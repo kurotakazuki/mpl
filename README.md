@@ -8,11 +8,11 @@ A MPG grammar `G` is a tuple `G = (V, T, R, S, $)` in which:
 - `T` is a finite set of terminal symbols.
 - `R` is a finite set of rules of the form
     - `A = B C / D`  
-    `A` in `V` (`A` &isin; `V`),  
-    `B, C, D` in `E` (`E` = `V` &cup; `T` &cup; {`(),f`}, `V` &cap; `T` = `V` &cap; {`(),f`} = `T` &cap; {`(),f`} = &empty;, `B, C, D` &isin; `E`).  
-    For any variable `A` there is at most one rule with `A` to the left of the `=`.
-- `S` in `V` (`S` &isin; `V`) is the start variable.
-- `$` not in `E` (`$`&notin; `E`) is the end symbol.
+    A in V (A &isin; V),  
+    B, C, D in E (E = V &cup; T &cup; {(), f}) (V &cap; T = V &cap; {(), f} = T &cap; {(), f} = &empty;) (B, C, D &isin; E).  
+    For any variable A there is at most one rule with A to the left of the `=`.
+- S in V (S &isin; V) is the start variable.
+- $ not in E ($ &notin; E) is the end symbol.
 
 ### Extended MPG
 Since one of the goals of MPG is to create an AST, it also supports two features in terms of ease of use and speed.
@@ -24,7 +24,7 @@ Since one of the goals of MPG is to create an AST, it also supports two features
 integer: i32 = ???? () / f
 ```
 
-To extend the difinition of MPG grammar, change {`(),f`} to {`?,(),f`}.
+To extend the difinition of MPG grammar, change {(), f} to {?, (), f}.
 
 #### Variable type
 Variables can have a type.
@@ -55,8 +55,8 @@ a = b'A' "abc" / 123
 ## Difference between TDPL and MPG
 The biggest difference between the two grammars is the rule form. There are two rule forms in TDPL.
 
-> `A..BC/D`,    `A,B,C,D` in `V`.  
-> `A..a`,       `a` in &sum; &cap; {&epsilon;,`f`}, f is a metasymbol not in &sum; and &epsilon; is the null string.
+> `A..BC/D`, A,B,C,D in V.  
+> `A..a`, a in &sum; &cup; {&epsilon;, f}, f is a metasymbol not in &sum; and &epsilon; is the null string.
 
 MPG, on the other hand, has one rule form.
 
