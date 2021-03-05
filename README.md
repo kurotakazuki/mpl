@@ -29,7 +29,7 @@ To extend the difinition of MPG grammar, change {(), f} to {?, (), f}.
 #### Variable type
 Variables can have a type.
 
-If the variable contains a type, it will include the value of that type when you create the CST. Therefore rules decomposed from variable including rule has a role like lexical analysis. The following syntax is a lexical syntax for numbers.
+If the variable contains a type, it will include the value of that type, such as a token, when the CST is created. Therefore rules decomposed from variable including rule has a role like lexical analysis. The following syntax is a lexical syntax for numbers.
 
 ```
 Number: String = digit numeral / f

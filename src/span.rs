@@ -1,92 +1,68 @@
-use std::convert::TryFrom;
-use std::fmt::Debug;
-use std::marker::PhantomData;
-use std::ops::{Add, Sub};
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct SpanData<S, L> {
-    lo: S,
-    hi: S,
-    phantom: PhantomData<L>,
-}
-
-impl<S, L> SpanData<S, L>
-where
-    S: Add<Output = S> + Sub<Output = S> + Copy + Ord + From<L>,
-    L: Add<Output = L> + Sub<Output = L> + Copy + Default + Ord + TryFrom<S>,
-    L::Error: Debug,
-{
-    #[inline]
-    pub fn with_lo(&self, lo: S) -> Span<S, L> {
-        Span::new(lo, self.hi)
-    }
-    #[inline]
-    pub fn with_hi(&self, hi: S) -> Span<S, L> {
-        Span::new(self.lo, hi)
-    }
-}
-
-/// Recommend that `S` has a wider scope of values than `L`.
-/// `hi = span.start + span.len` must be `<= S::MAX`.
-/// `span.len` must be `<= L::MAX`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Span<S, L> {
     start: S,
     len: L,
 }
 
-impl<S, L> Span<S, L>
-where
-    S: Add<Output = S> + Sub<Output = S> + Copy + Ord + From<L>,
-    L: Add<Output = L> + Sub<Output = L> + Copy + Default + Ord + TryFrom<S>,
-    L::Error: Debug,
-{
-    /// `span.len` must be `<= L::MAX`.
-    pub fn new(lo: S, hi: S) -> Self {
-        Self {
-            start: lo,
-            len: L::try_from(hi - lo).expect("hi - lo <= L::MAX"),
-        }
-    }
+pub trait SpanHi<L, I> {
+    fn hi(start: Self, len: L, input: &I) -> Self;
+}
 
-    /// `hi = span.start + span.len` must be `<= S::MAX`.
-    pub fn from_S_L(start: S, len: L) -> Self {
+pub trait SpanLen<S, I> {
+    fn len(lo: S, hi: S, input: &I) -> Self;
+}
+
+impl<S, L> Span<S, L> {
+    fn from_start_len(start: S, len: L) -> Self {
         Self { start, len }
     }
+}
 
-    /// Warning: This may overflow.
-    pub fn data(&self) -> SpanData<S, L> {
-        SpanData {
-            lo: self.start,
-            // Warning: This may overflow.
-            hi: self.start + self.len.into(),
-            phantom: PhantomData,
+impl<S, L> Span<S, L> where S: Clone {
+    fn lo(&self) -> S {
+        self.start.clone()
+    }
+}
+
+trait Spantrait<S, L, I> {
+    fn from_lo_hi_input(lo: S, hi: S, input: &I) -> Self;
+    fn with_lo(&self, lo: S, input: &I) -> Self;
+    fn with_hi(&self, hi: S, input: &I) -> Self;
+    fn hi(&self, input: &I) -> S;
+    fn stretch(&self, other: &Self, input: &I) -> Self;
+}
+
+impl<S, L, I> Spantrait<S, L, I> for Span<S, L>
+where
+    S: Clone + Ord + From<L> + SpanHi<L, I>,
+    L: Clone + Ord + SpanLen<S, I>,
+{
+    fn from_lo_hi_input(lo: S, hi: S, input: &I) -> Self {
+        Self {
+            start: lo.clone(),
+            len: L::len(lo, hi, input),
         }
     }
 
-    pub fn lo(&self) -> S {
-        self.data().lo
+    fn with_lo(&self, lo: S, input: &I) -> Self {
+        Self::from_lo_hi_input(lo, self.hi(input), input)
     }
 
-    pub fn hi(&self) -> S {
-        self.data().hi
+    fn with_hi(&self, hi: S, input: &I) -> Self {
+        Self::from_lo_hi_input(self.lo(), hi, input)
     }
 
-    pub fn with_lo(&self, lo: S) -> Self {
-        self.data().with_lo(lo)
+    fn hi(&self, input: &I) -> S {
+        S::hi(self.start.clone(), self.len.clone(), input)
     }
 
-    pub fn with_hi(&self, hi: S) -> Self {
-        self.data().with_hi(hi)
-    }
-
-    pub fn merge(&self, other: &Self) -> Self {
+    fn stretch(&self, other: &Self, input: &I) -> Self {
         use std::cmp::{max, min};
 
         let lo = min(self.lo(), other.lo());
-        let hi = max(self.hi(), other.hi());
+        let hi = max(self.hi(input), other.hi(input));
 
-        Self::new(lo, hi)
+        Self::from_lo_hi_input(lo, hi, input)
     }
 }
 
@@ -94,29 +70,63 @@ where
 mod tests {
     use super::*;
 
-    #[test]
-    fn span_new_lo_hi() {
-        let span = Span::<u32, u16>::new(1, 10);
+    impl SpanHi<u16, ()> for u32 {
+        fn hi(start: Self, len: u16, input: &()) -> Self {
+            start + len as u32
+        }
+    }
 
-        assert_eq!(1, span.lo());
-        assert_eq!(10, span.hi());
+    impl SpanLen<u32, ()> for u16 {
+        fn len(lo: u32, hi: u32, input: &()) -> Self {
+            (hi - lo) as u16
+        }
+    }
+
+    impl SpanHi<u16, u32> for u32 {
+        fn hi(start: Self, len: u16, input: &u32) -> Self {
+            input + start + len as u32
+        }
+    }
+
+    impl SpanLen<u32, u32> for u16 {
+        fn len(lo: u32, hi: u32, input: &u32) -> Self {
+            (input + hi - lo) as u16
+        }
     }
 
     #[test]
-    fn span_merge() {
-        let span = Span::<u32, u16>::new(5, 100);
-        let other_span = Span::new(1, 10);
+    fn from_lo_hi_input() {
+        let span = Span::<u32, u16>::from_lo_hi_input(1, 10, &());
 
-        let another_span = span.merge(&other_span);
+        assert_eq!(1, span.start);
+        assert_eq!(10, span.hi(&()));
+    }
 
-        assert_eq!(1, another_span.lo());
-        assert_eq!(100, another_span.hi());
+    #[test]
+    fn stretch() {
+        let span = Span::<u32, u16>::from_lo_hi_input(5, 100, &());
+        let other_span = Span::from_lo_hi_input(1, 10, &());
 
-        let span = Span::<u16, u8>::new(5, 100);
-        let other_span = Span::new(1, 255);
+        let another_span = span.stretch(&other_span, &());
 
-        let another_span = span.merge(&other_span);
+        assert_eq!(1, another_span.start);
+        assert_eq!(100, another_span.hi(&()));
 
-        assert_eq!(Span::new(1, 255), another_span);
+        let span = Span::<u32, u16>::from_lo_hi_input(5, 100, &());
+        let other_span = Span::from_lo_hi_input(1, 255, &());
+
+        let another_span = span.stretch(&other_span, &());
+
+        assert_eq!(Span::from_lo_hi_input(1, 255, &()), another_span);
+    }
+
+    #[test]
+    fn input_u32() {
+        let span = Span::<u32, u16>::from_lo_hi_input(1, 10, &5);
+
+        assert_eq!(1, span.start);
+        assert_eq!(14, span.len);
+        assert_eq!(20, u32::hi(span.start, span.len, &5));
+        assert_eq!(20, span.hi(&5));
     }
 }
