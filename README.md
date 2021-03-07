@@ -5,11 +5,11 @@ This is minimal parser generator that generates a parser from grammar like Top-D
 ### Definition of MPG grammar
 A MPG grammar `G` is a tuple `G = (V, T, R, S, $)` in which:
 - `V` is a finite set of variables.
-- `T` is a finite set of terminal symbols.
+- `T` is a finite set of terminal symbols containing `M` ( = {(), f}) (is a finite set of metasymbols).
 - `R` is a finite set of rules of the form
     - `A = B C / D`  
     A in V (A &isin; V),  
-    B, C, D in E (E = V &cup; T &cup; {(), f}) (V &cap; T = V &cap; {(), f} = T &cap; {(), f} = &empty;) (B, C, D &isin; E).  
+    B, C, D in E (E = T &cup; V) (T &cap; V = &empty;) (B, C, D &isin; E).  
     For any variable A there is at most one rule with A to the left of the `=`.
 - S in V (S &isin; V) is the start variable.
 - $ not in E ($ &notin; E) is the end symbol.
@@ -18,14 +18,15 @@ A MPG grammar `G` is a tuple `G = (V, T, R, S, $)` in which:
 Since one of the goals of MPG is to create an CST, it also supports two features in terms of ease of use and speed.
 
 #### Any
-`?` is a symbol representing any single input like wildcard character. This succeeds if there is any input left, and fails if there is no input left.
+`?` is a metasymbol representing any single input like wildcard character. This succeeds if there is any input left, and fails if there is no input left.
 
 ```
-Integer: i32 = ???? () / f
+Integer = ???? () / f
 ```
 
-To extend the difinition of MPG grammar, change {(), f} to {?, (), f}.
+To extend the difinition of MPG grammar, change `M` = {(), f} to `M` = {?, (), f}.
 
+<!---
 #### Variable type
 Variables can have a type.
 
@@ -44,6 +45,7 @@ Nine = "9" () / f
 An error (TODO: maybe failure would be better) will occur if the input cannot be converted to the variable type.
 
 To extend the difinition of MPG grammar, change `A = B C / D` to `A = B C / D` or `A: TYPE = B C / D`, or seperate definition of `V` by including type or not.
+--->
 
 #### Terminal symbol type
 Terminal symbols supports several types.

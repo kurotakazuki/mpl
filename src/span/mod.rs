@@ -1,4 +1,6 @@
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+use crate::position::BytePos;
+
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct Span<S, L> {
     start: S,
     len: L,
@@ -66,18 +68,38 @@ where
     }
 }
 
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
+pub struct Spanned<T, S, L> {
+    node: T,
+    span: Span<S, L>,
+}
+
+pub type ByteSpan = Span<BytePos, u16>;
+
+impl<I> SpanHi<u16, I> for BytePos {
+    fn hi(start: Self, len: u16, _: &I) -> Self {
+        start + BytePos(len as u32)
+    }
+}
+
+impl<I> SpanLen<BytePos, I> for u16 {
+    fn len(lo: BytePos, hi: BytePos, _: &I) -> Self {
+        u32::from(hi - lo) as u16
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     impl SpanHi<u16, ()> for u32 {
-        fn hi(start: Self, len: u16, input: &()) -> Self {
+        fn hi(start: Self, len: u16, _: &()) -> Self {
             start + len as u32
         }
     }
 
     impl SpanLen<u32, ()> for u16 {
-        fn len(lo: u32, hi: u32, input: &()) -> Self {
+        fn len(lo: u32, hi: u32, _: &()) -> Self {
             (hi - lo) as u16
         }
     }
