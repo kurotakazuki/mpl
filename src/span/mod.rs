@@ -6,11 +6,11 @@ pub struct Span<S, L> {
     len: L,
 }
 
-pub trait SpanHi<L, I> {
+pub trait SpanHi<L, I = ()> {
     fn hi(start: Self, len: L, input: &I) -> Self;
 }
 
-pub trait SpanLen<S, I> {
+pub trait SpanLen<S, I = ()> {
     fn len(lo: S, hi: S, input: &I) -> Self;
 }
 
@@ -74,19 +74,19 @@ pub struct Spanned<T, S, L> {
     span: Span<S, L>,
 }
 
-pub type ByteSpan = Span<BytePos, u16>;
+// pub type ByteSpan = Span<BytePos, u16>;
 
-impl<I> SpanHi<u16, I> for BytePos {
-    fn hi(start: Self, len: u16, _: &I) -> Self {
-        start + BytePos(len as u32)
-    }
-}
+// impl<I> SpanHi<u16, I> for BytePos {
+//     fn hi(start: Self, len: u16, _: &I) -> Self {
+//         start + BytePos(len as u32)
+//     }
+// }
 
-impl<I> SpanLen<BytePos, I> for u16 {
-    fn len(lo: BytePos, hi: BytePos, _: &I) -> Self {
-        u32::from(hi - lo) as u16
-    }
-}
+// impl<I> SpanLen<BytePos, I> for u16 {
+//     fn len(lo: BytePos, hi: BytePos, _: &I) -> Self {
+//         u32::from(hi - lo) as u16
+//     }
+// }
 
 #[cfg(test)]
 mod tests {

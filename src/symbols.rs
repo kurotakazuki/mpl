@@ -4,6 +4,27 @@ pub struct Variable {
 
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum TokenKind<'a> {
+    Str(&'a str),
+    Slice(&'a [u8]),
+    F32(f32),
+    F64(f64),
+    Isize(isize),
+    I8(i8),
+    I16(i16),
+    I32(i32),
+    I64(i64),
+    I128(i128),
+    Usize(usize),
+    U8(u8),
+    U16(u16),
+    U32(u32),
+    U64(u64),
+    U128(u128),
+
+}
+
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub enum Metasymbol {
     Epsilon,
@@ -14,26 +35,19 @@ pub enum Metasymbol {
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub enum TerminalSymbol<T> {
     Original(T),
-    Meta(Metasymbol),
+    M(Metasymbol),
 }
 
-// #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-// pub enum E<T, V> {
-//     T(TerminalSymbol<T>),
-//     V(V),
-// }
-
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
-pub struct RRuleWithValue<T, V1, V2, V3> {
-    value: T,
-    rrule: RRule<V1, V2, V3>
+trait TerminalAndInput {
+    type Input;
+    
+    fn from_terminal(&self) -> Self::Input;
 }
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
-pub struct RRule<V1, V2, V3> {
-    variable1: V1,
-    variable2: V2,
-    variable3: V3,
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
+pub enum E<T, V> {
+    T(TerminalSymbol<T>),
+    V(V),
 }
 
 #[cfg(test)]
