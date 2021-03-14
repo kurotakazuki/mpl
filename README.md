@@ -47,12 +47,15 @@ An error (TODO: maybe failure would be better) will occur if the input cannot be
 To extend the difinition of MPG grammar, change `A = B C / D` to `A = B C / D` or `A: TYPE = B C / D`, or seperate definition of `V` by including type or not.
 --->
 
+
 #### Terminal symbol type
 Terminal symbols supports several types.
 
 ```
-A = b'A' "abc" / 123
+A = 'A' "abc" / [0, 0, 0]
 ```
+
+Supports `char, str, [u8]` at this moment.
 
 ## Difference between TDPL and MPG
 The biggest difference between the two grammars is the rule form. There are two rule forms in TDPL.
@@ -64,22 +67,74 @@ MPG, on the other hand, has one rule form.
 
 ## MPGG (MPG Grammar) syntax
 ### In PEG like grammar
-```r
+```rust
+// Hierarchical syntax
 MPGG = (Line)*
-Line = ZeroOrMoreWhiteSpace (RuleLine / CommentLine / ()) ZeroOrMoreWhiteSpace NewLine
-RuleLine = E WhiteSpace ZeroOrMoreWhiteSpace E WhiteSpace ZeroOrMoreWhiteSpace '/' WhiteSpace ZeroOrMoreWhiteSpace E
-CommentLine = "//" (!NewLine .)*
+Line = (Rule / LineComment / ()) EndOfLine
+Rule = Variable '=' E Space E Space '/' Space E
 E = Variable / TerminalSymbol
-Str = '"' (!'"' .)* '"'
 
-Literal = CharLiteral / StringLiteral / IntegerLiteral / FloatLiteral
+// Lexical syntax
+// Variable
+Variable = Uppercase (Alphabet / DecDigit)*
 
+// Terminal symbol
+TerminalSymbol = Expression
+
+// Expression
+Expression = LiteralExpression / ArrayExpression
+
+// Array
+ArrayExpression = '[' ArrayElements? ']'
+ArrayElements = Expression (',' Expression)* ','? / Expression ';' Expression
+
+// Literal
+LiteralExpression = CharLiteral / StringLiteral / IntegerLiteral / FloatLiteral
+
+// String
+StringLiteral = '\"' ((!('\"' / '\\' / IsolatedCR) . / QuoteEscape / ASCIIEscape / UnicodeEscape / StringContinue)* '\"'
+StringContinue = '\\' &'\n' 
+
+// Char
+CharLiteral = '\'' (!('\'' / '\n' / '\r' / '\t') . / QuoteEscape / ASCIIEscape / UnicodeEscape) '\''
+QuoteEscape = "\\'" / "\\\""
+ASCIIEscape = "\\x" OctDigit HexDigit / "\\n" / "\\r" / "\\t" / "\\\\" / "\\0"
+UnicodeEscape = "\\u{" (HexDigit '_'*)^1..6 '}'
+
+// Integer
 IntegerLiteral = (DecLiteral / HexLiteral) IntegerSuffix?
-Dec
+DecLiteral = DecDigit (DecDigit / '_')*
+HexLiteral =  "0x" (HexDigit / '_')* HexDigit (HexDigit / '_')*
 
-NewLine = '\n' / "\r\n" / '\r'
-ZeroOrMoreWhiteSpace = ' '*
-WhiteSpace = ' '
+IntegerSuffix = "u8" / "u16" / "u32" / "u64" / "u128" / "usize" / "i8" / "i16" / "i32" / "i64" / "i128" / "isize"
+
+// Float
+FloatLiteral = DecLiteral '.' ()
+
+FloatExponent = ('e' / 'E') ('+' / '-')? (DecDigit / '_')* DecDigit (DecDigit / '_')*
+FloatSuffix = "f32" / "f64"
+
+
+// Letters
+UppercaseAToF = 'A' / 'B' / 'C' / 'D' / 'E' / 'F'
+LowercaseAToF = 'a' / 'b' / 'c' / 'd' / 'e' / 'f'
+Uppercase = UppercaseAToF / 'G' / 'H' / 'I' / 'J' / 'K' / 'L' / 'M' / 'N' / 'O' / 'P' / 'Q' / 'R' / 'S' / 'T' / 'U' / 'V' / 'W' / 'X' / 'Y' / 'Z'
+Lowercase = LowercaseAToF / 'g' / 'h' / 'i' / 'j' / 'k' / 'l' / 'm' / 'n' / 'o' / 'p' / 'q' / 'r' / 's' / 't' / 'u' / 'v' / 'w' / 'x' / 'y' / 'z'
+Alphabet = Uppercase / Lowercase
+
+// Digits
+BinDigit = '0' / '1'
+OctDigit = BinDigit / '2' / '3' / '4' / '5' / '6' / '7'
+DecDigit = OctDigit / '8' / '9'
+HexDigit = DecDigit / UppercaseAToF / LowercaseAToF
+
+// Comment
+LineComment = "//" (!('\n') .)*
+
+IsolatedCR = '\r' !'\n' ()
+// TODO: Maybe need EOF
+EndOfLine = '\n' / "\r\n"
+Space = ' '
 ```
 
 ### In MPG grammar

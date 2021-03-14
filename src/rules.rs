@@ -1,23 +1,42 @@
-use crate::symbols::E;
+// use crate::symbols::E;
 
-// #[derive(Clone, Debug, Hash, Eq, PartialEq)]
-// pub struct RRuleWithValue<T, V1, V2, V3> {
-//     value: T,
-//     rrule: RRule<V1, V2, V3>
+#[derive(Clone, Debug, Hash, PartialEq)]
+pub enum Choice<E> {
+    First(E, E),
+    Second(E),
+}
+
+impl<E> Choice<E> {
+    pub fn first(left: E, right: E) -> Self {
+        Self::First(left, right)
+    }
+
+    pub fn second(e: E) -> Self {
+        Self::Second(e)
+    }
+
+    /// Returns true if Self::First
+    pub fn is_first(&self) -> bool {
+        match self {
+            Self::First(_, _) => true,
+            Self::Second(_) => false,
+        }
+    }
+
+    /// Returns true if Self::Second
+    pub fn is_second(&self) -> bool {
+        match self {
+            Self::First(_, _) => false,
+            Self::Second(_) => true,
+        }
+    }
+}
+
+// #[derive(Clone, Debug, PartialEq)]
+// pub struct RightRule<T, V> {
+//     first: (E<T, V>, E<T, V>),
+//     second: E<T, V>,
 // }
-
-#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-pub enum Choice<T, V> {
-    First(E<T, V>, E<T, V>),
-    Second(E<T, V>),
-}
-
-
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
-pub struct RightRule<T, V> {
-    first: (E<T, V>, E<T, V>),
-    second: E<T, V>,
-}
 
 #[cfg(test)]
 mod tests {

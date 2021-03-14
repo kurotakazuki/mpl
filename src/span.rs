@@ -1,6 +1,6 @@
 use crate::position::BytePos;
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Span<S, L> {
     start: S,
     len: L,
@@ -68,10 +68,19 @@ where
     }
 }
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
-pub struct Spanned<T, S, L> {
-    node: T,
+#[derive(Clone, Debug, PartialEq)]
+pub struct Spanned<N, S, L> {
+    node: N,
     span: Span<S, L>,
+}
+
+impl<N, S, L> Spanned<N, S, L> {
+    pub fn new(node: N, span: Span<S, L>) -> Self {
+        Spanned {
+            node,
+            span
+        }
+    }
 }
 
 // pub type ByteSpan = Span<BytePos, u16>;
