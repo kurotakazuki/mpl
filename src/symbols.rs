@@ -1,6 +1,8 @@
+use std::convert::TryFrom;
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum MPGGTerminalType<'a> {
-    Char(char),
+    // Char(char),
     Str(&'a str),
     U8Slice(&'a [u8]),
     // F32(f32),
@@ -19,26 +21,6 @@ pub enum MPGGTerminalType<'a> {
     // U128(u128),
 }
 
-// trait FromInput {
-//     fn from_input() -> Self;
-// }
-
-trait FromTerminalType {
-    fn from_terminal_type(m_p_g_g_terminal_type: MPGGTerminalType) -> Self;
-}
-
-
-
-// impl TerminalType<'_> {
-//     pub fn into(&self)
-// }
-
-impl From<char> for MPGGTerminalType<'_> {
-    fn from(value: char) -> Self {
-        Self::Char(value)
-    }
-}
-
 impl<'a> From<&'a str> for MPGGTerminalType<'a> {
     fn from(value: &'a str) -> Self {
         Self::Str(value)
@@ -48,6 +30,29 @@ impl<'a> From<&'a str> for MPGGTerminalType<'a> {
 impl<'a> From<&'a [u8]> for MPGGTerminalType<'a> {
     fn from(value: &'a [u8]) -> Self {
         Self::U8Slice(value)
+    }
+}
+
+/// TODO: Change Error type
+impl<'a> TryFrom<MPGGTerminalType<'a>> for &'a str {
+    type Error = ();
+
+    fn try_from(m_p_g_g_terminal_type: MPGGTerminalType<'a>) -> Result<Self, Self::Error> {
+        match m_p_g_g_terminal_type {
+            MPGGTerminalType::Str(s) => Ok(s),
+            MPGGTerminalType::U8Slice(s) => std::str::from_utf8(s).map_err(|_| ()),
+        }
+    }
+}
+
+impl<'a> TryFrom<MPGGTerminalType<'a>> for &'a [u8] {
+    type Error = ();
+
+    fn try_from(m_p_g_g_terminal_type: MPGGTerminalType<'a>) -> Result<Self, Self::Error> {
+        match m_p_g_g_terminal_type {
+            MPGGTerminalType::Str(s) => Ok(s.as_bytes()),
+            MPGGTerminalType::U8Slice(s) => Ok(s),
+        }
     }
 }
 
@@ -108,10 +113,7 @@ pub struct Variable<V, E> {
 
 impl<V, E> Variable<V, E> {
     pub fn new(value: V, equal: E) -> Self {
-        Self {
-            value,
-            equal
-        }
+        Self { value, equal }
     }
 }
 
@@ -123,28 +125,27 @@ impl<V, E> Variable<V, E> {
 
 // trait TerminalAndInput {
 //     type Input;
-    
+
 //     fn from_terminal(&self) -> Self::Input;
 // }
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn valiable() {
-        // use crate::span::VSpan;
+    // #[test]
+    // fn valiable() {
+    //     // use crate::span::VSpan;
 
-        // enum VariableKind<V1, V2, V3> {
-        //     Number(RRuleWithValue<String, V1, V2, V3>),
-        //     Numeral(RRule<V1, V2, V3>),
-        //     Digit(RRule<V1, V2, V3>),
-        //     Zero(RRule<V1, V2, V3>),
-        //     One(RRule<V1, V2, V3>),
-        //     Nine(RRule<&str, V2, V3>),
+    //     // enum VariableKind<V1, V2, V3> {
+    //     //     Number(RRuleWithValue<String, V1, V2, V3>),
+    //     //     Numeral(RRule<V1, V2, V3>),
+    //     //     Digit(RRule<V1, V2, V3>),
+    //     //     Zero(RRule<V1, V2, V3>),
+    //     //     One(RRule<V1, V2, V3>),
+    //     //     Nine(RRule<&str, V2, V3>),
 
-        // }
+    //     // }
 
-    }
+    // }
 }

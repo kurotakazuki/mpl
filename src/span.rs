@@ -15,12 +15,15 @@ pub trait SpanLen<S, I = ()> {
 }
 
 impl<S, L> Span<S, L> {
-    fn from_start_len(start: S, len: L) -> Self {
+    pub fn from_start_len(start: S, len: L) -> Self {
         Self { start, len }
     }
 }
 
-impl<S, L> Span<S, L> where S: Clone {
+impl<S, L> Span<S, L>
+where
+    S: Clone,
+{
     fn lo(&self) -> S {
         self.start.clone()
     }
@@ -76,10 +79,7 @@ pub struct Spanned<N, S, L> {
 
 impl<N, S, L> Spanned<N, S, L> {
     pub fn new(node: N, span: Span<S, L>) -> Self {
-        Spanned {
-            node,
-            span
-        }
+        Spanned { node, span }
     }
 }
 

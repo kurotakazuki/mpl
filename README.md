@@ -33,11 +33,11 @@ Variables can have a type.
 If the variable contains a type, it will include the value of that type, such as a token, when the CST is created. Therefore rules decomposed from variable including rule has a role like lexical analysis. The following syntax is a lexical syntax for numbers.
 
 ```
-Number: String = digit numeral / f
-Numeral = digit numeral / ()
-Digit = zero () / f
-Zero = "0" () / one
-One = "1" () / two
+Number: String = Digit Numeral / f
+Numeral = Digit Numeral / ()
+Digit = Zero () / f
+Zero = "0" () / One
+One = "1" () / Two
 // ...
 Nine = "9" () / f
 ```
@@ -52,10 +52,10 @@ To extend the difinition of MPG grammar, change `A = B C / D` to `A = B C / D` o
 Terminal symbols supports several types.
 
 ```
-A = 'A' "abc" / [0, 0, 0]
+A = "A" "abc" / [0, 0, 0]
 ```
 
-Supports `char, str, [u8]` at this moment.
+Supports `&str, &[u8]` at this moment.
 
 ## Difference between TDPL and MPG
 The biggest difference between the two grammars is the rule form. There are two rule forms in TDPL.
@@ -85,56 +85,57 @@ TerminalSymbol = Expression
 Expression = LiteralExpression / ArrayExpression
 
 // Array
-ArrayExpression = '[' ArrayElements? ']'
-ArrayElements = Expression (',' Expression)* ','? / Expression ';' Expression
+ArrayExpression = "[" ArrayElements? "]"
+ArrayElements = Expression ("," Expression)* ","? / Expression ";" Expression
 
 // Literal
-LiteralExpression = CharLiteral / StringLiteral / IntegerLiteral / FloatLiteral
+LiteralExpression = StringLiteral / IntegerLiteral
+// LiteralExpression = CharLiteral / StringLiteral / IntegerLiteral / FloatLiteral
 
 // String
-StringLiteral = '\"' ((!('\"' / '\\' / IsolatedCR) . / QuoteEscape / ASCIIEscape / UnicodeEscape / StringContinue)* '\"'
-StringContinue = '\\' &'\n' 
+StringLiteral = "\"" ((!("\"" / "\\" / IsolatedCR) . / QuoteEscape / ASCIIEscape / UnicodeEscape / StringContinue)* "\""
+StringContinue = "\\" &"\n" 
 
 // Char
-CharLiteral = '\'' (!('\'' / '\n' / '\r' / '\t') . / QuoteEscape / ASCIIEscape / UnicodeEscape) '\''
+// CharLiteral = "\'" (!("\'" / "\n" / "\r" / "\t") . / QuoteEscape / ASCIIEscape / UnicodeEscape) '\''
 QuoteEscape = "\\'" / "\\\""
 ASCIIEscape = "\\x" OctDigit HexDigit / "\\n" / "\\r" / "\\t" / "\\\\" / "\\0"
-UnicodeEscape = "\\u{" (HexDigit '_'*)^1..6 '}'
+UnicodeEscape = "\\u{" (HexDigit "_"*)^1..6 "}"
 
 // Integer
 IntegerLiteral = (DecLiteral / HexLiteral) IntegerSuffix?
-DecLiteral = DecDigit (DecDigit / '_')*
-HexLiteral =  "0x" (HexDigit / '_')* HexDigit (HexDigit / '_')*
+DecLiteral = DecDigit (DecDigit / "_")*
+HexLiteral =  "0x" (HexDigit / "_")* HexDigit (HexDigit / "_")*
 
 IntegerSuffix = "u8" / "u16" / "u32" / "u64" / "u128" / "usize" / "i8" / "i16" / "i32" / "i64" / "i128" / "isize"
 
 // Float
-FloatLiteral = DecLiteral '.' ()
+FloatLiteral = DecLiteral "." ()
 
-FloatExponent = ('e' / 'E') ('+' / '-')? (DecDigit / '_')* DecDigit (DecDigit / '_')*
+FloatExponent = ("e" / "E") ("+" / "-")? (DecDigit / "_")* DecDigit (DecDigit / "_")*
 FloatSuffix = "f32" / "f64"
 
 
 // Letters
-UppercaseAToF = 'A' / 'B' / 'C' / 'D' / 'E' / 'F'
-LowercaseAToF = 'a' / 'b' / 'c' / 'd' / 'e' / 'f'
-Uppercase = UppercaseAToF / 'G' / 'H' / 'I' / 'J' / 'K' / 'L' / 'M' / 'N' / 'O' / 'P' / 'Q' / 'R' / 'S' / 'T' / 'U' / 'V' / 'W' / 'X' / 'Y' / 'Z'
-Lowercase = LowercaseAToF / 'g' / 'h' / 'i' / 'j' / 'k' / 'l' / 'm' / 'n' / 'o' / 'p' / 'q' / 'r' / 's' / 't' / 'u' / 'v' / 'w' / 'x' / 'y' / 'z'
+UppercaseAToF = "A" / "B" / "C" / "D" / "E" / "F"
+LowercaseAToF = "a" / "b" / "c" / "d" / "e" / "f"
+Uppercase = UppercaseAToF / "G" / "H" / "I" / "J" / "K" / "L" / "M" / "N" / "O" / "P" / "Q" / "R" / "S" / "T" / "U" / "V" / "W" / "X" / "Y" / "Z"
+Lowercase = LowercaseAToF / "g" / "h" / "i" / "j" / "k" / "l" / "m" / "n" / "o" / "p" / "q" / "r" / "s" / "t" / "u" / "v" / "w" / "x" / "y" / "z"
 Alphabet = Uppercase / Lowercase
 
 // Digits
-BinDigit = '0' / '1'
-OctDigit = BinDigit / '2' / '3' / '4' / '5' / '6' / '7'
-DecDigit = OctDigit / '8' / '9'
+BinDigit = "0" / "1"
+OctDigit = BinDigit / "2" / "3" / "4" / "5" / "6" / "7"
+DecDigit = OctDigit / "8" / "9"
 HexDigit = DecDigit / UppercaseAToF / LowercaseAToF
 
 // Comment
-LineComment = "//" (!('\n') .)*
+LineComment = "//" (!("\n") .)*
 
-IsolatedCR = '\r' !'\n' ()
+IsolatedCR = "\r" !"\n" ()
 // TODO: Maybe need EOF
-EndOfLine = '\n' / "\r\n"
-Space = ' '
+EndOfLine = "\n" / "\r\n"
+Space = " "
 ```
 
 ### In MPG grammar

@@ -7,8 +7,8 @@ pub enum Choice<E> {
 }
 
 impl<E> Choice<E> {
-    pub fn first(left: E, right: E) -> Self {
-        Self::First(left, right)
+    pub fn first(l: E, r: E) -> Self {
+        Self::First(l, r)
     }
 
     pub fn second(e: E) -> Self {
