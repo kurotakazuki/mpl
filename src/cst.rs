@@ -24,7 +24,7 @@ pub enum CSTKind<T, V, S, L> {
     // InternalNode { variable: V, choice: Box<Choice<CST<T, V, S, L>>> },
 }
 
-type CST<T, V, S, L> = Spanned<CSTKind<T, V, S, L>, S, L>;
+pub type CST<T, V, S, L> = Spanned<CSTKind<T, V, S, L>, S, L>;
 
 impl<T, V, S, L> CST<T, V, S, L> {
     pub fn leaf_node(leaf_node: LeafNode<T>, span: Span<S, L>) -> Self {
@@ -57,31 +57,31 @@ mod tests {
     fn number_cst() {
         #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
         enum NumberTerminal {
-            ZeroFC0,
-            OneFC0,
-            TwoFC0,
-            ThreeFC0,
-            FourFC0,
-            FiveFC0,
-            SixFC0,
-            SevenFC0,
-            EightFC0,
-            NineFC0,
+            ZeroFCLHS,
+            OneFCLHS,
+            TwoFCLHS,
+            ThreeFCLHS,
+            FourFCLHS,
+            FiveFCLHS,
+            SixFCLHS,
+            SevenFCLHS,
+            EightFCLHS,
+            NineFCLHS,
         }
 
         impl NumberTerminal {
             fn into_terminal_type(&self) -> MPGGTerminalType {
                 match *self {
-                    Self::ZeroFC0 => "0".into(),
-                    Self::OneFC0 => "1".into(),
-                    Self::TwoFC0 => "2".into(),
-                    Self::ThreeFC0 => "3".into(),
-                    Self::FourFC0 => "4".into(),
-                    Self::FiveFC0 => "5".into(),
-                    Self::SixFC0 => "6".into(),
-                    Self::SevenFC0 => "7".into(),
-                    Self::EightFC0 => "8".into(),
-                    Self::NineFC0 => [96, 1][..].into(),
+                    Self::ZeroFCLHS => "0".into(),
+                    Self::OneFCLHS => "1".into(),
+                    Self::TwoFCLHS => "2".into(),
+                    Self::ThreeFCLHS => "3".into(),
+                    Self::FourFCLHS => "4".into(),
+                    Self::FiveFCLHS => "5".into(),
+                    Self::SixFCLHS => "6".into(),
+                    Self::SevenFCLHS => "7".into(),
+                    Self::EightFCLHS => "8".into(),
+                    Self::NineFCLHS => [96, 1][..].into(),
                 }
             }
         }
@@ -103,24 +103,24 @@ mod tests {
             Nine,
         }
 
-        impl<I> SpanHi<u16, I> for BytePos {
-            fn hi(start: Self, len: u16, _: &I) -> Self {
-                start + BytePos(len as u32)
-            }
-        }
+        // impl<I> SpanHi<u16, I> for BytePos {
+        //     fn hi(start: Self, len: u16, _: &I) -> Self {
+        //         start + BytePos(len as u32)
+        //     }
+        // }
 
-        impl<I> SpanLen<BytePos, I> for u16 {
-            fn len(lo: BytePos, hi: BytePos, _: &I) -> Self {
-                u32::from(hi - lo) as u16
-            }
-        }
+        // impl<I> SpanLen<BytePos, I> for u16 {
+        //     fn len(lo: BytePos, hi: BytePos, _: &I) -> Self {
+        //         u32::from(hi - lo) as u16
+        //     }
+        // }
 
         // Input: 10
 
         // 1
         // One
         let one_fc0: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
-            LeafNode::Original(NumberTerminal::OneFC0),
+            LeafNode::Original(NumberTerminal::OneFCLHS),
             Span::from_start_len(BytePos(0), 1),
         );
         let one_fc1: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
@@ -149,7 +149,7 @@ mod tests {
         // 0
         // Zero
         let zero_fc0: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
-            LeafNode::Original(NumberTerminal::ZeroFC0),
+            LeafNode::Original(NumberTerminal::ZeroFCLHS),
             Span::from_start_len(BytePos(1), 1),
         );
         let zero_fc1: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(

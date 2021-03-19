@@ -1,4 +1,8 @@
-use crate::position::BytePos;
+pub use self::byte_span::ByteSpan;
+pub use self::spanned::Spanned;
+
+mod byte_span;
+mod spanned;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Span<S, L> {
@@ -29,7 +33,7 @@ where
     }
 }
 
-trait Spantrait<S, L, I> {
+trait SpanTrait<S, L, I> {
     fn from_lo_hi_input(lo: S, hi: S, input: &I) -> Self;
     fn with_lo(&self, lo: S, input: &I) -> Self;
     fn with_hi(&self, hi: S, input: &I) -> Self;
@@ -37,7 +41,7 @@ trait Spantrait<S, L, I> {
     fn stretch(&self, other: &Self, input: &I) -> Self;
 }
 
-impl<S, L, I> Spantrait<S, L, I> for Span<S, L>
+impl<S, L, I> SpanTrait<S, L, I> for Span<S, L>
 where
     S: Clone + Ord + From<L> + SpanHi<L, I>,
     L: Clone + Ord + SpanLen<S, I>,
@@ -70,32 +74,6 @@ where
         Self::from_lo_hi_input(lo, hi, input)
     }
 }
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Spanned<N, S, L> {
-    node: N,
-    span: Span<S, L>,
-}
-
-impl<N, S, L> Spanned<N, S, L> {
-    pub fn new(node: N, span: Span<S, L>) -> Self {
-        Spanned { node, span }
-    }
-}
-
-// pub type ByteSpan = Span<BytePos, u16>;
-
-// impl<I> SpanHi<u16, I> for BytePos {
-//     fn hi(start: Self, len: u16, _: &I) -> Self {
-//         start + BytePos(len as u32)
-//     }
-// }
-
-// impl<I> SpanLen<BytePos, I> for u16 {
-//     fn len(lo: BytePos, hi: BytePos, _: &I) -> Self {
-//         u32::from(hi - lo) as u16
-//     }
-// }
 
 #[cfg(test)]
 mod tests {

@@ -65,6 +65,8 @@ The biggest difference between the two grammars is the rule form. There are two 
 
 MPG, on the other hand, has one rule form.
 
+
+<!---
 ## MPGG (MPG Grammar) syntax
 ### In PEG like grammar
 ```rust
@@ -139,7 +141,7 @@ Space = " "
 ```
 
 ### In MPG grammar
-
+--->
 
 ## References
 These are references that I read. (I may have misunderstood the content because I haven't read some reference completely or have no reading comprehension. Please let me know if there are any mistakes.)

@@ -1,4 +1,14 @@
+pub use self::e::E;
+pub use self::metasymbol::Metasymbol;
+pub use self::terminal_symbol::TerminalSymbol;
+pub use self::variable::Variable;
+
 use std::convert::TryFrom;
+
+mod e;
+mod metasymbol;
+mod terminal_symbol;
+mod variable;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum MPGGTerminalType<'a> {
@@ -55,79 +65,6 @@ impl<'a> TryFrom<MPGGTerminalType<'a>> for &'a [u8] {
         }
     }
 }
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Metasymbol {
-    Epsilon,
-    Failed,
-    Any,
-}
-
-impl Metasymbol {
-    pub fn epsilon() -> Self {
-        Self::Epsilon
-    }
-
-    pub fn failed() -> Self {
-        Self::Failed
-    }
-
-    pub fn any() -> Self {
-        Self::Any
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum TerminalSymbol<T> {
-    Original(T),
-    M(Metasymbol),
-}
-
-// impl<T> From<Metasymbol> for TerminalSymbol<T> {
-//     fn from(metasymbol: Metasymbol) -> Self {
-//         Self::M(metasymbol)
-//     }
-// }
-
-// impl<T> From<T> for TerminalSymbol<T> {
-//     fn from(t: T) -> Self {
-//         Self::Original(t)
-//     }
-// }
-
-impl<T> TerminalSymbol<T> {
-    pub fn original(t: T) -> Self {
-        Self::Original(t)
-    }
-
-    pub fn m(metasymbol: Metasymbol) -> Self {
-        Self::M(metasymbol)
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct Variable<V, E> {
-    value: V,
-    equal: E,
-}
-
-impl<V, E> Variable<V, E> {
-    pub fn new(value: V, equal: E) -> Self {
-        Self { value, equal }
-    }
-}
-
-// #[derive(Clone, Debug, PartialEq)]
-// pub enum E<T, V> {
-//     T(TerminalSymbol<T>),
-//     V(V),
-// }
-
-// trait TerminalAndInput {
-//     type Input;
-
-//     fn from_terminal(&self) -> Self::Input;
-// }
 
 #[cfg(test)]
 mod tests {

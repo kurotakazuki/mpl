@@ -1,4 +1,5 @@
-// use crate::symbols::E;
+use crate::symbols::E;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, Hash, PartialEq)]
 pub enum Choice<E> {
@@ -32,11 +33,14 @@ impl<E> Choice<E> {
     }
 }
 
-// #[derive(Clone, Debug, PartialEq)]
-// pub struct RightRule<T, V> {
-//     first: (E<T, V>, E<T, V>),
-//     second: E<T, V>,
-// }
+/// This structure is used when defining the rule for a variable.
+#[derive(Clone, Debug, PartialEq)]
+pub struct RightRule<T, V> {
+    first: (E<T, V>, E<T, V>),
+    second: E<T, V>,
+}
+
+pub type Rules<T, V> = HashMap<V, RightRule<T, V>>;
 
 #[cfg(test)]
 mod tests {
