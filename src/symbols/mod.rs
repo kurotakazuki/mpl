@@ -66,23 +66,23 @@ impl<'a> TryFrom<MPGGTerminalType<'a>> for &'a [u8] {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    // #[test]
-    // fn valiable() {
-    //     // use crate::span::VSpan;
+//     // #[test]
+//     // fn valiable() {
+//     //     // use crate::span::VSpan;
 
-    //     // enum VariableKind<V1, V2, V3> {
-    //     //     Number(RRuleWithValue<String, V1, V2, V3>),
-    //     //     Numeral(RRule<V1, V2, V3>),
-    //     //     Digit(RRule<V1, V2, V3>),
-    //     //     Zero(RRule<V1, V2, V3>),
-    //     //     One(RRule<V1, V2, V3>),
-    //     //     Nine(RRule<&str, V2, V3>),
+//     //     // enum VariableKind<V1, V2, V3> {
+//     //     //     Number(RRuleWithValue<String, V1, V2, V3>),
+//     //     //     Numeral(RRule<V1, V2, V3>),
+//     //     //     Digit(RRule<V1, V2, V3>),
+//     //     //     Zero(RRule<V1, V2, V3>),
+//     //     //     One(RRule<V1, V2, V3>),
+//     //     //     Nine(RRule<&str, V2, V3>),
 
-    //     // }
+//     //     // }
 
-    // }
-}
+//     // }
+// }

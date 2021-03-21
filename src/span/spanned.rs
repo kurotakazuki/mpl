@@ -2,8 +2,8 @@ use crate::span::Span;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Spanned<N, S, L> {
-    node: N,
-    span: Span<S, L>,
+    pub node: N,
+    pub span: Span<S, L>,
 }
 
 impl<N, S, L> Spanned<N, S, L> {

@@ -6,15 +6,15 @@ mod spanned;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Span<S, L> {
-    start: S,
-    len: L,
+    pub start: S,
+    pub len: L,
 }
 
-pub trait SpanHi<L, I = ()> {
+pub trait SpanHi<L, I = ()> where I: ?Sized {
     fn hi(start: Self, len: L, input: &I) -> Self;
 }
 
-pub trait SpanLen<S, I = ()> {
+pub trait SpanLen<S, I = ()> where I: ?Sized {
     fn len(lo: S, hi: S, input: &I) -> Self;
 }
 
@@ -28,12 +28,12 @@ impl<S, L> Span<S, L>
 where
     S: Clone,
 {
-    fn lo(&self) -> S {
+    pub fn lo(&self) -> S {
         self.start.clone()
     }
 }
 
-trait SpanTrait<S, L, I> {
+pub trait SpanTrait<S, L, I = ()> where I: ?Sized {
     fn from_lo_hi_input(lo: S, hi: S, input: &I) -> Self;
     fn with_lo(&self, lo: S, input: &I) -> Self;
     fn with_hi(&self, hi: S, input: &I) -> Self;
