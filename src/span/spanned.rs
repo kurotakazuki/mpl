@@ -1,13 +1,13 @@
 use crate::span::Span;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Spanned<N, S, L> {
+pub struct Spanned<N, S> {
     pub node: N,
-    pub span: Span<S, L>,
+    pub span: S,
 }
 
-impl<N, S, L> Spanned<N, S, L> {
-    pub fn new(node: N, span: Span<S, L>) -> Self {
+impl<N, S> Spanned<N, S> {
+    pub fn new(node: N, span: S) -> Self {
         Spanned { node, span }
     }
 }

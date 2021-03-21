@@ -1,16 +1,16 @@
 use crate::position::BytePos;
-use crate::span::{Span, SpanHi, SpanLen};
+use crate::span::{StartAndLenSpan, StartAndLenSpanHi, StartAndLenSpanLen};
 
-pub type ByteSpan = Span<BytePos, u16>;
+pub type ByteSpan = StartAndLenSpan<BytePos, u16>;
 
-impl<I> SpanHi<u16, I> for BytePos {
-    fn hi(start: Self, len: u16, _: &I) -> Self {
+impl StartAndLenSpanHi<u16> for BytePos {
+    fn hi_from_start_and_len(start: Self, len: u16) -> Self {
         start + BytePos(len as u32)
     }
 }
 
-impl<I> SpanLen<BytePos, I> for u16 {
-    fn len(lo: BytePos, hi: BytePos, _: &I) -> Self {
+impl StartAndLenSpanLen<BytePos> for u16 {
+    fn len_from_lo_and_hi(lo: BytePos, hi: BytePos) -> Self {
         u32::from(hi - lo) as u16
     }
 }
