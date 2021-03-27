@@ -3,6 +3,7 @@ pub enum Metasymbol {
     Epsilon,
     Failed,
     Any,
+    All,
 }
 
 impl Metasymbol {
@@ -16,5 +17,9 @@ impl Metasymbol {
 
     pub fn any() -> Self {
         Self::Any
+    }
+
+    pub fn all() -> Self {
+        Self::All
     }
 }

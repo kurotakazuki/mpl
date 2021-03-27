@@ -21,10 +21,21 @@ Since one of the goals of MPG is to create an CST, it also supports two features
 `?` is a metasymbol representing any single input like wildcard character. This succeeds if there is any input left, and fails if there is no input left.
 
 ```
-Integer = ???? () / f
+Any = ? () / f
 ```
 
 To extend the difinition of MPG grammar, change `M` = {(), f} to `M` = {?, (), f}.
+
+#### All
+`*` is a metasymbol representing All remaining input like wildcard character. This will succeed even if the remaining inputs are zero.
+
+```
+All = * () / f
+```
+
+To extend the difinition of MPG grammar, change `M` = {(), f} to `M` = {*, (), f}.
+
+Same as `All = ? All / ()`.
 
 <!---
 #### Variable type
@@ -142,6 +153,37 @@ Space = " "
 
 ### In MPG grammar
 --->
+
+## TODO
+- Create parser from MPGG file.
+- Packrat Parsing
+- Left Recursion
+
+## Practice
+### Sequence
+`A = e1 e2`
+```rust
+A = e1 e2 / f
+```
+
+### Choice
+`A = e1 / e2`
+```rust
+A = e1 () / e2
+```
+
+### Zero or more
+`A = e*`
+```rust
+A = e A / ()
+```
+
+### Not predicate
+`A = !e .`
+```rust
+A = B ? / f
+B = e * / ()
+```
 
 ## References
 These are references that I read. (I may have misunderstood the content because I haven't read some reference completely or have no reading comprehension. Please let me know if there are any mistakes.)

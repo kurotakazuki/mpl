@@ -1,13 +1,11 @@
 pub use self::e::E;
-pub use self::metasymbol::Metasymbol;
-pub use self::terminal_symbol::TerminalSymbol;
+pub use self::terminal::{metasymbol::Metasymbol, Terminal, terminal_symbol::TerminalSymbol};
 pub use self::variable::Variable;
 
 use std::convert::TryFrom;
 
 mod e;
-mod metasymbol;
-mod terminal_symbol;
+mod terminal;
 mod variable;
 
 #[derive(Copy, Clone, Debug, PartialEq)]

@@ -1,3 +1,4 @@
+use crate::position::Position;
 use crate::span::Span;
 use std::ops;
 
@@ -23,8 +24,8 @@ impl<P, L> StartAndLenSpan<P, L> {
 
 impl<P, L> Span<P> for StartAndLenSpan<P, L>
 where
-    P: Clone + Ord + StartAndLenSpanHi<L>,
-    L: Clone + Ord + StartAndLenSpanLen<P>,
+    P: StartAndLenSpanHi<L> + Position,
+    L: Clone + ops::Add<Output = L> + StartAndLenSpanLen<P>,
 {
     fn from_lo_hi(lo: P, hi: P) -> Self {
         Self {
@@ -49,19 +50,39 @@ where
         P::hi_from_start_and_len(self.start.clone(), self.len.clone())
     }
 
-    fn stretch(&self, other: &Self) -> Self {
-        use std::cmp::{max, min};
-
-        let lo = min(self.lo(), other.lo());
-        let hi = max(self.hi(), other.hi());
-
-        Self::from_lo_hi(lo.clone(), hi.clone())
+    fn merge_lhs_and_rhs(lhs: &Self, rhs: &Self) -> Self {
+        Self::from_start_len(lhs.lo(), lhs.len.clone() + rhs.len.clone())
     }
+
+    // fn stretch(&self, other: &Self) -> Self {
+    //     use std::cmp::{max, min};
+
+    //     let self_lo = self.lo();
+    //     let other_lo = other.lo();
+
+    //     let lo = if self_lo <= other_lo {
+    //         self_lo
+    //     } else {
+    //         other_lo
+    //     };
+        
+    //     min(self.lo(), other.lo());
+    //     let hi = max(self.hi(), other.hi());
+
+    //     Self::from_lo_hi(lo.clone(), hi.clone())
+    // }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::position::Position;
+
+    impl Position for u32 {
+        fn with_one_added(&self) -> Self {
+            self + 1
+        }
+    }
 
     impl StartAndLenSpanHi<u16> for u32 {
         fn hi_from_start_and_len(start: Self, len: u16) -> Self {
@@ -84,20 +105,23 @@ mod tests {
     }
 
     #[test]
-    fn stretch() {
-        let span = StartAndLenSpan::<u32, u16>::from_lo_hi(5, 100);
-        let other_span = StartAndLenSpan::from_lo_hi(1, 10);
+    fn merge_lhs_and_rhs() {
+        let lhs = StartAndLenSpan::<u32, u16>::from_lo_hi(5, 100);
+        let rhs = StartAndLenSpan::from_lo_hi(100, 1000);
 
-        let another_span = span.stretch(&other_span);
+        let merged_span = Span::merge_lhs_and_rhs(&lhs, &rhs);
 
-        assert_eq!(1, another_span.start);
-        assert_eq!(100, another_span.hi());
+        assert_eq!(5, merged_span.start);
+        assert_eq!(1000, merged_span.hi());
 
-        let span = StartAndLenSpan::<u32, u16>::from_lo_hi(5, 100);
-        let other_span = StartAndLenSpan::from_lo_hi(1, 255);
+        let lhs = StartAndLenSpan::<u32, u16>::from_lo_hi(0, 5);
+        let rhs = StartAndLenSpan::from_lo_hi(5, 10);
 
-        let another_span = span.stretch(&other_span);
+        let merged_span = Span::merge_lhs_and_rhs(&lhs, &rhs);
 
-        assert_eq!(StartAndLenSpan::from_lo_hi(1, 255), another_span);
+        assert_eq!(0, merged_span.start);
+        assert_eq!(10, merged_span.hi());
+
+        assert_eq!(StartAndLenSpan::from_lo_hi(0, 10), merged_span);
     }
 }

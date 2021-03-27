@@ -27,11 +27,11 @@ pub enum CSTKind<T, V, S> {
 pub type CST<T, V, S> = Spanned<CSTKind<T, V, S>, S>;
 
 impl<T, V, S> CST<T, V, S> {
-    pub fn leaf_node(leaf_node: LeafNode<T>, span: S) -> Self {
+    pub fn from_leaf_node(leaf_node: LeafNode<T>, span: S) -> Self {
         Self::new(CSTKind::LeafNode(leaf_node), span)
     }
 
-    pub fn internal_node(internal_node: InternalNode<T, V, S>, span: S) -> Self {
+    pub fn from_internal_node(internal_node: InternalNode<T, V, S>, span: S) -> Self {
         Self::new(CSTKind::InternalNode(internal_node), span)
     }
 }

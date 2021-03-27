@@ -1,4 +1,5 @@
-use core::ops::{Add, Sub};
+use crate::position::Position;
+use std::ops::{Add, Sub};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct BytePos(pub u32);
@@ -36,5 +37,11 @@ impl Sub for BytePos {
 
     fn sub(self, rhs: Self) -> Self {
         Self(self.0 - rhs.0)
+    }
+}
+
+impl Position for BytePos {
+    fn with_one_added(&self) -> Self {
+        *self + BytePos(1)
     }
 }
