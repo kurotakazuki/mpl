@@ -19,11 +19,11 @@ pub enum TerminalSymbol<T> {
 // }
 
 impl<T> TerminalSymbol<T> {
-    pub fn original(t: T) -> Self {
+    pub fn from_t(t: T) -> Self {
         Self::Original(t)
     }
 
-    pub fn m(metasymbol: Metasymbol) -> Self {
+    pub fn from_m(metasymbol: Metasymbol) -> Self {
         Self::M(metasymbol)
     }
 }

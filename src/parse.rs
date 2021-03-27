@@ -45,10 +45,11 @@ where
     }
 
     fn into_failed_cst(&self, pos: P) -> Result<CST<T, V, S>, ()> {
-        Ok(CST::from_leaf_node(
-            TerminalSymbol::M(Metasymbol::Failed),
-            Span::from_lo_hi(pos.clone(), pos)
-        ))
+        // Ok(CST::from_leaf_node(
+        //     TerminalSymbol::M(Metasymbol::Failed),
+        //     Span::from_lo_hi(pos.clone(), pos)
+        // ))
+        Err(())
     }
 
     fn into_any_cst(&self, pos: P) -> Result<CST<T, V, S>, ()> {

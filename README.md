@@ -156,6 +156,7 @@ Space = " "
 
 ## TODO
 - Create parser from MPGG file.
+- Error Handling
 - Packrat Parsing
 - Left Recursion
 
