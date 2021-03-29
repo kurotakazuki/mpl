@@ -1,6 +1,7 @@
 use crate::choice;
-use crate::symbols::{E, Metasymbol, TerminalSymbol};
+use crate::symbols::{Metasymbol, TerminalSymbol, Variable, E};
 use std::collections::HashMap;
+use std::hash::Hash;
 
 /// This structure is used when defining the rule for a variable.
 #[derive(Clone, Debug, PartialEq)]
@@ -14,15 +15,16 @@ impl<T, V> RightRule<T, V> {
         Self { first, second }
     }
 
-    pub fn from_right_rule_kind(first: (RightRuleKind<T, V>, RightRuleKind<T, V>), second: RightRuleKind<T, V>) -> Self {
+    pub fn from_right_rule_kind(
+        first: (RightRuleKind<T, V>, RightRuleKind<T, V>),
+        second: RightRuleKind<T, V>,
+    ) -> Self {
         Self {
             first: choice::First::new(first.0.into(), first.1.into()),
-            second: choice::Second::new(second.into())
+            second: choice::Second::new(second.into()),
         }
     }
 }
-
-pub type Rules<T, V> = HashMap<V, RightRule<T, V>>;
 
 /// This is used when creating a RightRule.
 pub enum RightRuleKind<T, V> {
@@ -48,10 +50,35 @@ impl<T, V> From<RightRuleKind<T, V>> for E<T, V> {
     }
 }
 
+pub type Rule<T, V> = Variable<V, RightRule<T, V>>;
+
+pub struct Rules<T, V: Eq + Hash>(pub HashMap<V, RightRule<T, V>>);
+
+impl<T, V> Rules<T, V>
+where
+    V: Eq + Hash,
+{
+    pub fn new() -> Self {
+        Rules(HashMap::new())
+    }
+
+    pub fn insert_rule(&mut self, rule: Rule<T, V>) -> Option<RightRule<T, V>> {
+        self.0.insert(rule.value, rule.equal)
+    }
+    // pub fn insert_rules(&mut self, rules: Vec<Rule<T, V>>) {
+    //     for rule in rules {
+    //         self.0.insert(
+    //             rule.value,
+    //             rule.equal
+    //         );
+    //     }
+    // }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::symbols::{Metasymbol, TerminalSymbol};
     use super::*;
+    use crate::symbols::{Metasymbol, TerminalSymbol};
 
     /// ```
     /// BinDigit = '0' () / One
@@ -70,49 +97,59 @@ mod tests {
             One,
         }
 
-        let mut rules: Rules<BinDigitTerminal, BinDigitVariable> = HashMap::new();
+        let mut rules: Rules<BinDigitTerminal, BinDigitVariable> = Rules::new();
 
-        rules.insert(
+        rules.0.insert(
             BinDigitVariable::BinDigit,
             RightRule::new(
                 choice::First::new(
                     E::t(TerminalSymbol::from_t(BinDigitTerminal::Char('0'))),
-                    E::t(TerminalSymbol::from_m(Metasymbol::Epsilon))
+                    E::t(TerminalSymbol::from_m(Metasymbol::Epsilon)),
                 ),
-                choice::Second::new(
-                    E::v(BinDigitVariable::One)
-                )
-            )
+                choice::Second::new(E::v(BinDigitVariable::One)),
+            ),
         );
-        rules.insert(
+        rules.0.insert(
             BinDigitVariable::One,
             RightRule::new(
                 choice::First::new(
                     E::t(TerminalSymbol::from_t(BinDigitTerminal::Char('1'))),
-                    E::t(TerminalSymbol::from_m(Metasymbol::Epsilon))
+                    E::t(TerminalSymbol::from_m(Metasymbol::Epsilon)),
                 ),
-                choice::Second::new(
-                    E::t(TerminalSymbol::from_m(Metasymbol::Failed))
-                )
-            )
+                choice::Second::new(E::t(TerminalSymbol::from_m(Metasymbol::Failed))),
+            ),
         );
 
-        let mut rules2: Rules<BinDigitTerminal, BinDigitVariable> = HashMap::new();
+        let mut rules2: Rules<BinDigitTerminal, BinDigitVariable> = Rules::new();
 
-        rules2.insert(BinDigitVariable::BinDigit,
+        rules2.0.insert(
+            BinDigitVariable::BinDigit,
             RightRule::from_right_rule_kind(
-                (RightRuleKind::T(BinDigitTerminal::Char('0')), RightRuleKind::Epsilon),
-                RightRuleKind::V(BinDigitVariable::One)
-            )
+                (
+                    RightRuleKind::T(BinDigitTerminal::Char('0')),
+                    RightRuleKind::Epsilon,
+                ),
+                RightRuleKind::V(BinDigitVariable::One),
+            ),
         );
-        rules2.insert(BinDigitVariable::One,
+        rules2.0.insert(
+            BinDigitVariable::One,
             RightRule::from_right_rule_kind(
-                (RightRuleKind::T(BinDigitTerminal::Char('1')), RightRuleKind::Epsilon),
-                RightRuleKind::Failed
-            )
+                (
+                    RightRuleKind::T(BinDigitTerminal::Char('1')),
+                    RightRuleKind::Epsilon,
+                ),
+                RightRuleKind::Failed,
+            ),
         );
 
-        assert_eq!(rules[&BinDigitVariable::BinDigit], rules2[&BinDigitVariable::BinDigit]);
-        assert_eq!(rules[&BinDigitVariable::One], rules2[&BinDigitVariable::One]);
+        assert_eq!(
+            rules.0[&BinDigitVariable::BinDigit],
+            rules2.0[&BinDigitVariable::BinDigit]
+        );
+        assert_eq!(
+            rules.0[&BinDigitVariable::One],
+            rules2.0[&BinDigitVariable::One]
+        );
     }
 }

@@ -65,7 +65,7 @@ where
     //     } else {
     //         other_lo
     //     };
-        
+
     //     min(self.lo(), other.lo());
     //     let hi = max(self.hi(), other.hi());
 

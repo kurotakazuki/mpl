@@ -8,7 +8,10 @@ mod byte_span;
 mod spanned;
 mod start_and_len_span;
 
-pub trait Span<P>: Clone where P: Position {
+pub trait Span<P>: Clone
+where
+    P: Position,
+{
     fn from_lo_hi(lo: P, hi: P) -> Self;
     fn with_lo(&self, lo: P) -> Self;
     fn with_hi(&self, hi: P) -> Self;
@@ -19,4 +22,3 @@ pub trait Span<P>: Clone where P: Position {
     /// lhs.hi() and rhs.lo() must be equal.
     fn merge_lhs_and_rhs(lhs: &Self, rhs: &Self) -> Self;
 }
-

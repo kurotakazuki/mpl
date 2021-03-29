@@ -1,7 +1,7 @@
 #[derive(Clone, Debug, PartialEq)]
 pub struct Variable<V, E> {
-    value: V,
-    equal: E,
+    pub value: V,
+    pub equal: E,
 }
 
 impl<V, E> Variable<V, E> {

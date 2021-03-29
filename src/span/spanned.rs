@@ -1,5 +1,3 @@
-use crate::span::Span;
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct Spanned<N, S> {
     pub node: N,

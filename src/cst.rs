@@ -2,36 +2,36 @@ use crate::choice::Choice;
 use crate::span::Spanned;
 use crate::symbols::{TerminalSymbol, Variable};
 
-pub type LeafNode<T> = TerminalSymbol<T>;
-pub type InternalNode<T, V, S> = Variable<V, Box<Choice<CST<T, V, S>>>>;
+pub type LeafNode<OutputT> = TerminalSymbol<OutputT>;
+pub type InternalNode<OutputT, V, S> = Variable<V, Box<Choice<CST<OutputT, V, S>>>>;
 
-impl<T, V, S> InternalNode<T, V, S> {
-    pub fn from_first(v: V, l: CST<T, V, S>, r: CST<T, V, S>) -> Self {
+impl<OutputT, V, S> InternalNode<OutputT, V, S> {
+    pub fn from_first(v: V, l: CST<OutputT, V, S>, r: CST<OutputT, V, S>) -> Self {
         Variable::new(v, Box::new(Choice::first(l, r)))
     }
 
-    pub fn from_second(v: V, e: CST<T, V, S>) -> Self {
+    pub fn from_second(v: V, e: CST<OutputT, V, S>) -> Self {
         Variable::new(v, Box::new(Choice::second(e)))
     }
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum CSTKind<T, V, S> {
+pub enum CSTKind<OutputT, V, S> {
     /// Terminal symbol
-    LeafNode(LeafNode<T>),
+    LeafNode(LeafNode<OutputT>),
     /// Viriable
-    InternalNode(InternalNode<T, V, S>),
-    // InternalNode { variable: V, choice: Box<Choice<CST<T, V, S, L>>> },
+    InternalNode(InternalNode<OutputT, V, S>),
+    // InternalNode { variable: V, choice: Box<Choice<CST<OutputT, V, S, L>>> },
 }
 
-pub type CST<T, V, S> = Spanned<CSTKind<T, V, S>, S>;
+pub type CST<OutputT, V, S> = Spanned<CSTKind<OutputT, V, S>, S>;
 
-impl<T, V, S> CST<T, V, S> {
-    pub fn from_leaf_node(leaf_node: LeafNode<T>, span: S) -> Self {
+impl<OutputT, V, S> CST<OutputT, V, S> {
+    pub fn from_leaf_node(leaf_node: LeafNode<OutputT>, span: S) -> Self {
         Self::new(CSTKind::LeafNode(leaf_node), span)
     }
 
-    pub fn from_internal_node(internal_node: InternalNode<T, V, S>, span: S) -> Self {
+    pub fn from_internal_node(internal_node: InternalNode<OutputT, V, S>, span: S) -> Self {
         Self::new(CSTKind::InternalNode(internal_node), span)
     }
 }
