@@ -25,7 +25,7 @@ impl<P, L> StartAndLenSpan<P, L> {
 impl<P, L> Span<P> for StartAndLenSpan<P, L>
 where
     P: StartAndLenSpanHi<L> + Position,
-    L: Clone + ops::Add<Output = L> + StartAndLenSpanLen<P>,
+    L: Clone + ops::Add<Output = L> + PartialEq + StartAndLenSpanLen<P>,
 {
     fn from_lo_hi(lo: P, hi: P) -> Self {
         Self {

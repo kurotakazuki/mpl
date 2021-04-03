@@ -8,7 +8,7 @@ mod byte_span;
 mod spanned;
 mod start_and_len_span;
 
-pub trait Span<P>: Clone
+pub trait Span<P>: Clone + PartialEq
 where
     P: Position,
 {

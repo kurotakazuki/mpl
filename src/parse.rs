@@ -1,62 +1,75 @@
-use crate::cst::{InternalNode, LeafNode, CST};
+// use crate::choice::Choice;
+use crate::cst::{InternalNode, CST};
 use crate::position::Position;
 use crate::rules::Rules;
 use crate::span::Span;
-use crate::symbols::{Metasymbol, TerminalSymbol, E::*};
+use crate::symbols::{Metasymbol, TerminalSymbol, E};
 use std::convert::TryFrom;
 use std::hash::Hash;
 // pub trait Variable: Copy + Eq + Hash {}
 
-pub trait Input<'a, OutputT, V, S, P>
+pub trait Input<'input, S>
 where
-    Self: 'a,
+    Self: 'input,
 {
-    type Element;
+    // fn slice_len(slice: &'input Self) -> usize;
 
-    fn slice_len(slice: &'a Self) -> usize;
+    fn is_the_same_as(&self, other: &Self) -> bool;
 
     /// This method represents the start and length of the input.
     /// Recommended span.start is 0.
-    fn all_of_the_span(&'a self) -> S;
-    fn element(&'a self, span: S) -> Self::Element;
-    fn slice(&'a self, span: S) -> &'a Self;
+    fn all_of_the_span(&'input self) -> S;
+    // fn element(&'input self, span: S) -> Self::Element;
+    // fn slice(&'input self, span: S) -> &'input Self;
     // fn eval_literal(&self, literal: Self::Slice, pos: P) -> Result<CST<OutputT, V, S>, ()>;
 }
 
-/// T is (enum of) terminal symbols.
+pub trait Terminal<'input, I: ?Sized, OutputT, V, S, P> where OutputT: {
+    fn eval(&'input self, input: &'input I, pos: P, all_of_the_span: &S) -> Result<CST<OutputT, V, S>, ()>;
+}
+
+/// T is terminal symbols.
 /// OutputT is output type.
 /// V is (enum of) Variables.
-/// S is span.start.
-/// L is span.len.
-pub trait Parse<'a, T, OutputT, V, S, P>: Input<'a, OutputT, V, S, P>
+/// S is Span.
+/// P is position.
+pub trait Parse<'input, T, OutputT, V, S, P>: Input<'input, S>
 where
-    T: Clone,
-    OutputT: TryFrom<(&'a Self, V)>,
+    T: Clone + Terminal<'input, Self, OutputT, V, S, P>,
+    //TODO
+    // OutputT: TryFrom<(&'input Self, V, S, Choice<CST<OutputT, V, S>>)>,
+    OutputT: TryFrom<(&'input Self, V, S)>,
     V: Copy + Eq + Hash,
     S: Span<P>,
     P: Position,
 {
     fn parse(
-        &'a self,
-        rules: &Rules<T, V>,
+        &'input self,
+        rules: &'input Rules<T, V>,
         start_variable: &V,
-        span: Option<S>,
+        all_of_the_span: Option<S>,
     ) -> Result<CST<OutputT, V, S>, ()> {
-        let span = match span {
-            Some(span) => span,
+        let all_of_the_span = match all_of_the_span {
+            Some(all_of_the_span) => all_of_the_span,
             None => self.all_of_the_span(),
         };
-        self.eval(&span.lo(), &rules, &start_variable, &span)
+        let cst = self.eval(&all_of_the_span.lo(), &rules, &start_variable, &all_of_the_span)?;
+
+        if cst.span == all_of_the_span {
+            Ok(cst)
+        } else {
+            Err(())
+        }
     }
 
-    fn into_epsilon_cst(&'a self, pos: P) -> Result<CST<OutputT, V, S>, ()> {
+    fn into_epsilon_cst(&'input self, pos: P) -> Result<CST<OutputT, V, S>, ()> {
         Ok(CST::from_leaf_node(
             TerminalSymbol::M(Metasymbol::Epsilon),
             Span::from_lo_hi(pos.clone(), pos),
         ))
     }
 
-    fn into_failed_cst(&'a self, pos: P) -> Result<CST<OutputT, V, S>, ()> {
+    fn into_failed_cst(&'input self, _pos: P) -> Result<CST<OutputT, V, S>, ()> {
         // Ok(CST::from_leaf_node(
         //     TerminalSymbol::M(Metasymbol::Failed),
         //     Span::from_lo_hi(pos.clone(), pos)
@@ -64,7 +77,7 @@ where
         Err(())
     }
 
-    fn into_any_cst(&'a self, pos: P) -> Result<CST<OutputT, V, S>, ()> {
+    fn into_any_cst(&'input self, pos: P) -> Result<CST<OutputT, V, S>, ()> {
         let pos_with_one_added = pos.with_one_added();
         if self.all_of_the_span().hi() >= pos_with_one_added {
             Ok(CST::from_leaf_node(
@@ -76,7 +89,7 @@ where
         }
     }
 
-    fn into_all_cst(&'a self, pos: P) -> Result<CST<OutputT, V, S>, ()> {
+    fn into_all_cst(&'input self, pos: P) -> Result<CST<OutputT, V, S>, ()> {
         Ok(CST::from_leaf_node(
             TerminalSymbol::M(Metasymbol::All),
             Span::from_lo_hi(pos, self.all_of_the_span().hi()),
@@ -84,21 +97,14 @@ where
     }
 
     fn eval_terminal_symbol(
-        &'a self,
-        terminal_symbol: &LeafNode<T>,
+        &'input self,
+        terminal_symbol: &'input TerminalSymbol<T>,
         pos: P,
+        all_of_the_span: &S,
     ) -> Result<CST<OutputT, V, S>, ()> {
         match terminal_symbol {
             TerminalSymbol::Original(t) => {
-                // let t_slice = Self::Slice::from(t.clone());
-
-                // let l = literal.len();
-                // if self.len() >= pos + l && &self[pos..pos + l] == literal.as_bytes() {
-                //     RuleResult::Matched(pos + l, ())
-                // } else {
-                //     RuleResult::Failed
-                // }
-                todo!()
+                t.eval(self, pos, all_of_the_span)
             }
             TerminalSymbol::M(metasymbol) => match metasymbol {
                 Metasymbol::Epsilon => self.into_epsilon_cst(pos),
@@ -110,11 +116,11 @@ where
     }
 
     fn eval(
-        &'a self,
+        &'input self,
         pos: &P,
-        rules: &Rules<T, V>,
+        rules: &'input Rules<T, V>,
         variable: &V,
-        span: &S,
+        all_of_the_span: &S,
     ) -> Result<CST<OutputT, V, S>, ()> {
         let right_rule = rules
             .0
@@ -124,34 +130,58 @@ where
         // First choice
         // left-hand side of first choice
         let left_cst: Result<CST<OutputT, V, S>, ()> = match &right_rule.first.lhs {
-            T(terminal_symbol) => self.eval_terminal_symbol(terminal_symbol, pos.clone()),
-            V(lhs_of_fc_v) => self.eval(pos, rules, &lhs_of_fc_v, span),
+            E::T(terminal_symbol) => self.eval_terminal_symbol(terminal_symbol, pos.clone(), all_of_the_span),
+            E::V(lhs_of_fc_v) => self.eval(pos, rules, &lhs_of_fc_v, all_of_the_span),
         };
 
         if let Ok(left_cst) = left_cst {
             // right-hand side of first choice
             let right_cst: Result<CST<OutputT, V, S>, ()> = match &right_rule.first.rhs {
-                T(terminal_symbol) => self.eval_terminal_symbol(terminal_symbol, pos.clone()),
-                V(rhs_of_fc_v) => self.eval(&left_cst.span.hi(), rules, &rhs_of_fc_v, span),
+                E::T(terminal_symbol) => self.eval_terminal_symbol(terminal_symbol, pos.clone(), all_of_the_span),
+                E::V(rhs_of_fc_v) => self.eval(&left_cst.span.hi(), rules, &rhs_of_fc_v, all_of_the_span),
             };
 
             if let Ok(right_cst) = right_cst {
                 let merged_span = Span::merge_lhs_and_rhs(&left_cst.span, &right_cst.span);
+
+                // let output = OutputT::try_from((self, *variable, merged_span.clone(), Choice::first(left_cst, right_cst)));
+                let output = OutputT::try_from((self, *variable, merged_span.clone()));
+
                 return Ok(CST::from_internal_node(
-                    InternalNode::from_first(*variable, left_cst, right_cst),
+                    InternalNode::from_first((*variable, output.ok()), left_cst, right_cst),
                     merged_span,
                 ));
+
+                // return Ok(CST::from_internal_node(
+                //     InternalNode::from_first((*variable, output.ok()), , right_cst),
+                //     merged_span,
+                // ));
+
+                // if let Ok(output) = output {
+                //     return Ok(CST::from_internal_node(
+                //         InternalNode::from_first((*variable, Some(output)), left_cst, right_cst),
+                //         merged_span,
+                //     ));
+                // } else {
+                //     return Ok(CST::from_internal_node(
+                //         InternalNode::from_first((*variable, None), left_cst, right_cst),
+                //         merged_span,
+                //     ));
+                // }
             }
         }
 
         // Second choice
         match &right_rule.second.0 {
-            T(terminal_symbol) => self.eval_terminal_symbol(terminal_symbol, pos.clone()),
-            V(sc_v) => {
-                let cst = self.eval(pos, rules, &sc_v, span)?;
+            E::T(terminal_symbol) => self.eval_terminal_symbol(terminal_symbol, pos.clone(), all_of_the_span),
+            E::V(sc_v) => {
+                let cst = self.eval(pos, rules, &sc_v, all_of_the_span)?;
                 let span = cst.span.clone();
+
+                let output = OutputT::try_from((self, *variable, span.clone()));
+
                 Ok(CST::from_internal_node(
-                    InternalNode::from_second(*variable, cst),
+                    InternalNode::from_second((*variable, output.ok()), cst),
                     span,
                 ))
             }
