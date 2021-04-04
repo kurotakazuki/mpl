@@ -1,78 +1,79 @@
-use std::convert::TryFrom;
+use crate::cst::{CST, LeafNode};
+use crate::position::BytePos;
+use crate::span::{ByteSpan, Span};
+use crate::symbols::{Metasymbol, Terminal};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum StrTerminal<'a> {
     Char(char),
     Str(&'a str),
-    U8Slice(&'a [u8]),
-    // F32(f32),
-    // F64(f64),
-    U8(u8),
-    // I8(i8),
-    // U16(u16),
-    // I16(i16),
-    // U32(u32),
-    // I32(i32),
-    // U64(u64),
-    // I64(i64),
-    // U128(u128),
-    // I128(i128),
-    // Usize(usize),
-    // Isize(isize),
 }
 
-impl<'a> From<&'a str> for MPGGTerminalType<'a> {
+impl From<char> for StrTerminal<'_> {
+    fn from(value: char) -> Self {
+        Self::Char(value)
+    }
+}
+
+impl<'a> From<&'a str> for StrTerminal<'a> {
     fn from(value: &'a str) -> Self {
         Self::Str(value)
     }
 }
 
-impl<'a> From<&'a [u8]> for MPGGTerminalType<'a> {
-    fn from(value: &'a [u8]) -> Self {
-        Self::U8Slice(value)
-    }
-}
-
-/// TODO: Change Error type
-impl<'a> TryFrom<MPGGTerminalType<'a>> for &'a str {
-    type Error = ();
-
-    fn try_from(m_p_g_g_terminal_type: MPGGTerminalType<'a>) -> Result<Self, Self::Error> {
-        match m_p_g_g_terminal_type {
-            MPGGTerminalType::Str(s) => Ok(s),
-            MPGGTerminalType::U8Slice(s) => std::str::from_utf8(s).map_err(|_| ()),
+impl<'a, OutputT, V> Terminal<'a, str, OutputT, V, ByteSpan, BytePos> for StrTerminal<'a> {
+    fn eval(
+        &'a self,
+        input: &'a str,
+        pos: BytePos,
+        all_of_the_span: &ByteSpan,
+    ) -> Result<CST<OutputT, V, ByteSpan>, ()> {
+        match self {
+            StrTerminal::Char(c) => {
+                let start = pos;
+                let pos: usize = pos.0 as usize;
+                let len = c.len_utf8();
+                if pos + len <= all_of_the_span.hi().0 as usize
+                    && &input.as_bytes()[pos..pos + len] == c.to_string()[..].as_bytes()
+                {
+                    Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+                        LeafNode::from_m(Metasymbol::Epsilon),
+                        ByteSpan::from_start_len(start, len as u16),
+                    ))
+                } else {
+                    Err(())
+                }
+            }
+            StrTerminal::Str(s) => {
+                let start = pos;
+                let pos: usize = pos.0 as usize;
+                let s_bytes = s.as_bytes();
+                let len = s_bytes.len();
+                if pos + len <= all_of_the_span.hi().0 as usize
+                    && &input.as_bytes()[pos..pos + len] == s.as_bytes()
+                {
+                    Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+                        LeafNode::from_m(Metasymbol::Epsilon),
+                        ByteSpan::from_start_len(start, len as u16),
+                    ))
+                } else {
+                    Err(())
+                }
+            }
         }
     }
 }
 
-impl<'a> TryFrom<MPGGTerminalType<'a>> for &'a [u8] {
-    type Error = ();
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    fn try_from(m_p_g_g_terminal_type: MPGGTerminalType<'a>) -> Result<Self, Self::Error> {
-        match m_p_g_g_terminal_type {
-            MPGGTerminalType::Str(s) => Ok(s.as_bytes()),
-            MPGGTerminalType::U8Slice(s) => Ok(s),
-        }
+    #[test]
+    fn convert() {
+        let c = StrTerminal::from('A');
+        let s = StrTerminal::from("abc");
+
+        assert_eq!(c, StrTerminal::Char('A'));
+        assert_eq!(s, StrTerminal::Str("abc"));
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-
-//     // #[test]
-//     // fn valiable() {
-//     //     // use crate::span::VSpan;
-
-//     //     // enum VariableKind<V1, V2, V3> {
-//     //     //     Number(RRuleWithValue<String, V1, V2, V3>),
-//     //     //     Numeral(RRule<V1, V2, V3>),
-//     //     //     Digit(RRule<V1, V2, V3>),
-//     //     //     Zero(RRule<V1, V2, V3>),
-//     //     //     One(RRule<V1, V2, V3>),
-//     //     //     Nine(RRule<&str, V2, V3>),
-
-//     //     // }
-
-//     // }
-// }

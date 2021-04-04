@@ -1,9 +1,10 @@
 use crate::choice::Choice;
 use crate::span::Spanned;
-use crate::symbols::{TerminalSymbol, Variable};
+use crate::symbols::{TerminalSymbol, VAndE};
 
 pub type LeafNode<OutputT> = TerminalSymbol<OutputT>;
-pub type InternalNode<OutputT, V, S> = Variable<(V, Option<OutputT>), Box<Choice<CST<OutputT, V, S>>>>;
+pub type InternalNode<OutputT, V, S> =
+    VAndE<(V, Option<OutputT>), Box<Choice<CST<OutputT, V, S>>>>;
 
 // impl LeafNode {
 //     pub fn from_t() -> Self {
@@ -16,12 +17,16 @@ pub type InternalNode<OutputT, V, S> = Variable<(V, Option<OutputT>), Box<Choice
 // }
 
 impl<OutputT, V, S> InternalNode<OutputT, V, S> {
-    pub fn from_first(value: (V, Option<OutputT>), l: CST<OutputT, V, S>, r: CST<OutputT, V, S>) -> Self {
-        Variable::new(value, Box::new(Choice::first(l, r)))
+    pub fn from_first(
+        value: (V, Option<OutputT>),
+        l: CST<OutputT, V, S>,
+        r: CST<OutputT, V, S>,
+    ) -> Self {
+        VAndE::new(value, Box::new(Choice::first(l, r)))
     }
 
     pub fn from_second(value: (V, Option<OutputT>), e: CST<OutputT, V, S>) -> Self {
-        Variable::new(value, Box::new(Choice::second(e)))
+        VAndE::new(value, Box::new(Choice::second(e)))
     }
 }
 

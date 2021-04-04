@@ -1,5 +1,5 @@
 use crate::choice;
-use crate::symbols::{Metasymbol, TerminalSymbol, Variable, E};
+use crate::symbols::{Metasymbol, TerminalSymbol, VAndE, E};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -50,7 +50,7 @@ impl<T, V> From<RightRuleKind<T, V>> for E<T, V> {
     }
 }
 
-pub type Rule<T, V> = Variable<V, RightRule<T, V>>;
+pub type Rule<T, V> = VAndE<V, RightRule<T, V>>;
 
 pub struct Rules<T, V: Eq + Hash>(pub HashMap<V, RightRule<T, V>>);
 
