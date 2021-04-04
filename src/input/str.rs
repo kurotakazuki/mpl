@@ -1,10 +1,9 @@
 use crate::input::Input;
+use crate::output::Output;
 use crate::parse::Parse;
 use crate::position::BytePos;
 use crate::span::ByteSpan;
 use crate::symbols::{StrTerminal, Variable};
-
-use std::convert::TryFrom;
 
 impl<'input> Input<'input, ByteSpan> for str {
     fn all_of_the_span(&'input self) -> ByteSpan {
@@ -14,7 +13,7 @@ impl<'input> Input<'input, ByteSpan> for str {
 
 impl<'input, OutputT, V> Parse<'input, StrTerminal<'input>, OutputT, V, ByteSpan, BytePos> for str
 where
-    OutputT: TryFrom<(&'input Self, V, ByteSpan)>,
+    OutputT: Output<'input, str, V, ByteSpan>,
     V: Variable,
 {
 }

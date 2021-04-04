@@ -1,5 +1,6 @@
 use mpg::cst::{LeafNode, CST};
 use mpg::input::Input;
+use mpg::output::Output;
 use mpg::parse::Parse;
 use mpg::position::BytePos;
 use mpg::span::{ByteSpan, Span};
@@ -7,16 +8,6 @@ use mpg::symbols::{Terminal, Variable};
 
 use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
 
-use std::convert::TryFrom;
-
-// The following syntax is a lexical syntax for numbers.
-// ```
-// Number = Digit Numeral / f
-// Numeral = Digit Numeral / ()
-// Digit = Zero () / f
-// Zero = "0" () / One
-// One = "1" () / f
-// ```
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 enum NumberTerminal<'a> {
     Str(&'a str),
@@ -87,22 +78,18 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
     }
 }
 
-impl<'input> TryFrom<(&'input ExtStr, NumberVariable, ByteSpan)> for NumberTerminal<'input> {
-    type Error = &'static str;
-
-    fn try_from(value: (&'input ExtStr, NumberVariable, ByteSpan)) -> Result<Self, Self::Error> {
-        let (input, v, span) = value;
-
-        match v {
+impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal<'input> {
+    fn new(input: &'input ExtStr, variable: NumberVariable, span: ByteSpan) -> Option<Self> {
+        match variable {
             NumberVariable::Number => {
                 let lo = span.start.0 as usize;
                 let hi = lo + span.len as usize;
                 let s = &input.0[lo..hi];
 
-                Ok(NumberTerminal::Str(s))
+                Some(NumberTerminal::Str(s))
             }
-            NumberVariable::Digit => Ok(NumberTerminal::Str("ijjijijij")),
-            _ => Err("No output"),
+            NumberVariable::Digit => Some(NumberTerminal::Str("ijjijijij")),
+            _ => None,
         }
     }
 }
@@ -114,6 +101,14 @@ impl<'a> Parse<'a, NumberTerminal<'a>, NumberTerminal<'a>, NumberVariable, ByteS
 {
 }
 
+/// The following syntax is a lexical syntax for numbers.
+/// ```
+/// Number = Digit Numeral / f
+/// Numeral = Digit Numeral / ()
+/// Digit = Zero () / f
+/// Zero = "0" () / One
+/// One = "1" () / f
+/// ```
 #[test]
 fn number() {
     let number_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
@@ -177,12 +172,12 @@ fn number() {
     rules.insert_rule(one_rule);
 
     let input = ExtStr(String::from("012001"));
-    let result = input.parse(&rules, &NumberVariable::Number, None);
+    let result = input.mpg_parse(&rules, &NumberVariable::Number, None);
 
     assert_eq!(result, Err(()));
 
     let input = ExtStr(String::from("001"));
-    let result = input.parse(&rules, &NumberVariable::Number, None);
+    let result = input.mpg_parse(&rules, &NumberVariable::Number, None);
 
     assert_eq!(
         result.unwrap().span,

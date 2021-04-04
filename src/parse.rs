@@ -1,11 +1,11 @@
 // use crate::choice::Choice;
 use crate::cst::{InternalNode, CST};
 use crate::input::Input;
+use crate::output::Output;
 use crate::position::Position;
 use crate::rules::Rules;
 use crate::span::Span;
 use crate::symbols::{Metasymbol, Terminal, TerminalSymbol, Variable, E};
-use std::convert::TryFrom;
 
 /// T is terminal symbols.
 /// OutputT is output type.
@@ -17,12 +17,12 @@ where
     T: Clone + Terminal<'input, Self, OutputT, V, S, P>,
     //TODO
     // OutputT: TryFrom<(&'input Self, V, S, Choice<CST<OutputT, V, S>>)>,
-    OutputT: TryFrom<(&'input Self, V, S)>,
+    OutputT: Output<'input, Self, V, S>,
     V: Variable,
     S: Span<P>,
     P: Position,
 {
-    fn parse(
+    fn mpg_parse(
         &'input self,
         rules: &'input Rules<T, V>,
         start_variable: &V,
@@ -133,10 +133,10 @@ where
                 let merged_span = Span::merge_lhs_and_rhs(&left_cst.span, &right_cst.span);
 
                 // let output = OutputT::try_from((self, *variable, merged_span.clone(), Choice::first(left_cst, right_cst)));
-                let output = OutputT::try_from((self, *variable, merged_span.clone()));
+                let output = OutputT::new(&self, *variable, merged_span.clone());
 
                 return Ok(CST::from_internal_node(
-                    InternalNode::from_first((*variable, output.ok()), left_cst, right_cst),
+                    InternalNode::from_first((*variable, output), left_cst, right_cst),
                     merged_span,
                 ));
 
@@ -168,10 +168,10 @@ where
                 let cst = self.eval(pos, rules, &sc_v, all_of_the_span)?;
                 let span = cst.span.clone();
 
-                let output = OutputT::try_from((self, *variable, span.clone()));
+                let output = OutputT::new(self, *variable, span.clone());
 
                 Ok(CST::from_internal_node(
-                    InternalNode::from_second((*variable, output.ok()), cst),
+                    InternalNode::from_second((*variable, output), cst),
                     span,
                 ))
             }
