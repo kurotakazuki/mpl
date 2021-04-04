@@ -1,4 +1,4 @@
-use crate::cst::{CST, LeafNode};
+use crate::cst::{LeafNode, CST};
 use crate::position::BytePos;
 use crate::span::{ByteSpan, Span};
 use crate::symbols::{Metasymbol, Terminal};

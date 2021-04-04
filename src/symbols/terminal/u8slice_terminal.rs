@@ -40,7 +40,6 @@
 //     LittleEndianIsize(isize),
 // }
 
-
 // impl<'a, V> Terminal<'a, str, StrTerminal<'a>, V, ByteSpan, BytePos> for StrTerminal<'a> {
 //     fn eval(
 //         &'a self,

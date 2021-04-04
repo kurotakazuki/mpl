@@ -16,4 +16,3 @@ where
         all_of_the_span: &S,
     ) -> Result<CST<OutputT, V, S>, ()>;
 }
-

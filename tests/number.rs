@@ -1,153 +1,191 @@
-// use super::*;
-// use crate::position::BytePos;
-// use crate::symbols::{MPGGTerminalType, Metasymbol};
+use mpg::cst::{LeafNode, CST};
+use mpg::input::Input;
+use mpg::parse::Parse;
+use mpg::position::BytePos;
+use mpg::span::{ByteSpan, Span};
+use mpg::symbols::{Terminal, Variable};
 
-// // The following syntax is a lexical syntax for numbers.
-// // ```
-// // Number = Digit Numeral / f
-// // Numeral = Digit Numeral / ()
-// // Digit = Zero () / f
-// // Zero = "0" () / One
-// // One = "1" () / Two
-// // // ...
-// // Nine = "9" () / f
-// // ```
-// #[test]
-// fn number_cst() {
-//     #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-//     enum NumberTerminal {
-//         ZeroFCLHS,
-//         OneFCLHS,
-//         TwoFCLHS,
-//         ThreeFCLHS,
-//         FourFCLHS,
-//         FiveFCLHS,
-//         SixFCLHS,
-//         SevenFCLHS,
-//         EightFCLHS,
-//         NineFCLHS,
-//     }
+use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
 
-//     impl NumberTerminal {
-//         fn into_terminal_type(&self) -> MPGGTerminalType {
-//             match *self {
-//                 Self::ZeroFCLHS => "0".into(),
-//                 Self::OneFCLHS => "1".into(),
-//                 Self::TwoFCLHS => "2".into(),
-//                 Self::ThreeFCLHS => "3".into(),
-//                 Self::FourFCLHS => "4".into(),
-//                 Self::FiveFCLHS => "5".into(),
-//                 Self::SixFCLHS => "6".into(),
-//                 Self::SevenFCLHS => "7".into(),
-//                 Self::EightFCLHS => "8".into(),
-//                 Self::NineFCLHS => [96, 1][..].into(),
-//             }
-//         }
-//     }
+use std::convert::TryFrom;
 
-//     #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-//     enum NumberVariable {
-//         Number,
-//         Numeral,
-//         Digit,
-//         Zero,
-//         One,
-//         Two,
-//         Three,
-//         Four,
-//         Five,
-//         Six,
-//         Seven,
-//         Eight,
-//         Nine,
-//     }
+// The following syntax is a lexical syntax for numbers.
+// ```
+// Number = Digit Numeral / f
+// Numeral = Digit Numeral / ()
+// Digit = Zero () / f
+// Zero = "0" () / One
+// One = "1" () / f
+// ```
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
+enum NumberTerminal<'a> {
+    Str(&'a str),
+    Char(char),
+}
 
-//     // impl<I> SpanHi<u16, I> for BytePos {
-//     //     fn hi(start: Self, len: u16, _: &I) -> Self {
-//     //         start + BytePos(len as u32)
-//     //     }
-//     // }
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
+enum NumberVariable {
+    Number,
+    Numeral,
+    Digit,
+    Zero,
+    One,
+}
 
-//     // impl<I> SpanLen<BytePos, I> for u16 {
-//     //     fn len(lo: BytePos, hi: BytePos, _: &I) -> Self {
-//     //         u32::from(hi - lo) as u16
-//     //     }
-//     // }
+struct ExtStr(pub String);
 
-//     // Input: 10
+impl Input<'_, ByteSpan> for ExtStr {
+    fn all_of_the_span(&self) -> ByteSpan {
+        let len = self.0.len();
+        ByteSpan::from_start_len(BytePos(0), len as u16)
+    }
+}
 
-//     // 1
-//     // One
-//     let one_fc0: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
-//         LeafNode::Original(NumberTerminal::OneFCLHS),
-//         Span::from_start_len(BytePos(0), 1),
-//     );
-//     let one_fc1: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
-//         LeafNode::M(Metasymbol::Epsilon),
-//         Span::from_start_len(BytePos(1), 0),
-//     );
-//     let one = CST::internal_node(
-//         InternalNode::from_first(NumberVariable::One, one_fc0, one_fc1),
-//         Span::from_start_len(BytePos(0), 1),
-//     );
-//     // Zero
-//     let zero = CST::internal_node(
-//         InternalNode::from_second(NumberVariable::Zero, one),
-//         Span::from_start_len(BytePos(0), 1),
-//     );
-//     // Digit
-//     let digit_fc1: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
-//         LeafNode::M(Metasymbol::Epsilon),
-//         Span::from_start_len(BytePos(1), 0),
-//     );
-//     let digit_1 = CST::internal_node(
-//         InternalNode::from_first(NumberVariable::Digit, zero, digit_fc1),
-//         Span::from_start_len(BytePos(0), 1),
-//     );
+impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos>
+    for NumberTerminal<'a>
+{
+    fn eval(
+        &'a self,
+        input: &'a ExtStr,
+        pos: BytePos,
+        all_of_the_span: &ByteSpan,
+    ) -> Result<CST<NumberTerminal<'a>, NumberVariable, ByteSpan>, ()> {
+        match self {
+            NumberTerminal::Str(digit) => {
+                let start = pos;
+                let pos: usize = pos.0 as usize;
+                if pos + 1 <= all_of_the_span.len as usize + all_of_the_span.start.0 as usize
+                    && &input.0.as_bytes()[pos..pos + 1] == digit.as_bytes()
+                {
+                    Ok(
+                        CST::<NumberTerminal, NumberVariable, ByteSpan>::from_leaf_node(
+                            LeafNode::from_t(NumberTerminal::Str(digit)),
+                            ByteSpan::from_start_len(start, 1),
+                        ),
+                    )
+                } else {
+                    Err(())
+                }
+            }
+            NumberTerminal::Char(digit) => {
+                let start = pos;
+                let pos: usize = pos.0 as usize;
+                if pos + 1 <= all_of_the_span.len as usize + all_of_the_span.start.0 as usize
+                    && &input.0.as_bytes()[pos..pos + 1] == digit.to_string()[..].as_bytes()
+                {
+                    Ok(
+                        CST::<NumberTerminal, NumberVariable, ByteSpan>::from_leaf_node(
+                            LeafNode::from_t(NumberTerminal::Char(*digit)),
+                            ByteSpan::from_start_len(start, 1),
+                        ),
+                    )
+                } else {
+                    Err(())
+                }
+            }
+        }
+    }
+}
 
-//     // 0
-//     // Zero
-//     let zero_fc0: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
-//         LeafNode::Original(NumberTerminal::ZeroFCLHS),
-//         Span::from_start_len(BytePos(1), 1),
-//     );
-//     let zero_fc1: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
-//         LeafNode::M(Metasymbol::Epsilon),
-//         Span::from_start_len(BytePos(2), 0),
-//     );
-//     let zero = CST::internal_node(
-//         InternalNode::from_first(NumberVariable::One, zero_fc0, zero_fc1),
-//         Span::from_start_len(BytePos(1), 1),
-//     );
-//     // Digit
-//     let digit_fc1: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
-//         LeafNode::M(Metasymbol::Epsilon),
-//         Span::from_start_len(BytePos(2), 0),
-//     );
-//     let digit = CST::internal_node(
-//         InternalNode::from_first(NumberVariable::Digit, zero, digit_fc1),
-//         Span::from_start_len(BytePos(1), 1),
-//     );
-//     // Numeral
-//     let numeral_fc1: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
-//         LeafNode::M(Metasymbol::Epsilon),
-//         Span::from_start_len(BytePos(2), 0),
-//     );
-//     let numeral_0 = CST::internal_node(
-//         InternalNode::from_first(NumberVariable::Digit, digit, numeral_fc1),
-//         Span::from_start_len(BytePos(1), 1),
-//     );
+impl<'input> TryFrom<(&'input ExtStr, NumberVariable, ByteSpan)> for NumberTerminal<'input> {
+    type Error = &'static str;
 
-//     // Number
-//     let number = CST::internal_node(
-//         InternalNode::from_first(NumberVariable::Number, digit_1, numeral_0),
-//         Span::from_start_len(BytePos(0), 2),
-//     );
+    fn try_from(value: (&'input ExtStr, NumberVariable, ByteSpan)) -> Result<Self, Self::Error> {
+        let (input, v, span) = value;
 
-//     let e: CST<NumberTerminal, NumberVariable, BytePos, u16> = CST::leaf_node(
-//         LeafNode::M(Metasymbol::Epsilon),
-//         Span::from_start_len(BytePos(2), 0),
-//     );
+        match v {
+            NumberVariable::Number => {
+                let lo = span.start.0 as usize;
+                let hi = lo + span.len as usize;
+                let s = &input.0[lo..hi];
 
-//     // assert_eq!(number);
-// }
+                Ok(NumberTerminal::Str(s))
+            }
+            NumberVariable::Digit => Ok(NumberTerminal::Str("ijjijijij")),
+            _ => Err("No output"),
+        }
+    }
+}
+
+impl Variable for NumberVariable {}
+
+impl<'a> Parse<'a, NumberTerminal<'a>, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos>
+    for ExtStr
+{
+}
+
+#[test]
+fn number() {
+    let number_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+        NumberVariable::Number,
+        RightRule::from_right_rule_kind(
+            (
+                RightRuleKind::V(NumberVariable::Digit),
+                RightRuleKind::V(NumberVariable::Numeral),
+            ),
+            RightRuleKind::Failed,
+        ),
+    );
+    let numeral_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+        NumberVariable::Numeral,
+        RightRule::from_right_rule_kind(
+            (
+                RightRuleKind::V(NumberVariable::Digit),
+                RightRuleKind::V(NumberVariable::Numeral),
+            ),
+            RightRuleKind::Epsilon,
+        ),
+    );
+    let digit_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+        NumberVariable::Digit,
+        RightRule::from_right_rule_kind(
+            (
+                RightRuleKind::V(NumberVariable::Zero),
+                RightRuleKind::Epsilon,
+            ),
+            RightRuleKind::Failed,
+        ),
+    );
+
+    let zero_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+        NumberVariable::Zero,
+        RightRule::from_right_rule_kind(
+            (
+                RightRuleKind::T(NumberTerminal::Str("0")),
+                RightRuleKind::Epsilon,
+            ),
+            RightRuleKind::V(NumberVariable::One),
+        ),
+    );
+    let one_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+        NumberVariable::One,
+        RightRule::from_right_rule_kind(
+            (
+                RightRuleKind::T(NumberTerminal::Char('1')),
+                RightRuleKind::Epsilon,
+            ),
+            RightRuleKind::Failed,
+        ),
+    );
+
+    let mut rules = Rules::new();
+
+    rules.insert_rule(number_rule);
+    rules.insert_rule(numeral_rule);
+    rules.insert_rule(digit_rule);
+    rules.insert_rule(zero_rule);
+    rules.insert_rule(one_rule);
+
+    let input = ExtStr(String::from("012001"));
+    let result = input.parse(&rules, &NumberVariable::Number, None);
+
+    assert_eq!(result, Err(()));
+
+    let input = ExtStr(String::from("001"));
+    let result = input.parse(&rules, &NumberVariable::Number, None);
+
+    assert_eq!(
+        result.unwrap().span,
+        ByteSpan::from_lo_hi(0.into(), 3.into())
+    );
+}

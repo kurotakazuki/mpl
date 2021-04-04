@@ -3,8 +3,7 @@ use crate::span::Spanned;
 use crate::symbols::{TerminalSymbol, VAndE};
 
 pub type LeafNode<OutputT> = TerminalSymbol<OutputT>;
-pub type InternalNode<OutputT, V, S> =
-    VAndE<(V, Option<OutputT>), Box<Choice<CST<OutputT, V, S>>>>;
+pub type InternalNode<OutputT, V, S> = VAndE<(V, Option<OutputT>), Box<Choice<CST<OutputT, V, S>>>>;
 
 // impl LeafNode {
 //     pub fn from_t() -> Self {
