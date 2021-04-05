@@ -1,4 +1,4 @@
-// use crate::choice::Choice;
+use crate::choice::Choice;
 use crate::cst::{InternalNode, CST};
 use crate::input::Input;
 use crate::output::Output;
@@ -55,7 +55,7 @@ where
 
     fn into_failed_cst(&'input self, _pos: P) -> Result<CST<OutputT, V, S>, ()> {
         // Ok(CST::from_leaf_node(
-        //     TerminalSymbol::M(Metasymbol::Failed),
+        //     TerminalSymbol::M(Metasymbol::Failure),
         //     Span::from_lo_hi(pos.clone(), pos)
         // ))
         Err(())
@@ -90,7 +90,7 @@ where
             TerminalSymbol::Original(t) => t.eval(self, pos, all_of_the_span),
             TerminalSymbol::M(metasymbol) => match metasymbol {
                 Metasymbol::Epsilon => self.into_epsilon_cst(pos),
-                Metasymbol::Failed => self.into_failed_cst(pos),
+                Metasymbol::Failure => self.into_failed_cst(pos),
                 Metasymbol::Any => self.into_any_cst(pos),
                 Metasymbol::All => self.into_all_cst(pos),
             },
@@ -133,7 +133,7 @@ where
                 let merged_span = Span::merge_lhs_and_rhs(&left_cst.span, &right_cst.span);
 
                 // let output = OutputT::try_from((self, *variable, merged_span.clone(), Choice::first(left_cst, right_cst)));
-                let output = OutputT::new(&self, *variable, merged_span.clone());
+                let output = OutputT::new(&self, variable, &merged_span, Choice::first(&left_cst, &right_cst));
 
                 return Ok(CST::from_internal_node(
                     InternalNode::from_first((*variable, output), left_cst, right_cst),
@@ -168,7 +168,7 @@ where
                 let cst = self.eval(pos, rules, &sc_v, all_of_the_span)?;
                 let span = cst.span.clone();
 
-                let output = OutputT::new(self, *variable, span.clone());
+                let output = OutputT::new(self, variable, &span, Choice::second(&cst));
 
                 Ok(CST::from_internal_node(
                     InternalNode::from_second((*variable, output), cst),

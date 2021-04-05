@@ -29,7 +29,7 @@ impl<T, V> RightRule<T, V> {
 /// This is used when creating a RightRule.
 pub enum RightRuleKind<T, V> {
     Epsilon,
-    Failed,
+    Failure,
     Any,
     All,
     T(T),
@@ -41,7 +41,7 @@ impl<T, V> From<RightRuleKind<T, V>> for E<T, V> {
     fn from(right_rule_kind: RightRuleKind<T, V>) -> Self {
         match right_rule_kind {
             RightRuleKind::Epsilon => E::T(TerminalSymbol::M(Metasymbol::Epsilon)),
-            RightRuleKind::Failed => E::T(TerminalSymbol::M(Metasymbol::Failed)),
+            RightRuleKind::Failure => E::T(TerminalSymbol::M(Metasymbol::Failure)),
             RightRuleKind::Any => E::T(TerminalSymbol::M(Metasymbol::Any)),
             RightRuleKind::All => E::T(TerminalSymbol::M(Metasymbol::All)),
             RightRuleKind::T(t) => E::T(TerminalSymbol::Original(t)),
@@ -116,7 +116,7 @@ mod tests {
                     E::t(TerminalSymbol::from_t(BinDigitTerminal::Char('1'))),
                     E::t(TerminalSymbol::from_m(Metasymbol::Epsilon)),
                 ),
-                choice::Second::new(E::t(TerminalSymbol::from_m(Metasymbol::Failed))),
+                choice::Second::new(E::t(TerminalSymbol::from_m(Metasymbol::Failure))),
             ),
         );
 
@@ -139,7 +139,7 @@ mod tests {
                     RightRuleKind::T(BinDigitTerminal::Char('1')),
                     RightRuleKind::Epsilon,
                 ),
-                RightRuleKind::Failed,
+                RightRuleKind::Failure,
             ),
         );
 

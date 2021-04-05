@@ -1,7 +1,7 @@
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Metasymbol {
     Epsilon,
-    Failed,
+    Failure,
     Any,
     All,
 }
@@ -12,7 +12,7 @@ impl Metasymbol {
     }
 
     pub fn failed() -> Self {
-        Self::Failed
+        Self::Failure
     }
 
     pub fn any() -> Self {

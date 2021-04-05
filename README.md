@@ -14,6 +14,20 @@ A MPG grammar `G` is a tuple `G = (V, T, R, S, $)` in which:
 - S in V (S &isin; V) is the start variable.
 - $ not in E ($ &notin; E) is the end symbol.
 
+#### Epsilon
+`()` is a metasymbol that always succeeds without consuming input.
+
+```
+Epsilon = () () / ()
+```
+
+#### Failure
+`f` is a metasymbol that always fails without consuming input.
+
+```
+Failure = f f / f
+```
+
 ### Extended MPG
 Since one of the goals of MPG is to create an CST, it also supports two features in terms of ease of use and speed.
 
@@ -163,25 +177,25 @@ Space = " "
 
 ## Practice
 ### Sequence
-`A = e1 e2`
+`A <- e1 e2`
 ```rust
 A = e1 e2 / f
 ```
 
 ### Choice
-`A = e1 / e2`
+`A <- e1 / e2`
 ```rust
 A = e1 () / e2
 ```
 
 ### Zero or more
-`A = e*`
+`A <- e*`
 ```rust
 A = e A / ()
 ```
 
 ### Not predicate
-`A = !e .`
+`A <- !e .`
 ```rust
 A = B ? / f
 B = e * / ()

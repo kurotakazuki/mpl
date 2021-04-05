@@ -1,3 +1,4 @@
+use mpg::choice::Choice;
 use mpg::cst::CST;
 use mpg::parse::Parse;
 use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
@@ -16,7 +17,7 @@ enum ParenthesesVariable {
 impl Variable for ParenthesesVariable {}
 
 impl<'input> Output<'input, str, ParenthesesVariable, ByteSpan> for String {
-    fn new(_input: &'input str, variable: ParenthesesVariable, _span: ByteSpan) -> Option<Self> {
+    fn new(_input: &'input str, variable: &ParenthesesVariable, _span: &ByteSpan, _cst_choice: Choice<&CST<Self, ParenthesesVariable, ByteSpan>>) -> Option<Self> {
         match variable {
             ParenthesesVariable::Open => Some(String::from("open")),
             ParenthesesVariable::Parentheses => Some(String::from("paren")),
@@ -49,7 +50,7 @@ fn parentheses() {
                 RightRuleKind::V(ParenthesesVariable::Open),
                 RightRuleKind::V(ParenthesesVariable::Close),
             ),
-            RightRuleKind::Failed,
+            RightRuleKind::Failure,
         ),
     );
     let close_rule: Rule<StrTerminal, ParenthesesVariable> = Rule::new(
@@ -59,7 +60,7 @@ fn parentheses() {
                 RightRuleKind::T(StrTerminal::Str(")")),
                 RightRuleKind::V(ParenthesesVariable::Open),
             ),
-            RightRuleKind::Failed,
+            RightRuleKind::Failure,
         ),
     );
 

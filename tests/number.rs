@@ -1,3 +1,4 @@
+use mpg::choice::Choice;
 use mpg::cst::{LeafNode, CST};
 use mpg::input::Input;
 use mpg::output::Output;
@@ -79,7 +80,7 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
 }
 
 impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal<'input> {
-    fn new(input: &'input ExtStr, variable: NumberVariable, span: ByteSpan) -> Option<Self> {
+    fn new(input: &'input ExtStr, variable: &NumberVariable, span: &ByteSpan, _cst_choice: Choice<&CST<Self, NumberVariable, ByteSpan>>) -> Option<Self> {
         match variable {
             NumberVariable::Number => {
                 let lo = span.start.0 as usize;
@@ -118,7 +119,7 @@ fn number() {
                 RightRuleKind::V(NumberVariable::Digit),
                 RightRuleKind::V(NumberVariable::Numeral),
             ),
-            RightRuleKind::Failed,
+            RightRuleKind::Failure,
         ),
     );
     let numeral_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
@@ -138,7 +139,7 @@ fn number() {
                 RightRuleKind::V(NumberVariable::Zero),
                 RightRuleKind::Epsilon,
             ),
-            RightRuleKind::Failed,
+            RightRuleKind::Failure,
         ),
     );
 
@@ -159,7 +160,7 @@ fn number() {
                 RightRuleKind::T(NumberTerminal::Char('1')),
                 RightRuleKind::Epsilon,
             ),
-            RightRuleKind::Failed,
+            RightRuleKind::Failure,
         ),
     );
 
