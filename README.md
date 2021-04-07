@@ -3,7 +3,7 @@ This is minimal parser generator that generates a parser from grammar like Top-D
 
 ## MPG
 ### Definition of MPG grammar
-A MPG grammar `G` is a tuple `G = (V, T, R, S, $)` in which:
+A MPG grammar `G` is a tuple `G = (V, T, R, S)` in which:
 - `V` is a finite set of variables.
 - `T` is a finite set of terminal symbols containing `M` ( = {(), f}) (is a finite set of metasymbols).
 - `R` is a finite set of rules of the form
@@ -12,7 +12,6 @@ A MPG grammar `G` is a tuple `G = (V, T, R, S, $)` in which:
     B, C, D in E (E = T &cup; V) (T &cap; V = &empty;) (B, C, D &isin; E).  
     For any variable A there is at most one rule with A to the left of the `=`.
 - S in V (S &isin; V) is the start variable.
-- $ not in E ($ &notin; E) is the end symbol.
 
 #### Epsilon
 `()` is a metasymbol that always succeeds without consuming input.
@@ -169,6 +168,7 @@ Space = " "
 --->
 
 ## TODO
+- Add Omit
 - Add RowColSpan
 - Create parser from MPGG file.
 - Error Handling

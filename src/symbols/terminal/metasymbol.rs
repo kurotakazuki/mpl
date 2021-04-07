@@ -4,6 +4,7 @@ pub enum Metasymbol {
     Failure,
     Any,
     All,
+    Omit,
 }
 
 impl Metasymbol {
@@ -21,5 +22,9 @@ impl Metasymbol {
 
     pub fn all() -> Self {
         Self::All
+    }
+
+    pub fn omit() -> Self {
+        Self::Omit
     }
 }

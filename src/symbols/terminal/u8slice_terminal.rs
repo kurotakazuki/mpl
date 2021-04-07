@@ -1,7 +1,7 @@
-// use crate::cst::{CST, LeafNode};
-// use crate::parse::Terminal;
+// use crate::cst::{LeafNode, CST};
 // use crate::position::BytePos;
 // use crate::span::{ByteSpan, Span};
+// use crate::symbols::{Metasymbol, Terminal};
 
 // #[derive(Copy, Clone, Debug, PartialEq)]
 // pub enum U8SliceTerminal<'a> {
@@ -40,39 +40,55 @@
 //     LittleEndianIsize(isize),
 // }
 
-// impl<'a, V> Terminal<'a, str, StrTerminal<'a>, V, ByteSpan, BytePos> for StrTerminal<'a> {
+// impl<'a, OutputT, V> Terminal<'a, [u8], OutputT, V, ByteSpan, BytePos> for U8SliceTerminal<'a> {
 //     fn eval(
 //         &'a self,
-//         input: &'a str,
+//         input: &'a [u8],
 //         pos: BytePos,
 //         all_of_the_span: &ByteSpan,
-//     ) -> Result<CST<StrTerminal<'a>, V, ByteSpan>, ()> {
+//     ) -> Result<CST<OutputT, V, ByteSpan>, ()> {
 //         match self {
-//             StrTerminal::Char(c) => {
+//             U8SliceTerminal::Char(c) => {
 //                 let start = pos;
 //                 let pos: usize = pos.0 as usize;
 //                 let len = c.len_utf8();
 //                 if pos + len <= all_of_the_span.hi().0 as usize
-//                     && &input.as_bytes()[pos..pos + len] == c.to_string()[..].as_bytes()
+//                     && &input[pos..pos + len] == c.to_string()[..].as_bytes()
 //                 {
-//                     Ok(CST::<StrTerminal, V, ByteSpan>::from_leaf_node(
-//                         LeafNode::from_t(StrTerminal::Char(*c)),
+//                     Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+//                         LeafNode::from_m(Metasymbol::Epsilon),
 //                         ByteSpan::from_start_len(start, len as u16),
 //                     ))
 //                 } else {
 //                     Err(())
 //                 }
 //             }
-//             StrTerminal::Str(s) => {
+//             U8SliceTerminal::Str(s) => {
 //                 let start = pos;
 //                 let pos: usize = pos.0 as usize;
 //                 let s_bytes = s.as_bytes();
 //                 let len = s_bytes.len();
 //                 if pos + len <= all_of_the_span.hi().0 as usize
-//                     && &input.as_bytes()[pos..pos + len] == s.as_bytes()
+//                     && &input[pos..pos + len] == s.as_bytes()
 //                 {
-//                     Ok(CST::<StrTerminal, V, ByteSpan>::from_leaf_node(
-//                         LeafNode::from_t(StrTerminal::Str(s)),
+//                     Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+//                         LeafNode::from_m(Metasymbol::Epsilon),
+//                         ByteSpan::from_start_len(start, len as u16),
+//                     ))
+//                 } else {
+//                     Err(())
+//                 }
+//             }
+//             U8SliceTerminal::U8Slice(s) => {
+//                 let start = pos;
+//                 let pos: usize = pos.0 as usize;
+//                 let s_bytes = s.as_bytes();
+//                 let len = s_bytes.len();
+//                 if pos + len <= all_of_the_span.hi().0 as usize
+//                     && &input[pos..pos + len] == s.as_bytes()
+//                 {
+//                     Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+//                         LeafNode::from_m(Metasymbol::Epsilon),
 //                         ByteSpan::from_start_len(start, len as u16),
 //                     ))
 //                 } else {

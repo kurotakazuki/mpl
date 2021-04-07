@@ -22,6 +22,7 @@ where
     S: Span<P>,
     P: Position,
 {
+    // all_of_the_span.unwarp().hi() < input.len()
     fn mpg_parse(
         &'input self,
         rules: &'input Rules<T, V>,
@@ -36,7 +37,7 @@ where
             &all_of_the_span.lo(),
             &rules,
             &start_variable,
-            &all_of_the_span,
+            &self.all_of_the_span().hi(),
         )?;
 
         if cst.span == all_of_the_span {
@@ -61,9 +62,9 @@ where
         Err(())
     }
 
-    fn into_any_cst(&'input self, pos: P) -> Result<CST<OutputT, V, S>, ()> {
+    fn into_any_cst(&'input self, pos: P, max_pos: &P) -> Result<CST<OutputT, V, S>, ()> {
         let pos_with_one_added = pos.with_one_added();
-        if self.all_of_the_span().hi() >= pos_with_one_added {
+        if  &pos_with_one_added <= max_pos {
             Ok(CST::from_leaf_node(
                 TerminalSymbol::M(Metasymbol::Any),
                 Span::from_lo_hi(pos.clone(), pos_with_one_added),
@@ -73,10 +74,10 @@ where
         }
     }
 
-    fn into_all_cst(&'input self, pos: P) -> Result<CST<OutputT, V, S>, ()> {
+    fn into_all_cst(&'input self, pos: P, max_pos: P) -> Result<CST<OutputT, V, S>, ()> {
         Ok(CST::from_leaf_node(
             TerminalSymbol::M(Metasymbol::All),
-            Span::from_lo_hi(pos, self.all_of_the_span().hi()),
+            Span::from_lo_hi(pos, max_pos),
         ))
     }
 
@@ -84,15 +85,16 @@ where
         &'input self,
         terminal_symbol: &'input TerminalSymbol<T>,
         pos: P,
-        all_of_the_span: &S,
+        max_pos: &P,
     ) -> Result<CST<OutputT, V, S>, ()> {
         match terminal_symbol {
-            TerminalSymbol::Original(t) => t.eval(self, pos, all_of_the_span),
+            TerminalSymbol::Original(t) => t.eval(self, pos, max_pos),
             TerminalSymbol::M(metasymbol) => match metasymbol {
                 Metasymbol::Epsilon => self.into_epsilon_cst(pos),
                 Metasymbol::Failure => self.into_failed_cst(pos),
-                Metasymbol::Any => self.into_any_cst(pos),
-                Metasymbol::All => self.into_all_cst(pos),
+                Metasymbol::Any => self.into_any_cst(pos, max_pos),
+                Metasymbol::All => self.into_all_cst(pos, max_pos.clone()),
+                Metasymbol::Omit => unimplemented!(),
             },
         }
     }
@@ -102,7 +104,7 @@ where
         pos: &P,
         rules: &'input Rules<T, V>,
         variable: &V,
-        all_of_the_span: &S,
+        max_pos: &P,
     ) -> Result<CST<OutputT, V, S>, ()> {
         let right_rule = rules
             .0
@@ -113,19 +115,19 @@ where
         // left-hand side of first choice
         let left_cst: Result<CST<OutputT, V, S>, ()> = match &right_rule.first.lhs {
             E::T(terminal_symbol) => {
-                self.eval_terminal_symbol(terminal_symbol, pos.clone(), all_of_the_span)
+                self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
             }
-            E::V(lhs_of_fc_v) => self.eval(pos, rules, &lhs_of_fc_v, all_of_the_span),
+            E::V(lhs_of_fc_v) => self.eval(pos, rules, &lhs_of_fc_v, max_pos),
         };
 
         if let Ok(left_cst) = left_cst {
             // right-hand side of first choice
             let right_cst: Result<CST<OutputT, V, S>, ()> = match &right_rule.first.rhs {
                 E::T(terminal_symbol) => {
-                    self.eval_terminal_symbol(terminal_symbol, pos.clone(), all_of_the_span)
+                    self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
                 }
                 E::V(rhs_of_fc_v) => {
-                    self.eval(&left_cst.span.hi(), rules, &rhs_of_fc_v, all_of_the_span)
+                    self.eval(&left_cst.span.hi(), rules, &rhs_of_fc_v, max_pos)
                 }
             };
 
@@ -162,10 +164,10 @@ where
         // Second choice
         match &right_rule.second.0 {
             E::T(terminal_symbol) => {
-                self.eval_terminal_symbol(terminal_symbol, pos.clone(), all_of_the_span)
+                self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
             }
             E::V(sc_v) => {
-                let cst = self.eval(pos, rules, &sc_v, all_of_the_span)?;
+                let cst = self.eval(pos, rules, &sc_v, max_pos)?;
                 let span = cst.span.clone();
 
                 let output = OutputT::new(self, variable, &span, Choice::second(&cst));
