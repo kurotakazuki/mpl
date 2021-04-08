@@ -1,8 +1,8 @@
-use mpg::tree::{AST, CST};
 use mpg::parse::Parse;
 use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
 use mpg::span::{ByteSpan, Span};
 use mpg::symbols::{StrTerminal, Variable};
+use mpg::tree::{AST, CST};
 
 use mpg::output::Output;
 
@@ -16,11 +16,18 @@ enum ParenthesesVariable {
 impl Variable for ParenthesesVariable {}
 
 impl<'input> Output<'input, str, ParenthesesVariable, ByteSpan> for String {
-    fn output_ast(_input: &'input str, cst: CST<Self, ParenthesesVariable, ByteSpan>) -> AST<Self, ParenthesesVariable, ByteSpan> {
+    fn output_ast(
+        _input: &'input str,
+        cst: CST<Self, ParenthesesVariable, ByteSpan>,
+    ) -> AST<Self, ParenthesesVariable, ByteSpan> {
         match cst.node.value {
             ParenthesesVariable::Open => AST::from_cst_and_output(cst, Some(String::from("open"))),
-            ParenthesesVariable::Parentheses => AST::from_cst_and_output(cst, Some(String::from("paren"))),
-            ParenthesesVariable::Close => AST::from_cst_and_output(cst, Some(String::from("close"))),
+            ParenthesesVariable::Parentheses => {
+                AST::from_cst_and_output(cst, Some(String::from("paren")))
+            }
+            ParenthesesVariable::Close => {
+                AST::from_cst_and_output(cst, Some(String::from("close")))
+            }
         }
     }
 }

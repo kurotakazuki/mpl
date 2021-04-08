@@ -1,4 +1,3 @@
-use crate::tree::{AST, CST};
 use crate::choice::Choice;
 use crate::input::Input;
 use crate::output::Output;
@@ -6,6 +5,7 @@ use crate::position::Position;
 use crate::rules::Rules;
 use crate::span::Span;
 use crate::symbols::{Metasymbol, Terminal, TerminalSymbol, VAndE, Variable, E};
+use crate::tree::{AST, CST};
 
 /// T is terminal symbols.
 /// OutputT is output type.
@@ -132,7 +132,8 @@ where
             if let Ok(right_ast) = right_ast {
                 let merged_span = Span::merge_lhs_and_rhs(&left_ast.span, &right_ast.span);
 
-                let variable_and_choice = VAndE::new(variable.clone(), Choice::first(left_ast, right_ast));
+                let variable_and_choice =
+                    VAndE::new(variable.clone(), Choice::first(left_ast, right_ast));
 
                 // let output = OutputT::try_from((self, *variable, merged_span.clone(), Choice::first(left_ast, right_ast)));
 

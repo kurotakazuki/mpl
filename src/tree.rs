@@ -53,31 +53,20 @@ impl<OutputT, V, S> AST<OutputT, V, S> {
         Self::new(ASTKind::InternalNode(internal_node), span)
     }
 
-    pub fn from_cst_and_output(
-        cst: CST<OutputT, V, S>,
-        output: Option<OutputT>,
-    ) -> Self
-    {
+    pub fn from_cst_and_output(cst: CST<OutputT, V, S>, output: Option<OutputT>) -> Self {
         match cst.node.equal {
-            Choice::First(first) => {
-                Self::from_internal_node(
-                    InternalNode::from_first((cst.node.value, output), first.lhs, first.rhs),
-                    cst.span,
-                )
-            }
-            Choice::Second(second) => {
-                Self::from_internal_node(
-                    InternalNode::from_second((cst.node.value, output), second.0),
-                    cst.span,
-                )
-            }
+            Choice::First(first) => Self::from_internal_node(
+                InternalNode::from_first((cst.node.value, output), first.lhs, first.rhs),
+                cst.span,
+            ),
+            Choice::Second(second) => Self::from_internal_node(
+                InternalNode::from_second((cst.node.value, output), second.0),
+                cst.span,
+            ),
         }
     }
 
-    pub fn from_cst(
-        cst: CST<OutputT, V, S>,
-    ) -> Self
-    {
+    pub fn from_cst(cst: CST<OutputT, V, S>) -> Self {
         Self::from_cst_and_output(cst, None)
     }
 }

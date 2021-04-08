@@ -1,7 +1,7 @@
-use crate::tree::{LeafNode, AST};
 use crate::position::BytePos;
 use crate::span::{ByteSpan, Span};
 use crate::symbols::{Metasymbol, Terminal};
+use crate::tree::{LeafNode, AST};
 
 use std::cmp::PartialEq;
 

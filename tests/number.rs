@@ -1,11 +1,11 @@
-use mpg::tree::InternalNode;
-use mpg::tree::{LeafNode, AST, CST};
 use mpg::input::Input;
 use mpg::output::Output;
 use mpg::parse::Parse;
 use mpg::position::BytePos;
 use mpg::span::ByteSpan;
-use mpg::symbols::{Terminal, Metasymbol, Variable};
+use mpg::symbols::{Metasymbol, Terminal, Variable};
+use mpg::tree::InternalNode;
+use mpg::tree::{LeafNode, AST, CST};
 
 use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
 
@@ -85,7 +85,10 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
 }
 
 impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal<'input> {
-    fn output_ast(input: &'input ExtStr, cst: CST<Self, NumberVariable, ByteSpan>) -> AST<Self, NumberVariable, ByteSpan> {
+    fn output_ast(
+        input: &'input ExtStr,
+        cst: CST<Self, NumberVariable, ByteSpan>,
+    ) -> AST<Self, NumberVariable, ByteSpan> {
         match cst.node.value {
             NumberVariable::Number => {
                 let lo = cst.span.start.0 as usize;
@@ -101,15 +104,16 @@ impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal
                 let hi = lo + span.len as usize;
                 let s = &input.0[lo..hi];
 
+                let omit: AST<Self, NumberVariable, ByteSpan> =
+                    AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), span.clone());
 
-                let omit: AST<Self, NumberVariable, ByteSpan> = AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), span.clone());
-
-                let internal_node = InternalNode::from_second((cst.node.value, Some(NumberTerminal::Str(s))), omit);
+                let internal_node =
+                    InternalNode::from_second((cst.node.value, Some(NumberTerminal::Str(s))), omit);
 
                 AST::from_internal_node(internal_node, span)
 
                 // AST::from_vandchoice_and_output(v_and_choice, Some(NumberTerminal::Str(s)))
-            },
+            }
             _ => AST::from_cst(cst),
         }
     }
