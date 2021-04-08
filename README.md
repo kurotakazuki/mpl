@@ -1,9 +1,16 @@
-# Minimal Parser Generator
-This is minimal parser generator that generates a parser from grammar like Top-Down Parsing Language (TDPL). The generated parser creates a concrete syntax tree (AST) for each input.
+# Minimal Parsing Language (MPL)
+This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Down Parsing Language (TDPL). It creates a abstract syntax tree (AST) for each input.
 
-## MPG
-### Definition of MPG grammar
-A MPG grammar `G` is a tuple `G = (V, T, R, S)` in which:
+## Getting Started
+
+### Test Examples
+- [Number](tests/number.rs)
+- [Parentheses](tests/parentheses.rs)
+- [Wave fmt](tests/wave_fmt.rs)
+
+## MPL
+### Definition of MPL grammar
+A MPL grammar `G` is a tuple `G = (V, T, R, S)` in which:
 - `V` is a finite set of variables.
 - `T` is a finite set of terminal symbols containing `M` ( = {(), f}) (is a finite set of metasymbols).
 - `R` is a finite set of rules of the form
@@ -27,8 +34,8 @@ Epsilon = () () / ()
 Failure = f f / f
 ```
 
-### Extended MPG
-Since one of the goals of MPG is to create an AST, it also supports two features in terms of ease of use and speed.
+### Extended MPL
+Since one of the goals of MPL is to create an AST, it also supports two features in terms of ease of use and speed.
 
 #### Any
 `?` is a metasymbol representing any single input like wildcard character. This succeeds if there is any input left, and fails if there is no input left.
@@ -37,7 +44,7 @@ Since one of the goals of MPG is to create an AST, it also supports two features
 Any = ? () / f
 ```
 
-To extend the difinition of MPG grammar, change `M` = {(), f} to `M` = {?, (), f}.
+To extend the difinition of MPL grammar, change `M` = {(), f} to `M` = {?, (), f}.
 
 #### All
 `*` is a metasymbol representing All remaining input like wildcard character. This will succeed even if the remaining inputs are zero.
@@ -46,7 +53,7 @@ To extend the difinition of MPG grammar, change `M` = {(), f} to `M` = {?, (), f
 All = * () / f
 ```
 
-To extend the difinition of MPG grammar, change `M` = {(), f} to `M` = {*, (), f}.
+To extend the difinition of MPL grammar, change `M` = {(), f} to `M` = {*, (), f}.
 
 Same as `All = ? All / ()`.
 
@@ -68,34 +75,34 @@ Nine = "9" () / f
 
 An error (TODO: maybe failure would be better) will occur if the input cannot be converted to the variable type.
 
-To extend the difinition of MPG grammar, change `A = B C / D` to `A = B C / D` or `A: TYPE = B C / D`, or seperate definition of `V` by including type or not.
+To extend the difinition of MPL grammar, change `A = B C / D` to `A = B C / D` or `A: TYPE = B C / D`, or seperate definition of `V` by including type or not.
 --->
 
 
-#### Terminal symbol type
+<!-- #### Terminal symbol type
 Terminal symbols supports several types.
 
 ```
 A = "A" "abc" / [0, 0, 0]
 ```
 
-Supports `&str, &[u8]` at this moment.
+Supports `&str, &[u8]` at this moment. -->
 
-## Difference between TDPL and MPG
+## Difference between TDPL and MPL
 The biggest difference between the two grammars is the rule form. There are two rule forms in TDPL.
 
 > `A..BC/D`, A,B,C,D in V.  
 > `A..a`, a in &sum; &cup; {&epsilon;, f}, f is a metasymbol not in &sum; and &epsilon; is the null string.
 
-MPG, on the other hand, has one rule form.
+MPL, on the other hand, has one rule form.
 
 
 <!---
-## MPGG (MPG Grammar) syntax
+## MPLG (MPL Grammar) syntax
 ### In PEG like grammar
 ```rust
 // Hierarchical syntax
-MPGG = (Line)*
+MPLG = (Line)*
 Line = (Rule / LineComment / ()) EndOfLine
 Rule = Variable '=' E Space E Space '/' Space E
 E = Variable / TerminalSymbol
@@ -164,13 +171,13 @@ EndOfLine = "\n" / "\r\n"
 Space = " "
 ```
 
-### In MPG grammar
+### In MPL grammar
 --->
 
 ## TODO
-- Add Omit
 - Add RowColSpan
-- Create parser from MPGG file.
+- Add U8SliceTerminal
+- Create parser from MPLG file.
 - Error Handling
 - Packrat Parsing
 - Left Recursion

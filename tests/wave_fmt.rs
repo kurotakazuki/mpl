@@ -58,7 +58,8 @@ impl<'input> Output<'input, [u8], WaveFmtVariable, ByteSpan> for U16OrU32 {
 /// RawU32Two = ? ? / f
 /// 
 /// ```
-fn main() {
+#[test]
+fn wave_fmt() {
     let riff_rule: Rule<SliceTerminal::<u8>, WaveFmtVariable> = Rule::new(
         WaveFmtVariable::Riff,
         RightRule::from_right_rule_kind(

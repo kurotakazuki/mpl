@@ -12,11 +12,9 @@ pub trait Span<P>: Clone + PartialEq
 where
     P: Position,
 {
-    fn from_lo_hi(lo: P, hi: P) -> Self;
-    fn with_lo(&self, lo: P) -> Self;
-    fn with_hi(&self, hi: P) -> Self;
     fn lo(&self) -> P;
     fn hi(&self) -> P;
+    fn from_lo_hi(lo: P, hi: P) -> Self;
     /// lhs.hi() and rhs.lo() must be equal.
     fn merge_lhs_and_rhs(lhs: &Self, rhs: &Self) -> Self;
 }

@@ -34,13 +34,13 @@ where
         }
     }
 
-    fn with_lo(&self, lo: P) -> Self {
-        Self::from_lo_hi(lo, self.hi().clone())
-    }
+    // fn with_lo(&self, lo: P) -> Self {
+    //     Self::from_lo_hi(lo, self.hi().clone())
+    // }
 
-    fn with_hi(&self, hi: P) -> Self {
-        Self::from_lo_hi(self.lo().clone(), hi)
-    }
+    // fn with_hi(&self, hi: P) -> Self {
+    //     Self::from_lo_hi(self.lo().clone(), hi)
+    // }
 
     fn lo(&self) -> P {
         self.start.clone()
