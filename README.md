@@ -1,5 +1,5 @@
 # Minimal Parser Generator
-This is minimal parser generator that generates a parser from grammar like Top-Down Parsing Language (TDPL). The generated parser creates a concrete syntax tree (CST) for each input.
+This is minimal parser generator that generates a parser from grammar like Top-Down Parsing Language (TDPL). The generated parser creates a concrete syntax tree (AST) for each input.
 
 ## MPG
 ### Definition of MPG grammar
@@ -28,7 +28,7 @@ Failure = f f / f
 ```
 
 ### Extended MPG
-Since one of the goals of MPG is to create an CST, it also supports two features in terms of ease of use and speed.
+Since one of the goals of MPG is to create an AST, it also supports two features in terms of ease of use and speed.
 
 #### Any
 `?` is a metasymbol representing any single input like wildcard character. This succeeds if there is any input left, and fails if there is no input left.
@@ -54,7 +54,7 @@ Same as `All = ? All / ()`.
 #### Variable type
 Variables can have a type.
 
-If the variable contains a type, it will include the value of that type, such as a token, when the CST is created. Therefore rules decomposed from variable including rule has a role like lexical analysis. The following syntax is a lexical syntax for numbers.
+If the variable contains a type, it will include the value of that type, such as a token, when the AST is created. Therefore rules decomposed from variable including rule has a role like lexical analysis. The following syntax is a lexical syntax for numbers.
 
 ```
 Number: String = Digit Numeral / f

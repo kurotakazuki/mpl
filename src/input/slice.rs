@@ -12,9 +12,10 @@ impl<'input, T> Input<'input, ByteSpan> for [T] where T: 'input {
 }
 
 /// T represents the element type.
-impl<'input, T, OutputT, V> Parse<'input, SliceTerminal<'input>, OutputT, V, ByteSpan, BytePos> for [T]
+impl<'input, T, OutputT, V> Parse<'input, SliceTerminal<'input, T>, OutputT, V, ByteSpan, BytePos> for [T]
 where
-    OutputT: Output<'input, str, V, ByteSpan>,
+    T: PartialEq,
+    OutputT: Output<'input, Self, V, ByteSpan>,
     V: Variable,
 {
 }

@@ -1,6 +1,5 @@
-use crate::choice::Choice;
-use crate::cst::CST;
+use crate::tree::{AST, CST};
 
 pub trait Output<'input, I: ?Sized, V, S>: Sized {
-    fn new(input: &'input I, variable: &V, span: &S, cst_choice: Choice<&CST<Self, V, S>>) -> Option<Self>;
+    fn output_ast(input: &'input I, cst: CST<Self, V, S>) -> AST<Self, V, S>;
 }

@@ -1,4 +1,4 @@
-use crate::cst::{LeafNode, CST};
+use crate::tree::{LeafNode, AST};
 use crate::position::BytePos;
 use crate::span::{ByteSpan, Span};
 use crate::symbols::{Metasymbol, Terminal};
@@ -23,13 +23,15 @@ impl<'a, T> From<&'a [T]> for SliceTerminal<'a, T> {
     }
 }
 
-impl<'a, T: PartialEq, OutputT, V> Terminal<'a, [T], OutputT, V, ByteSpan, BytePos> for SliceTerminal<'a, T> {
+impl<'a, T: PartialEq, OutputT, V> Terminal<'a, [T], OutputT, V, ByteSpan, BytePos>
+    for SliceTerminal<'a, T>
+{
     fn eval(
         &'a self,
         input: &'a [T],
         pos: BytePos,
         max_pos: &BytePos,
-    ) -> Result<CST<OutputT, V, ByteSpan>, ()> {
+    ) -> Result<AST<OutputT, V, ByteSpan>, ()> {
         match self {
             SliceTerminal::Element(element) => {
                 let start = pos;
@@ -41,7 +43,7 @@ impl<'a, T: PartialEq, OutputT, V> Terminal<'a, [T], OutputT, V, ByteSpan, ByteP
                     // let e = unsafe { input.get_unchecked(pos) };
                     if let Some(e) = input.get(pos) {
                         if element == e {
-                            return Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+                            return Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
                                 LeafNode::from_m(Metasymbol::Omit),
                                 span,
                             ));
@@ -59,7 +61,7 @@ impl<'a, T: PartialEq, OutputT, V> Terminal<'a, [T], OutputT, V, ByteSpan, ByteP
                 if &span.hi() <= max_pos {
                     if let Some(ref s) = input.get(pos..pos + len) {
                         if slice == s {
-                            return Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+                            return Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
                                 LeafNode::from_m(Metasymbol::Omit),
                                 span,
                             ));

@@ -1,11 +1,11 @@
-use mpg::choice::Choice;
-use mpg::cst::{LeafNode, CST};
+use mpg::tree::InternalNode;
+use mpg::tree::{LeafNode, AST, CST};
 use mpg::input::Input;
 use mpg::output::Output;
 use mpg::parse::Parse;
 use mpg::position::BytePos;
-use mpg::span::{ByteSpan, Span};
-use mpg::symbols::{Terminal, Variable};
+use mpg::span::ByteSpan;
+use mpg::symbols::{Terminal, Metasymbol, Variable};
 
 use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
 
@@ -21,7 +21,9 @@ enum NumberVariable {
     Numeral,
     Digit,
     Zero,
+    FZero,
     One,
+    FOne,
 }
 
 struct ExtStr(pub String);
@@ -41,7 +43,7 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
         input: &'a ExtStr,
         pos: BytePos,
         max_pos: &BytePos,
-    ) -> Result<CST<NumberTerminal<'a>, NumberVariable, ByteSpan>, ()> {
+    ) -> Result<AST<NumberTerminal<'a>, NumberVariable, ByteSpan>, ()> {
         match self {
             NumberTerminal::Str(digit) => {
                 let start = pos;
@@ -51,7 +53,7 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
                     && &input.0.as_bytes()[pos..pos + len] == digit.as_bytes()
                 {
                     Ok(
-                        CST::<NumberTerminal, NumberVariable, ByteSpan>::from_leaf_node(
+                        AST::<NumberTerminal, NumberVariable, ByteSpan>::from_leaf_node(
                             LeafNode::from_t(NumberTerminal::Str(digit)),
                             ByteSpan::from_start_len(start, len as u16),
                         ),
@@ -69,7 +71,7 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
                     && &input.0.as_bytes()[pos..pos + len] == digit.to_string()[..].as_bytes()
                 {
                     Ok(
-                        CST::<NumberTerminal, NumberVariable, ByteSpan>::from_leaf_node(
+                        AST::<NumberTerminal, NumberVariable, ByteSpan>::from_leaf_node(
                             LeafNode::from_t(NumberTerminal::Char(*digit)),
                             ByteSpan::from_start_len(start, len as u16),
                         ),
@@ -83,17 +85,32 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
 }
 
 impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal<'input> {
-    fn new(input: &'input ExtStr, variable: &NumberVariable, span: &ByteSpan, _cst_choice: Choice<&CST<Self, NumberVariable, ByteSpan>>) -> Option<Self> {
-        match variable {
+    fn output_ast(input: &'input ExtStr, cst: CST<Self, NumberVariable, ByteSpan>) -> AST<Self, NumberVariable, ByteSpan> {
+        match cst.node.value {
             NumberVariable::Number => {
+                let lo = cst.span.start.0 as usize;
+                let hi = lo + cst.span.len as usize;
+                let s = &input.0[lo..hi];
+
+                AST::from_cst_and_output(cst, Some(NumberTerminal::Str(s)))
+            }
+            NumberVariable::Digit => {
+                let span = cst.span;
+
                 let lo = span.start.0 as usize;
                 let hi = lo + span.len as usize;
                 let s = &input.0[lo..hi];
 
-                Some(NumberTerminal::Str(s))
-            }
-            NumberVariable::Digit => Some(NumberTerminal::Str("ijjijijij")),
-            _ => None,
+
+                let omit: AST<Self, NumberVariable, ByteSpan> = AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), span.clone());
+
+                let internal_node = InternalNode::from_second((cst.node.value, Some(NumberTerminal::Str(s))), omit);
+
+                AST::from_internal_node(internal_node, span)
+
+                // AST::from_vandchoice_and_output(v_and_choice, Some(NumberTerminal::Str(s)))
+            },
+            _ => AST::from_cst(cst),
         }
     }
 }
@@ -110,11 +127,12 @@ impl<'a> Parse<'a, NumberTerminal<'a>, NumberTerminal<'a>, NumberVariable, ByteS
 /// Number = Digit Numeral / f
 /// Numeral = Digit Numeral / ()
 /// Digit = Zero () / f
-/// Zero = "0" () / One
-/// One = "1" () / f
+/// Zero = "0" () / FZero
+/// FZero = '０' () / One
+/// One = '1' () / FOne
+/// FOne = "１" () / f
 /// ```
-#[test]
-fn number() {
+fn main() {
     let number_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
         NumberVariable::Number,
         RightRule::from_right_rule_kind(
@@ -153,6 +171,16 @@ fn number() {
                 RightRuleKind::T(NumberTerminal::Str("0")),
                 RightRuleKind::Epsilon,
             ),
+            RightRuleKind::V(NumberVariable::FZero),
+        ),
+    );
+    let f_zero_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+        NumberVariable::FZero,
+        RightRule::from_right_rule_kind(
+            (
+                RightRuleKind::T(NumberTerminal::Char('０')),
+                RightRuleKind::Epsilon,
+            ),
             RightRuleKind::V(NumberVariable::One),
         ),
     );
@@ -161,6 +189,16 @@ fn number() {
         RightRule::from_right_rule_kind(
             (
                 RightRuleKind::T(NumberTerminal::Char('1')),
+                RightRuleKind::Epsilon,
+            ),
+            RightRuleKind::V(NumberVariable::FOne),
+        ),
+    );
+    let f_one_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+        NumberVariable::FOne,
+        RightRule::from_right_rule_kind(
+            (
+                RightRuleKind::T(NumberTerminal::Str("１")),
                 RightRuleKind::Epsilon,
             ),
             RightRuleKind::Failure,
@@ -173,18 +211,17 @@ fn number() {
     rules.insert_rule(numeral_rule);
     rules.insert_rule(digit_rule);
     rules.insert_rule(zero_rule);
+    rules.insert_rule(f_zero_rule);
     rules.insert_rule(one_rule);
+    rules.insert_rule(f_one_rule);
 
     let input = ExtStr(String::from("012001"));
     let result = input.mpg_parse(&rules, &NumberVariable::Number, None);
 
     assert_eq!(result, Err(()));
 
-    let input = ExtStr(String::from("001"));
+    let input = ExtStr(String::from("0１0０1"));
     let result = input.mpg_parse(&rules, &NumberVariable::Number, None);
 
-    assert_eq!(
-        result.unwrap().span,
-        ByteSpan::from_lo_hi(0.into(), 3.into())
-    );
+    assert_eq!(result.unwrap().span.len, 9);
 }

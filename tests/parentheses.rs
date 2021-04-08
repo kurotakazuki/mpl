@@ -1,5 +1,4 @@
-use mpg::choice::Choice;
-use mpg::cst::CST;
+use mpg::tree::{AST, CST};
 use mpg::parse::Parse;
 use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
 use mpg::span::{ByteSpan, Span};
@@ -17,11 +16,11 @@ enum ParenthesesVariable {
 impl Variable for ParenthesesVariable {}
 
 impl<'input> Output<'input, str, ParenthesesVariable, ByteSpan> for String {
-    fn new(_input: &'input str, variable: &ParenthesesVariable, _span: &ByteSpan, _cst_choice: Choice<&CST<Self, ParenthesesVariable, ByteSpan>>) -> Option<Self> {
-        match variable {
-            ParenthesesVariable::Open => Some(String::from("open")),
-            ParenthesesVariable::Parentheses => Some(String::from("paren")),
-            ParenthesesVariable::Close => Some(String::from("close")),
+    fn output_ast(_input: &'input str, cst: CST<Self, ParenthesesVariable, ByteSpan>) -> AST<Self, ParenthesesVariable, ByteSpan> {
+        match cst.node.value {
+            ParenthesesVariable::Open => AST::from_cst_and_output(cst, Some(String::from("open"))),
+            ParenthesesVariable::Parentheses => AST::from_cst_and_output(cst, Some(String::from("paren"))),
+            ParenthesesVariable::Close => AST::from_cst_and_output(cst, Some(String::from("close"))),
         }
     }
 }
@@ -71,7 +70,7 @@ fn parentheses() {
     rules.insert_rule(close_rule);
 
     let input = "()";
-    let result: Result<CST<String, ParenthesesVariable, ByteSpan>, ()> =
+    let result: Result<AST<String, ParenthesesVariable, ByteSpan>, ()> =
         input.mpg_parse(&rules, &ParenthesesVariable::Open, None);
     assert_eq!(
         result.unwrap().span,
@@ -79,7 +78,7 @@ fn parentheses() {
     );
 
     let input = "(()(()))";
-    let result: Result<CST<String, ParenthesesVariable, ByteSpan>, ()> =
+    let result: Result<AST<String, ParenthesesVariable, ByteSpan>, ()> =
         input.mpg_parse(&rules, &ParenthesesVariable::Open, None);
     assert_eq!(
         result.unwrap().span,
@@ -87,7 +86,7 @@ fn parentheses() {
     );
 
     let input = "(()(())))";
-    let result: Result<CST<String, ParenthesesVariable, ByteSpan>, ()> =
+    let result: Result<AST<String, ParenthesesVariable, ByteSpan>, ()> =
         input.mpg_parse(&rules, &ParenthesesVariable::Open, None);
     assert_eq!(result, Err(()));
 }

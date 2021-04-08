@@ -1,4 +1,4 @@
-// use crate::cst::{LeafNode, CST};
+// use crate::tree::{LeafNode, AST};
 // use crate::position::BytePos;
 // use crate::span::{ByteSpan, Span};
 // use crate::symbols::{Metasymbol, Terminal};
@@ -46,7 +46,7 @@
 //         input: &'a [u8],
 //         pos: BytePos,
 //         all_of_the_span: &ByteSpan,
-//     ) -> Result<CST<OutputT, V, ByteSpan>, ()> {
+//     ) -> Result<AST<OutputT, V, ByteSpan>, ()> {
 //         match self {
 //             U8SliceTerminal::Char(c) => {
 //                 let start = pos;
@@ -55,7 +55,7 @@
 //                 if pos + len <= all_of_the_span.hi().0 as usize
 //                     && &input[pos..pos + len] == c.to_string()[..].as_bytes()
 //                 {
-//                     Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+//                     Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
 //                         LeafNode::from_m(Metasymbol::Epsilon),
 //                         ByteSpan::from_start_len(start, len as u16),
 //                     ))
@@ -71,7 +71,7 @@
 //                 if pos + len <= all_of_the_span.hi().0 as usize
 //                     && &input[pos..pos + len] == s.as_bytes()
 //                 {
-//                     Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+//                     Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
 //                         LeafNode::from_m(Metasymbol::Epsilon),
 //                         ByteSpan::from_start_len(start, len as u16),
 //                     ))
@@ -87,7 +87,7 @@
 //                 if pos + len <= all_of_the_span.hi().0 as usize
 //                     && &input[pos..pos + len] == s.as_bytes()
 //                 {
-//                     Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+//                     Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
 //                         LeafNode::from_m(Metasymbol::Epsilon),
 //                         ByteSpan::from_start_len(start, len as u16),
 //                     ))

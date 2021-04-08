@@ -17,8 +17,6 @@ where
     fn with_hi(&self, hi: P) -> Self;
     fn lo(&self) -> P;
     fn hi(&self) -> P;
-    // fn stretch(&self, other: &Self) -> Self;
-
     /// lhs.hi() and rhs.lo() must be equal.
     fn merge_lhs_and_rhs(lhs: &Self, rhs: &Self) -> Self;
 }

@@ -1,167 +1,122 @@
-use mpg::choice::Choice;
-use mpg::cst::{LeafNode, CST};
-use mpg::input::Input;
-use mpg::output::Output;
+use std::convert::TryInto;
+use mpg::tree::{AST, CST};
 use mpg::parse::Parse;
-use mpg::position::BytePos;
-use mpg::span::{ByteSpan, Span};
-use mpg::symbols::{Terminal, Variable};
-
 use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
+use mpg::span::{ByteSpan, Span};
+use mpg::symbols::{SliceTerminal, Variable};
+
+use mpg::output::Output;
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-enum NumberTerminal<'a> {
-    Str(&'a str),
-    Char(char),
+enum WaveFmtVariable {
+    // RIFF chunk
+    Riff,
+    FileSize,
+    Wave,
+
+    // Lexical analysis
+    // U16,
+    // RawU16,
+    U32,
+    RawU32One,
+    RawU32Two,
 }
 
-#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-enum NumberVariable {
-    Number,
-    Numeral,
-    Digit,
-    Zero,
-    One,
+#[derive(Debug)]
+enum U16OrU32 {
+    // U16(u16),
+    U32(u32),
 }
 
-struct ExtStr(pub String);
+impl Variable for WaveFmtVariable {}
 
-impl Input<'_, ByteSpan> for ExtStr {
-    fn all_of_the_span(&self) -> ByteSpan {
-        let len = self.0.len();
-        ByteSpan::from_start_len(BytePos(0), len as u16)
-    }
-}
+impl<'input> Output<'input, [u8], WaveFmtVariable, ByteSpan> for U16OrU32 {
+    fn output_ast(input: &'input [u8], cst: CST<Self, WaveFmtVariable, ByteSpan>) -> AST<Self, WaveFmtVariable, ByteSpan> {
+        match cst.node.value {
+            WaveFmtVariable::U32 => {
+                let lo = cst.span.start.0 as usize;
+                let hi = cst.span.hi().0 as usize;
+                
+                let n = u32::from_le_bytes(input[lo..hi].try_into().unwrap());
 
-impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos>
-    for NumberTerminal<'a>
-{
-    fn eval(
-        &'a self,
-        input: &'a ExtStr,
-        pos: BytePos,
-        max_pos: &BytePos,
-    ) -> Result<CST<NumberTerminal<'a>, NumberVariable, ByteSpan>, ()> {
-        match self {
-            NumberTerminal::Str(digit) => {
-                let start = pos;
-                let pos: usize = pos.0 as usize;
-                let len = digit.len();
-                if pos + len <= max_pos.0 as usize
-                    && &input.0.as_bytes()[pos..pos + len] == digit.as_bytes()
-                {
-                    Ok(
-                        CST::<NumberTerminal, NumberVariable, ByteSpan>::from_leaf_node(
-                            LeafNode::from_t(NumberTerminal::Str(digit)),
-                            ByteSpan::from_start_len(start, len as u16),
-                        ),
-                    )
-                } else {
-                    Err(())
-                }
-            }
-            NumberTerminal::Char(digit) => {
-                let start = pos;
-                let pos: usize = pos.0 as usize;
-                let len = digit.len_utf8();
-
-                if pos + len <= max_pos.0 as usize
-                    && &input.0.as_bytes()[pos..pos + len] == digit.to_string()[..].as_bytes()
-                {
-                    Ok(
-                        CST::<NumberTerminal, NumberVariable, ByteSpan>::from_leaf_node(
-                            LeafNode::from_t(NumberTerminal::Char(*digit)),
-                            ByteSpan::from_start_len(start, len as u16),
-                        ),
-                    )
-                } else {
-                    Err(())
-                }
-            }
+                AST::from_cst_and_output(cst, Some(U16OrU32::U32(n)))
+        },
+            _ => AST::from_cst(cst),
         }
     }
 }
 
-impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal<'input> {
-    fn new(input: &'input ExtStr, variable: &NumberVariable, span: &ByteSpan, _cst_choice: Choice<&CST<Self, NumberVariable, ByteSpan>>) -> Option<Self> {
-        match variable {
-            NumberVariable::Number => {
-                let lo = span.start.0 as usize;
-                let hi = lo + span.len as usize;
-                let s = &input.0[lo..hi];
-
-                Some(NumberTerminal::Str(s))
-            }
-            NumberVariable::Digit => Some(NumberTerminal::Str("ijjijijij")),
-            _ => None,
-        }
-    }
-}
-
-impl Variable for NumberVariable {}
-
-impl<'a> Parse<'a, NumberTerminal<'a>, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos>
-    for ExtStr
-{
-}
-
-/// The following syntax is a lexical syntax for numbers.
 /// ```
-/// Number = Digit Numeral / f
-/// Numeral = Digit Numeral / ()
-/// Digit = Zero () / f
-/// Zero = "0" () / One
-/// One = "1" () / f
+/// Riff = b"RIFF" FileSize / f
+/// FileSize = U32 Wave / f
+/// Wave = b"WAVE" () / f
+/// 
+/// // U16 = RawU16 () / f
+/// // RawU16 = ? ? / f
+/// U32 = ? U32One / f
+/// RawU32One = ? RawU32Two / f
+/// RawU32Two = ? ? / f
+/// 
 /// ```
-#[test]
-fn number() {
-    let number_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
-        NumberVariable::Number,
+fn main() {
+    let riff_rule: Rule<SliceTerminal::<u8>, WaveFmtVariable> = Rule::new(
+        WaveFmtVariable::Riff,
         RightRule::from_right_rule_kind(
             (
-                RightRuleKind::V(NumberVariable::Digit),
-                RightRuleKind::V(NumberVariable::Numeral),
+                RightRuleKind::T(SliceTerminal::<u8>::Slice(b"RIFF")),
+                RightRuleKind::V(WaveFmtVariable::FileSize),
             ),
             RightRuleKind::Failure,
         ),
     );
-    let numeral_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
-        NumberVariable::Numeral,
+    let file_size_rule: Rule<SliceTerminal::<u8>, WaveFmtVariable> = Rule::new(
+        WaveFmtVariable::FileSize,
         RightRule::from_right_rule_kind(
             (
-                RightRuleKind::V(NumberVariable::Digit),
-                RightRuleKind::V(NumberVariable::Numeral),
+                RightRuleKind::V(WaveFmtVariable::U32),
+                RightRuleKind::V(WaveFmtVariable::Wave),
             ),
-            RightRuleKind::Epsilon,
+            RightRuleKind::Failure,
         ),
     );
-    let digit_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
-        NumberVariable::Digit,
+    let wave_rule: Rule<SliceTerminal::<u8>, WaveFmtVariable> = Rule::new(
+        WaveFmtVariable::Wave,
         RightRule::from_right_rule_kind(
             (
-                RightRuleKind::V(NumberVariable::Zero),
+                RightRuleKind::T(SliceTerminal::<u8>::Slice(b"WAVE")),
                 RightRuleKind::Epsilon,
             ),
             RightRuleKind::Failure,
         ),
     );
 
-    let zero_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
-        NumberVariable::Zero,
+
+    let u32_rule: Rule<SliceTerminal::<u8>, WaveFmtVariable> = Rule::new(
+        WaveFmtVariable::U32,
         RightRule::from_right_rule_kind(
             (
-                RightRuleKind::T(NumberTerminal::Str("0")),
-                RightRuleKind::Epsilon,
+                RightRuleKind::Any,
+                RightRuleKind::V(WaveFmtVariable::RawU32One),
             ),
-            RightRuleKind::V(NumberVariable::One),
+            RightRuleKind::Failure,
         ),
     );
-    let one_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
-        NumberVariable::One,
+    let raw_u32_one_rule: Rule<SliceTerminal::<u8>, WaveFmtVariable> = Rule::new(
+        WaveFmtVariable::RawU32One,
         RightRule::from_right_rule_kind(
             (
-                RightRuleKind::T(NumberTerminal::Char('1')),
-                RightRuleKind::Epsilon,
+                RightRuleKind::Any,
+                RightRuleKind::V(WaveFmtVariable::RawU32Two),
+            ),
+            RightRuleKind::Failure,
+        ),
+    );
+    let raw_u32_two_rule: Rule<SliceTerminal::<u8>, WaveFmtVariable> = Rule::new(
+        WaveFmtVariable::RawU32Two,
+        RightRule::from_right_rule_kind(
+            (
+                RightRuleKind::Any,
+                RightRuleKind::Any,
             ),
             RightRuleKind::Failure,
         ),
@@ -169,22 +124,24 @@ fn number() {
 
     let mut rules = Rules::new();
 
-    rules.insert_rule(number_rule);
-    rules.insert_rule(numeral_rule);
-    rules.insert_rule(digit_rule);
-    rules.insert_rule(zero_rule);
-    rules.insert_rule(one_rule);
+    rules.insert_rule(riff_rule);
+    rules.insert_rule(file_size_rule);
+    rules.insert_rule(wave_rule);
 
-    let input = ExtStr(String::from("012001"));
-    let result = input.mpg_parse(&rules, &NumberVariable::Number, None);
+    rules.insert_rule(u32_rule);
+    rules.insert_rule(raw_u32_one_rule);
+    rules.insert_rule(raw_u32_two_rule);
 
-    assert_eq!(result, Err(()));
+    let input: &[u8] = &[0x52, 0x49, 0x46, 0x46, 0x04, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45][..];
+    let result: Result<AST<U16OrU32, WaveFmtVariable, ByteSpan>, ()> =
+        input.mpg_parse(&rules, &WaveFmtVariable::Riff, None);
 
-    let input = ExtStr(String::from("001"));
-    let result = input.mpg_parse(&rules, &NumberVariable::Number, None);
+        assert!(result.is_ok());
 
-    assert_eq!(
-        result.unwrap().span,
-        ByteSpan::from_lo_hi(0.into(), 3.into())
-    );
+        let input: &[u8] = &[0x52, 0x43, 0x46, 0x46, 0x04, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45][..];
+        let result: Result<AST<U16OrU32, WaveFmtVariable, ByteSpan>, ()> =
+            input.mpg_parse(&rules, &WaveFmtVariable::Riff, None);
+    
+            assert!(result.is_err());
+
 }

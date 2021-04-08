@@ -1,4 +1,4 @@
-use crate::cst::{LeafNode, CST};
+use crate::tree::{LeafNode, AST};
 use crate::position::BytePos;
 use crate::span::{ByteSpan, Span};
 use crate::symbols::{Metasymbol, Terminal};
@@ -27,7 +27,7 @@ impl<'a, OutputT, V> Terminal<'a, str, OutputT, V, ByteSpan, BytePos> for StrTer
         input: &'a str,
         pos: BytePos,
         max_pos: &BytePos,
-    ) -> Result<CST<OutputT, V, ByteSpan>, ()> {
+    ) -> Result<AST<OutputT, V, ByteSpan>, ()> {
         match self {
             StrTerminal::Char(c) => {
                 let start = pos;
@@ -37,7 +37,7 @@ impl<'a, OutputT, V> Terminal<'a, str, OutputT, V, ByteSpan, BytePos> for StrTer
                 if &span.hi() <= max_pos
                     && &input.as_bytes()[pos..pos + len] == c.to_string()[..].as_bytes()
                 {
-                    Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+                    Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
                         LeafNode::from_m(Metasymbol::Omit),
                         span,
                     ))
@@ -51,10 +51,8 @@ impl<'a, OutputT, V> Terminal<'a, str, OutputT, V, ByteSpan, BytePos> for StrTer
                 let s_bytes = s.as_bytes();
                 let len = s_bytes.len();
                 let span = ByteSpan::from_start_len(start, len as u16);
-                if &span.hi() <= max_pos
-                    && &input.as_bytes()[pos..pos + len] == s.as_bytes()
-                {
-                    Ok(CST::<OutputT, V, ByteSpan>::from_leaf_node(
+                if &span.hi() <= max_pos && &input.as_bytes()[pos..pos + len] == s.as_bytes() {
+                    Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
                         LeafNode::from_m(Metasymbol::Omit),
                         span,
                     ))
