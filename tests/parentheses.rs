@@ -1,10 +1,10 @@
-use mpg::parse::Parse;
-use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
-use mpg::span::{ByteSpan, Span};
-use mpg::symbols::{StrTerminal, Variable};
-use mpg::tree::{AST, CST};
+use mpl::parse::Parse;
+use mpl::rules::{RightRule, RightRuleKind, Rule, Rules};
+use mpl::span::{ByteSpan, Span};
+use mpl::symbols::{StrTerminal, Variable};
+use mpl::tree::{AST, CST};
 
-use mpg::output::Output;
+use mpl::output::Output;
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 enum ParenthesesVariable {
@@ -78,7 +78,7 @@ fn parentheses() {
 
     let input = "()";
     let result: Result<AST<String, ParenthesesVariable, ByteSpan>, ()> =
-        input.mpg_parse(&rules, &ParenthesesVariable::Open, None);
+        input.minimal_parse(&rules, &ParenthesesVariable::Open, None);
     assert_eq!(
         result.unwrap().span,
         ByteSpan::from_lo_hi(0.into(), 2.into())
@@ -86,7 +86,7 @@ fn parentheses() {
 
     let input = "(()(()))";
     let result: Result<AST<String, ParenthesesVariable, ByteSpan>, ()> =
-        input.mpg_parse(&rules, &ParenthesesVariable::Open, None);
+        input.minimal_parse(&rules, &ParenthesesVariable::Open, None);
     assert_eq!(
         result.unwrap().span,
         ByteSpan::from_lo_hi(0.into(), 8.into())
@@ -94,6 +94,6 @@ fn parentheses() {
 
     let input = "(()(())))";
     let result: Result<AST<String, ParenthesesVariable, ByteSpan>, ()> =
-        input.mpg_parse(&rules, &ParenthesesVariable::Open, None);
+        input.minimal_parse(&rules, &ParenthesesVariable::Open, None);
     assert_eq!(result, Err(()));
 }

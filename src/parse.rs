@@ -23,7 +23,7 @@ where
     P: Position,
 {
     // all_of_the_span.unwarp().hi() < input.len()
-    fn mpg_parse(
+    fn minimal_parse(
         &'input self,
         rules: &'input Rules<T, V>,
         start_variable: &V,

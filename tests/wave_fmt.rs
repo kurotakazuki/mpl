@@ -1,11 +1,11 @@
-use mpg::parse::Parse;
-use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
-use mpg::span::{ByteSpan, Span};
-use mpg::symbols::{SliceTerminal, Variable};
-use mpg::tree::{AST, CST};
+use mpl::parse::Parse;
+use mpl::rules::{RightRule, RightRuleKind, Rule, Rules};
+use mpl::span::{ByteSpan, Span};
+use mpl::symbols::{SliceTerminal, Variable};
+use mpl::tree::{AST, CST};
 use std::convert::TryInto;
 
-use mpg::output::Output;
+use mpl::output::Output;
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 enum WaveFmtVariable {
@@ -136,7 +136,7 @@ fn wave_fmt() {
         0x52, 0x49, 0x46, 0x46, 0x04, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,
     ][..];
     let result: Result<AST<U16OrU32, WaveFmtVariable, ByteSpan>, ()> =
-        input.mpg_parse(&rules, &WaveFmtVariable::Riff, None);
+        input.minimal_parse(&rules, &WaveFmtVariable::Riff, None);
 
     assert!(result.is_ok());
 
@@ -144,7 +144,7 @@ fn wave_fmt() {
         0x52, 0x43, 0x46, 0x46, 0x04, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,
     ][..];
     let result: Result<AST<U16OrU32, WaveFmtVariable, ByteSpan>, ()> =
-        input.mpg_parse(&rules, &WaveFmtVariable::Riff, None);
+        input.minimal_parse(&rules, &WaveFmtVariable::Riff, None);
 
     assert!(result.is_err());
 }

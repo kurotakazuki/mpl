@@ -1,13 +1,13 @@
-use mpg::input::Input;
-use mpg::output::Output;
-use mpg::parse::Parse;
-use mpg::position::BytePos;
-use mpg::span::ByteSpan;
-use mpg::symbols::{Metasymbol, Terminal, Variable};
-use mpg::tree::InternalNode;
-use mpg::tree::{LeafNode, AST, CST};
+use mpl::input::Input;
+use mpl::output::Output;
+use mpl::parse::Parse;
+use mpl::position::BytePos;
+use mpl::span::ByteSpan;
+use mpl::symbols::{Metasymbol, Terminal, Variable};
+use mpl::tree::InternalNode;
+use mpl::tree::{LeafNode, AST, CST};
 
-use mpg::rules::{RightRule, RightRuleKind, Rule, Rules};
+use mpl::rules::{RightRule, RightRuleKind, Rule, Rules};
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 enum NumberTerminal<'a> {
@@ -220,12 +220,12 @@ fn main() {
     rules.insert_rule(f_one_rule);
 
     let input = ExtStr(String::from("012001"));
-    let result = input.mpg_parse(&rules, &NumberVariable::Number, None);
+    let result = input.minimal_parse(&rules, &NumberVariable::Number, None);
 
     assert_eq!(result, Err(()));
 
     let input = ExtStr(String::from("0１0０1"));
-    let result = input.mpg_parse(&rules, &NumberVariable::Number, None);
+    let result = input.minimal_parse(&rules, &NumberVariable::Number, None);
 
     assert_eq!(result.unwrap().span.len, 9);
 }
