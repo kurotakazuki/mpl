@@ -12,12 +12,12 @@ This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Dow
 ### Definition of MPL grammar
 A MPL grammar `G` is a tuple `G = (V, T, R, S)` in which:
 - `V` is a finite set of variables.
-- `T` is a finite set of terminal symbols containing `M` ( = {(), f}) (is a finite set of metasymbols).
+- `T` is a finite set of terminal symbols containing elements of set `M` ( = {(), f}) (is a finite set of metasymbols).
 - `R` is a finite set of rules of the form
     - `A = B C / D`  
     A in V (A &isin; V),  
     B, C, D in E (E = T &cup; V) (T &cap; V = &empty;) (B, C, D &isin; E).  
-    For any variable A there is at most one rule with A to the left of the `=`.
+    For any variable A there is exactly one rule with A to the left of `=`.
 - S in V (S &isin; V) is the start variable.
 
 #### Epsilon
@@ -175,6 +175,7 @@ Space = " "
 --->
 
 ## TODO
+- Multiple Any
 - Include input in Span trait methods argument
 - Add RowColSpan
 - Add U8SliceTerminal
