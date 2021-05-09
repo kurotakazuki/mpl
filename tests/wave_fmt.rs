@@ -18,8 +18,6 @@ enum WaveFmtVariable {
     // U16,
     // RawU16,
     U32,
-    RawU32One,
-    RawU32Two,
 }
 
 #[derive(Debug)]
@@ -54,12 +52,8 @@ impl<'input> Output<'input, [u8], WaveFmtVariable, ByteSpan> for U16OrU32 {
 /// FileSize = U32 Wave / f
 /// Wave = b"WAVE" () / f
 ///
-/// // U16 = RawU16 () / f
-/// // RawU16 = ? ? / f
-/// U32 = ? U32One / f
-/// RawU32One = ? RawU32Two / f
-/// RawU32Two = ? ? / f
-///
+/// // U16 = ?? () / f
+/// U32 = ???? () / f
 /// ```
 #[test]
 fn wave_fmt() {
@@ -97,27 +91,7 @@ fn wave_fmt() {
     let u32_rule: Rule<SliceTerminal<u8>, WaveFmtVariable> = Rule::new(
         WaveFmtVariable::U32,
         RightRule::from_right_rule_kind(
-            (
-                RightRuleKind::Any,
-                RightRuleKind::V(WaveFmtVariable::RawU32One),
-            ),
-            RightRuleKind::Failure,
-        ),
-    );
-    let raw_u32_one_rule: Rule<SliceTerminal<u8>, WaveFmtVariable> = Rule::new(
-        WaveFmtVariable::RawU32One,
-        RightRule::from_right_rule_kind(
-            (
-                RightRuleKind::Any,
-                RightRuleKind::V(WaveFmtVariable::RawU32Two),
-            ),
-            RightRuleKind::Failure,
-        ),
-    );
-    let raw_u32_two_rule: Rule<SliceTerminal<u8>, WaveFmtVariable> = Rule::new(
-        WaveFmtVariable::RawU32Two,
-        RightRule::from_right_rule_kind(
-            (RightRuleKind::Any, RightRuleKind::Any),
+            (RightRuleKind::Any(4), RightRuleKind::Epsilon),
             RightRuleKind::Failure,
         ),
     );
@@ -129,8 +103,6 @@ fn wave_fmt() {
     rules.insert_rule(wave_rule);
 
     rules.insert_rule(u32_rule);
-    rules.insert_rule(raw_u32_one_rule);
-    rules.insert_rule(raw_u32_two_rule);
 
     let input: &[u8] = &[
         0x52, 0x49, 0x46, 0x46, 0x04, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,

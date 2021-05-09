@@ -10,9 +10,10 @@ This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Dow
 
 ## MPL
 ### Definition of MPL grammar
-A MPL grammar `G` is a tuple `G = (V, T, R, S)` in which:
+A MPL grammar `G` is a tuple `G = (V, Σ, R, S)` in which:
 - `V` is a finite set of variables.
-- `T` is a finite set of terminal symbols containing elements of set `M` ( = {(), f}) (is a finite set of metasymbols).
+- `Σ` is a finite set of terminal symbols.
+- `T` is an union of `Σ` or `M` (Σ &cup; M) (`M` (= {(), f}) is a finite set of metasymbols).
 - `R` is a finite set of rules of the form
     - `A = B C / D`  
     A in V (A &isin; V),  
@@ -44,7 +45,7 @@ Since one of the goals of MPL is to create an AST, it also supports two features
 Any = ? () / f
 ```
 
-To extend the difinition of MPL grammar, change `M` = {(), f} to `M` = {?, (), f}.
+To extend the difinition of MPL grammar, let ? &isin; M.
 
 #### All
 `*` is a metasymbol representing All remaining input like wildcard character. This will succeed even if the remaining inputs are zero.
@@ -53,9 +54,9 @@ To extend the difinition of MPL grammar, change `M` = {(), f} to `M` = {?, (), f
 All = * () / f
 ```
 
-To extend the difinition of MPL grammar, change `M` = {(), f} to `M` = {*, (), f}.
-
 Same as `All = ? All / ()`.
+
+To extend the difinition of MPL grammar, let * &isin; M.
 
 <!---
 #### Variable type
@@ -175,7 +176,6 @@ Space = " "
 --->
 
 ## TODO
-- Multiple Any
 - Include input in Span trait methods argument
 - Add RowColSpan
 - Add U8SliceTerminal

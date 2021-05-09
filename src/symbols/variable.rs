@@ -1,6 +1,6 @@
 use std::hash::Hash;
 
-pub trait Variable: Copy + Eq + Hash {}
+pub trait Variable: Clone + Eq + Hash {}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct VAndE<V, E> {

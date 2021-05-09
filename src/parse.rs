@@ -62,12 +62,15 @@ where
         Err(())
     }
 
-    fn into_any_ast(&'input self, pos: P, max_pos: &P) -> Result<AST<OutputT, V, S>, ()> {
-        let pos_with_one_added = pos.with_one_added();
+    fn into_any_ast(&'input self, pos: P, max_pos: &P, n: usize) -> Result<AST<OutputT, V, S>, ()> {
+        let mut pos_with_one_added = pos.with_one_added();
+        for _ in 1..n {
+            pos_with_one_added = pos_with_one_added.with_one_added();
+        }
         if &pos_with_one_added <= max_pos {
             Ok(AST::from_leaf_node(
-                TerminalSymbol::M(Metasymbol::Any),
-                Span::from_lo_hi(pos.clone(), pos_with_one_added),
+                TerminalSymbol::M(Metasymbol::Any(n)),
+                Span::from_lo_hi(pos, pos_with_one_added),
             ))
         } else {
             Err(())
@@ -92,7 +95,7 @@ where
             TerminalSymbol::M(metasymbol) => match metasymbol {
                 Metasymbol::Epsilon => self.into_epsilon_ast(pos),
                 Metasymbol::Failure => self.into_failed_ast(pos),
-                Metasymbol::Any => self.into_any_ast(pos, max_pos),
+                Metasymbol::Any(n) => self.into_any_ast(pos, max_pos, *n),
                 Metasymbol::All => self.into_all_ast(pos, max_pos.clone()),
                 Metasymbol::Omit => unimplemented!(),
             },

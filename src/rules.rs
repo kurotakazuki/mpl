@@ -30,7 +30,7 @@ impl<T, V> RightRule<T, V> {
 pub enum RightRuleKind<T, V> {
     Epsilon,
     Failure,
-    Any,
+    Any(usize),
     All,
     T(T),
     // M(Metasymbol),
@@ -42,7 +42,7 @@ impl<T, V> From<RightRuleKind<T, V>> for E<T, V> {
         match right_rule_kind {
             RightRuleKind::Epsilon => E::T(TerminalSymbol::M(Metasymbol::Epsilon)),
             RightRuleKind::Failure => E::T(TerminalSymbol::M(Metasymbol::Failure)),
-            RightRuleKind::Any => E::T(TerminalSymbol::M(Metasymbol::Any)),
+            RightRuleKind::Any(n) => E::T(TerminalSymbol::M(Metasymbol::Any(n))),
             RightRuleKind::All => E::T(TerminalSymbol::M(Metasymbol::All)),
             RightRuleKind::T(t) => E::T(TerminalSymbol::Original(t)),
             RightRuleKind::V(v) => E::V(v),
