@@ -12,7 +12,7 @@ use crate::tree::{AST, CST};
 /// V is (enum of) Variables.
 /// S is Span.
 /// P is position.
-pub trait Parse<'input, T, OutputT, V, S, P>: Input<'input, S>
+pub trait Parse<'input, T, OutputT, V, S, P>: Input<S>
 where
     T: Terminal<'input, Self, OutputT, V, S, P>,
     //TODO

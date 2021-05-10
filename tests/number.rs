@@ -28,7 +28,7 @@ enum NumberVariable {
 
 struct ExtStr(pub String);
 
-impl Input<'_, ByteSpan> for ExtStr {
+impl Input<ByteSpan> for ExtStr {
     fn all_of_the_span(&self) -> ByteSpan {
         let len = self.0.len();
         ByteSpan::from_start_len(BytePos(0), len as u16)

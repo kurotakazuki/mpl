@@ -5,8 +5,8 @@ use crate::position::BytePos;
 use crate::span::ByteSpan;
 use crate::symbols::{StrTerminal, Variable};
 
-impl<'input> Input<'input, ByteSpan> for str {
-    fn all_of_the_span(&'input self) -> ByteSpan {
+impl Input<ByteSpan> for str {
+    fn all_of_the_span(&self) -> ByteSpan {
         ByteSpan::from_start_len(BytePos(0), self.len() as u16)
     }
 }
