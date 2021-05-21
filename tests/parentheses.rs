@@ -1,6 +1,6 @@
 use mpl::parse::Parse;
 use mpl::rules::{RightRule, RightRuleKind, Rule, Rules};
-use mpl::span::{ByteSpan, Span};
+use mpl::span::{Span, StartAndLenSpan};
 use mpl::symbols::{StrTerminal, Variable};
 use mpl::tree::{AST, CST};
 
@@ -15,11 +15,11 @@ enum ParenthesesVariable {
 
 impl Variable for ParenthesesVariable {}
 
-impl<'input> Output<'input, str, ParenthesesVariable, ByteSpan> for String {
+impl<'input> Output<'input, str, ParenthesesVariable, StartAndLenSpan<u32, u16>> for String {
     fn output_ast(
         _input: &'input str,
-        cst: CST<Self, ParenthesesVariable, ByteSpan>,
-    ) -> AST<Self, ParenthesesVariable, ByteSpan> {
+        cst: CST<Self, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
+    ) -> AST<Self, ParenthesesVariable, StartAndLenSpan<u32, u16>> {
         match cst.node.value {
             ParenthesesVariable::Open => AST::from_cst_and_output(cst, Some(String::from("open"))),
             ParenthesesVariable::Parentheses => {
@@ -75,25 +75,37 @@ fn parentheses() {
     rules.insert_rule(open_rule);
     rules.insert_rule(parentheses_rule);
     rules.insert_rule(close_rule);
-
+    
     let input = "()";
-    let result: Result<AST<String, ParenthesesVariable, ByteSpan>, ()> =
-        input.minimal_parse(&rules, &ParenthesesVariable::Open, None);
+
+    // all of the span
+    let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
+
+    let result: Result<AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>, ()> =
+        input.minimal_parse(&rules, &ParenthesesVariable::Open, all_of_the_span);
     assert_eq!(
         result.unwrap().span,
-        ByteSpan::from_lo_hi(0.into(), 2.into())
+        StartAndLenSpan::from_lo_hi(0, 2, input)
     );
 
     let input = "(()(()))";
-    let result: Result<AST<String, ParenthesesVariable, ByteSpan>, ()> =
-        input.minimal_parse(&rules, &ParenthesesVariable::Open, None);
+
+    // all of the span
+    let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
+
+    let result: Result<AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>, ()> =
+        input.minimal_parse(&rules, &ParenthesesVariable::Open, all_of_the_span);
     assert_eq!(
         result.unwrap().span,
-        ByteSpan::from_lo_hi(0.into(), 8.into())
+        StartAndLenSpan::from_lo_hi(0, 8, input)
     );
 
     let input = "(()(())))";
-    let result: Result<AST<String, ParenthesesVariable, ByteSpan>, ()> =
-        input.minimal_parse(&rules, &ParenthesesVariable::Open, None);
+
+    // all of the span
+    let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
+
+    let result: Result<AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>, ()> =
+        input.minimal_parse(&rules, &ParenthesesVariable::Open, all_of_the_span);
     assert_eq!(result, Err(()));
 }

@@ -1,5 +1,5 @@
-use crate::position::BytePos;
-use crate::span::{ByteSpan, Span};
+use std::fmt::Debug;
+use crate::span::{Span, StartAndLenSpan, Start, Len};
 use crate::symbols::{Metasymbol, Terminal};
 use crate::tree::{LeafNode, AST};
 
@@ -21,23 +21,27 @@ impl<'a> From<&'a str> for StrTerminal<'a> {
     }
 }
 
-impl<'a, OutputT, V> Terminal<'a, str, OutputT, V, ByteSpan, BytePos> for StrTerminal<'a> {
+impl<'a, OutputT, V, P, L> Terminal<'a, str, OutputT, V, StartAndLenSpan<P, L>, P> for StrTerminal<'a>
+where 
+    P: Start<str, L>,
+    L: Len<str, P>,
+{
     fn eval(
         &'a self,
         input: &'a str,
-        pos: BytePos,
-        max_pos: &BytePos,
-    ) -> Result<AST<OutputT, V, ByteSpan>, ()> {
+        pos: P,
+        max_pos: &P,
+    ) -> Result<AST<OutputT, V, StartAndLenSpan<P, L>>, ()> {
         match self {
             StrTerminal::Char(c) => {
-                let start = pos;
-                let pos: usize = pos.0 as usize;
+                let start = pos.clone();
+                let pos: usize = P::into_usize(pos, input);
                 let len = c.len_utf8();
-                let span = ByteSpan::from_start_len(start, len as u16);
-                if &span.hi() <= max_pos
+                let span = StartAndLenSpan::from_lo_len(start, len, input);
+                if &span.hi(input) <= max_pos
                     && &input.as_bytes()[pos..pos + len] == c.to_string()[..].as_bytes()
                 {
-                    Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
+                    Ok(AST::<OutputT, V, StartAndLenSpan<P, L>>::from_leaf_node(
                         LeafNode::from_m(Metasymbol::Omit),
                         span,
                     ))
@@ -46,13 +50,13 @@ impl<'a, OutputT, V> Terminal<'a, str, OutputT, V, ByteSpan, BytePos> for StrTer
                 }
             }
             StrTerminal::Str(s) => {
-                let start = pos;
-                let pos: usize = pos.0 as usize;
+                let start = pos.clone();
+                let pos: usize = P::into_usize(pos, input);
                 let s_bytes = s.as_bytes();
                 let len = s_bytes.len();
-                let span = ByteSpan::from_start_len(start, len as u16);
-                if &span.hi() <= max_pos && &input.as_bytes()[pos..pos + len] == s.as_bytes() {
-                    Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
+                let span = StartAndLenSpan::from_lo_len(start, len, input);
+                if &span.hi(input) <= max_pos && &input.as_bytes()[pos..pos + len] == s.as_bytes() {
+                    Ok(AST::<OutputT, V, StartAndLenSpan<P, L>>::from_leaf_node(
                         LeafNode::from_m(Metasymbol::Omit),
                         span,
                     ))

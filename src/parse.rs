@@ -12,14 +12,14 @@ use crate::tree::{AST, CST};
 /// V is (enum of) Variables.
 /// S is Span.
 /// P is position.
-pub trait Parse<'input, T, OutputT, V, S, P>: Input<S>
+pub trait Parse<'input, T, OutputT, V, S, P>: Input
 where
     T: Terminal<'input, Self, OutputT, V, S, P>,
     //TODO
     // OutputT: TryFrom<(&'input Self, V, S, Choice<AST<OutputT, V, S>>)>,
     OutputT: Output<'input, Self, V, S>,
     V: Variable,
-    S: Span<P>,
+    S: Span<Self, P>,
     P: Position,
 {
     // all_of_the_span.unwarp().hi() < input.len()
@@ -27,17 +27,13 @@ where
         &'input self,
         rules: &'input Rules<T, V>,
         start_variable: &V,
-        all_of_the_span: Option<S>,
+        all_of_the_span: S,
     ) -> Result<AST<OutputT, V, S>, ()> {
-        let all_of_the_span = match all_of_the_span {
-            Some(all_of_the_span) => all_of_the_span,
-            None => self.all_of_the_span(),
-        };
         let ast = self.eval(
-            &all_of_the_span.lo(),
+            &all_of_the_span.lo(self),
             &rules,
             &start_variable,
-            &self.all_of_the_span().hi(),
+            &all_of_the_span.hi(self),
         )?;
 
         if ast.span == all_of_the_span {
@@ -50,7 +46,7 @@ where
     fn into_epsilon_ast(&'input self, pos: P) -> Result<AST<OutputT, V, S>, ()> {
         Ok(AST::from_leaf_node(
             TerminalSymbol::M(Metasymbol::Epsilon),
-            Span::from_lo_hi(pos.clone(), pos),
+            Span::from_lo_hi(pos.clone(), pos, self),
         ))
     }
 
@@ -63,14 +59,11 @@ where
     }
 
     fn into_any_ast(&'input self, pos: P, max_pos: &P, n: usize) -> Result<AST<OutputT, V, S>, ()> {
-        let mut pos_with_one_added = pos.with_one_added();
-        for _ in 1..n {
-            pos_with_one_added = pos_with_one_added.with_one_added();
-        }
-        if &pos_with_one_added <= max_pos {
+        let span_with_len_added = S::from_lo_len(pos, n, self);
+        if &span_with_len_added.hi(self) <= max_pos {
             Ok(AST::from_leaf_node(
                 TerminalSymbol::M(Metasymbol::Any(n)),
-                Span::from_lo_hi(pos, pos_with_one_added),
+                span_with_len_added,
             ))
         } else {
             Err(())
@@ -80,7 +73,7 @@ where
     fn into_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<OutputT, V, S>, ()> {
         Ok(AST::from_leaf_node(
             TerminalSymbol::M(Metasymbol::All),
-            Span::from_lo_hi(pos, max_pos),
+            Span::from_lo_hi(pos, max_pos, self),
         ))
     }
 
@@ -129,11 +122,13 @@ where
                 E::T(terminal_symbol) => {
                     self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
                 }
-                E::V(rhs_of_fc_v) => self.eval(&left_ast.span.hi(), rules, &rhs_of_fc_v, max_pos),
+                E::V(rhs_of_fc_v) => {
+                    self.eval(&left_ast.span.hi(self), rules, &rhs_of_fc_v, max_pos)
+                }
             };
 
             if let Ok(right_ast) = right_ast {
-                let merged_span = Span::merge_lhs_and_rhs(&left_ast.span, &right_ast.span);
+                let merged_span = Span::merge_lhs_and_rhs(&left_ast.span, &right_ast.span, self);
 
                 let variable_and_choice =
                     VAndE::new(variable.clone(), Choice::first(left_ast, right_ast));

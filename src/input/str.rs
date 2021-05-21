@@ -1,19 +1,17 @@
 use crate::input::Input;
 use crate::output::Output;
 use crate::parse::Parse;
-use crate::position::BytePos;
-use crate::span::ByteSpan;
+use crate::span::{Len, Start, StartAndLenSpan};
 use crate::symbols::{StrTerminal, Variable};
 
-impl Input<ByteSpan> for str {
-    fn all_of_the_span(&self) -> ByteSpan {
-        ByteSpan::from_start_len(BytePos(0), self.len() as u16)
-    }
-}
+impl Input for str {}
+impl Input for String {}
 
-impl<'input, OutputT, V> Parse<'input, StrTerminal<'input>, OutputT, V, ByteSpan, BytePos> for str
+impl<'input, OutputT, V, P, L> Parse<'input, StrTerminal<'input>, OutputT, V, StartAndLenSpan<P, L>, P> for str
 where
-    OutputT: Output<'input, str, V, ByteSpan>,
+    OutputT: Output<'input, Self, V, StartAndLenSpan<P, L>>,
     V: Variable,
+    P: Start<Self, L>,
+    L: Len<Self, P>,
 {
 }

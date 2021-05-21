@@ -1,15 +1,9 @@
-pub use self::byte_pos::BytePos;
+pub trait Position: Clone + PartialOrd {}
 
-// use crate::input::Input;
-// use crate::span::Span;
-
-mod byte_pos;
-
-pub trait Position: Clone + PartialOrd {
-    fn with_one_added(&self) -> Self;
+macro_rules! position_impl {
+    ( $( $t:ty ),* ) => ($(
+        impl Position for $t {}
+    )*)
 }
 
-
-// pub trait Position: Clone + PartialOrd {
-//     fn add_with_input<I: Input>(&self, rhs: usize, input: &I) -> Self;
-// }
+position_impl!(i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize, f32, f64);
