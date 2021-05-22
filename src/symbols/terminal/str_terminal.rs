@@ -1,7 +1,7 @@
-use std::fmt::Debug;
-use crate::span::{Span, StartAndLenSpan, Start, Len};
+use crate::span::{Len, Span, Start, StartAndLenSpan};
 use crate::symbols::{Metasymbol, Terminal};
 use crate::tree::{LeafNode, AST};
+use std::fmt::Debug;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum StrTerminal<'a> {
@@ -21,8 +21,9 @@ impl<'a> From<&'a str> for StrTerminal<'a> {
     }
 }
 
-impl<'a, OutputT, V, P, L> Terminal<'a, str, OutputT, V, StartAndLenSpan<P, L>, P> for StrTerminal<'a>
-where 
+impl<'a, OutputT, V, P, L> Terminal<'a, str, OutputT, V, StartAndLenSpan<P, L>, P>
+    for StrTerminal<'a>
+where
     P: Start<str, L>,
     L: Len<str, P>,
 {

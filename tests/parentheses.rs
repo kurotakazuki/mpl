@@ -75,7 +75,7 @@ fn parentheses() {
     rules.insert_rule(open_rule);
     rules.insert_rule(parentheses_rule);
     rules.insert_rule(close_rule);
-    
+
     let input = "()";
 
     // all of the span

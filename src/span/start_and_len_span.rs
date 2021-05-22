@@ -68,7 +68,6 @@ where
     }
 }
 
-
 // macro_rules! start_impl {
 //     ( $( $t:ty ),* ) => ($(
 //         impl<I> Start<I, u16> for $t where
@@ -86,25 +85,27 @@ where
 //     )*)
 // }
 
-macro_rules! direct_product {
+macro_rules! direct_product_impl {
     ($name:ident, $t1:ty, $t2:ty) => (
-            $name!($t1, $t2);
-            $name!($t2, $t1);
+        $name!($t1, $t2);
+        $name!($t2, $t1);
     );
 
-    ($name:ident, $t:ty, $($y:ty),+ $(,)?) => (
+    ($name:ident, $t:ty, $($ts:ty),+ $(,)?) => (
+        $name!($t, $t);
         $(
-            direct_product!($name, $t, $y);
+            direct_product_impl!($name, $t, $ts);
         )+
-
-        direct_product!($name, $($y),+);
+        direct_product_impl!($name, $($ts),+);
     );
 }
 
 macro_rules! start_impl {
-    ($t1:ty, $t2:ty) => (
-        impl<I> Start<I, $t2> for $t1 where
-        I: Input + ?Sized, {
+    ($t1:ty, $t2:ty) => {
+        impl<I> Start<I, $t2> for $t1
+        where
+            I: Input + ?Sized,
+        {
             fn into_usize(start: Self, _: &I) -> usize {
                 start as usize
             }
@@ -115,14 +116,15 @@ macro_rules! start_impl {
                 start + len as $t1
             }
         }
-    )
+    };
 }
 
-direct_product!(start_impl, i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize, f32, f64);
-
+direct_product_impl!(
+    start_impl, i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize, f32, f64
+);
 
 macro_rules! len_impl {
-    ($t1:ty, $t2:ty) => (
+    ($t1:ty, $t2:ty) => {
         impl<I> Len<I, $t2> for $t1
         where
             I: Input + ?Sized,
@@ -134,11 +136,12 @@ macro_rules! len_impl {
                 (hi - lo) as Self
             }
         }
-    )
+    };
 }
-// TODO
-len_impl!(u16, u32);
-len_impl!(u32, u16);
+
+direct_product_impl!(
+    len_impl, i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize, f32, f64
+);
 
 #[cfg(test)]
 mod tests {
@@ -146,17 +149,32 @@ mod tests {
     use crate::span::Span;
 
     #[test]
-    fn from_lo_hi_input() {
+    fn from_lo_len() {
+        let input = "0123456789";
+        let span = StartAndLenSpan::<usize, usize>::from_lo_len(1, 9, input);
+
+        assert_eq!(1, span.start);
+        assert_eq!(9, span.len);
+        assert_eq!(10, span.hi(input));
+    }
+
+    #[test]
+    fn from_lo_hi() {
         let input = "0123456789";
         let span = StartAndLenSpan::<u32, u16>::from_lo_hi(1, 10, input);
 
         assert_eq!(1, span.start);
+        assert_eq!(9, span.len);
         assert_eq!(10, span.hi(input));
     }
 
     #[test]
     fn merge_lhs_and_rhs() {
-        let input: String = (0..=54).into_iter().map(|n: usize| n.to_string()).collect::<Vec<String>>().join("");
+        let input: String = (0..=54)
+            .into_iter()
+            .map(|n: usize| n.to_string())
+            .collect::<Vec<String>>()
+            .join("");
 
         let lhs = StartAndLenSpan::<u32, u16>::from_lo_hi(5, 100, &input);
         let rhs = StartAndLenSpan::from_lo_hi(100, 1000, &input);
