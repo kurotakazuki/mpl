@@ -176,7 +176,6 @@ Space = " "
 --->
 
 ## TODO
-- Include input in Span trait methods argument
 - Add RowColSpan
 - Add U8SliceTerminal
 - Create parser from MPLG file.

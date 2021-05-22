@@ -1,7 +1,6 @@
 use crate::span::{Len, Span, Start, StartAndLenSpan};
 use crate::symbols::{Metasymbol, Terminal};
 use crate::tree::{LeafNode, AST};
-use std::fmt::Debug;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum StrTerminal<'a> {
@@ -42,7 +41,7 @@ where
                 if &span.hi(input) <= max_pos
                     && &input.as_bytes()[pos..pos + len] == c.to_string()[..].as_bytes()
                 {
-                    Ok(AST::<OutputT, V, StartAndLenSpan<P, L>>::from_leaf_node(
+                    Ok(AST::from_leaf_node(
                         LeafNode::from_m(Metasymbol::Omit),
                         span,
                     ))
@@ -57,7 +56,7 @@ where
                 let len = s_bytes.len();
                 let span = StartAndLenSpan::from_lo_len(start, len, input);
                 if &span.hi(input) <= max_pos && &input.as_bytes()[pos..pos + len] == s.as_bytes() {
-                    Ok(AST::<OutputT, V, StartAndLenSpan<P, L>>::from_leaf_node(
+                    Ok(AST::from_leaf_node(
                         LeafNode::from_m(Metasymbol::Omit),
                         span,
                     ))

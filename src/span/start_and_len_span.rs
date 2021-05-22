@@ -68,23 +68,6 @@ where
     }
 }
 
-// macro_rules! start_impl {
-//     ( $( $t:ty ),* ) => ($(
-//         impl<I> Start<I, u16> for $t where
-//         I: Input + ?Sized, {
-//             fn into_usize(start: Self, _: &I) -> usize {
-//                 start as usize
-//             }
-//             fn start(_: &I) -> Self {
-//                 0 as $t
-//             }
-//             fn hi_from_start_and_len(start: Self, len: u16, _: &I) -> Self {
-//                 start + len as $t
-//             }
-//         }
-//     )*)
-// }
-
 macro_rules! direct_product_impl {
     ($name:ident, $t1:ty, $t2:ty) => (
         $name!($t1, $t2);
@@ -176,7 +159,7 @@ mod tests {
             .collect::<Vec<String>>()
             .join("");
 
-        let lhs = StartAndLenSpan::<u32, u16>::from_lo_hi(5, 100, &input);
+        let lhs = StartAndLenSpan::<u16, f64>::from_lo_hi(5, 100, &input);
         let rhs = StartAndLenSpan::from_lo_hi(100, 1000, &input);
 
         let merged_span = Span::merge_lhs_and_rhs(&lhs, &rhs, &input);
@@ -184,7 +167,7 @@ mod tests {
         assert_eq!(5, merged_span.start);
         assert_eq!(1000, merged_span.hi(&input));
 
-        let lhs = StartAndLenSpan::<u32, u16>::from_lo_hi(0, 5, &input);
+        let lhs = StartAndLenSpan::<u16, f64>::from_lo_hi(0, 5, &input);
         let rhs = StartAndLenSpan::from_lo_hi(5, 10, &input);
 
         let merged_span = Span::merge_lhs_and_rhs(&lhs, &rhs, &input);

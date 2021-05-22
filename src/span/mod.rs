@@ -1,11 +1,9 @@
-// pub use self::byte_span::ByteSpan;
 pub use self::spanned::Spanned;
 pub use self::start_and_len_span::{Len, Start, StartAndLenSpan};
 
 use crate::input::Input;
 use crate::position::Position;
 
-mod byte_span;
 mod spanned;
 mod start_and_len_span;
 
