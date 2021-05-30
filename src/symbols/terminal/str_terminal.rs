@@ -20,7 +20,7 @@ impl<'a> From<&'a str> for StrTerminal<'a> {
     }
 }
 
-impl<'a, OutputT, V, P, L> Terminal<'a, str, OutputT, V, StartAndLenSpan<P, L>, P>
+impl<'a, O, V, P, L> Terminal<'a, str, O, V, StartAndLenSpan<P, L>, P>
     for StrTerminal<'a>
 where
     P: Start<str, L>,
@@ -31,7 +31,7 @@ where
         input: &'a str,
         pos: P,
         max_pos: &P,
-    ) -> Result<AST<OutputT, V, StartAndLenSpan<P, L>>, ()> {
+    ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
         match self {
             StrTerminal::Char(c) => {
                 let start = pos.clone();

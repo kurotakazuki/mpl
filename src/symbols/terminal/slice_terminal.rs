@@ -21,7 +21,7 @@ impl<'a, T> From<&'a [T]> for SliceTerminal<'a, T> {
     }
 }
 
-impl<'a, T: PartialEq, OutputT, V, P, L> Terminal<'a, [T], OutputT, V, StartAndLenSpan<P, L>, P>
+impl<'a, T: PartialEq, O, V, P, L> Terminal<'a, [T], O, V, StartAndLenSpan<P, L>, P>
     for SliceTerminal<'a, T>
 where
     P: Start<[T], L>,
@@ -32,7 +32,7 @@ where
         input: &'a [T],
         pos: P,
         max_pos: &P,
-    ) -> Result<AST<OutputT, V, StartAndLenSpan<P, L>>, ()> {
+    ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
         match self {
             SliceTerminal::Element(element) => {
                 let start = pos.clone();

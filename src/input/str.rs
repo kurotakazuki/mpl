@@ -7,10 +7,10 @@ use crate::symbols::{StrTerminal, Variable};
 impl Input for str {}
 impl Input for String {}
 
-impl<'input, OutputT, V, P, L>
-    Parse<'input, StrTerminal<'input>, OutputT, V, StartAndLenSpan<P, L>, P> for str
+impl<'input, O, V, P, L>
+    Parse<'input, StrTerminal<'input>, O, V, StartAndLenSpan<P, L>, P> for str
 where
-    OutputT: Output<'input, Self, V, StartAndLenSpan<P, L>>,
+    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
     V: Variable,
     P: Start<Self, L>,
     L: Len<Self, P>,

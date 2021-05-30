@@ -40,13 +40,13 @@
 //     LittleEndianIsize(isize),
 // }
 
-// impl<'a, OutputT, V> Terminal<'a, [u8], OutputT, V, ByteSpan, BytePos> for U8SliceTerminal<'a> {
+// impl<'a, O, V> Terminal<'a, [u8], O, V, ByteSpan, BytePos> for U8SliceTerminal<'a> {
 //     fn eval(
 //         &'a self,
 //         input: &'a [u8],
 //         pos: BytePos,
 //         all_of_the_span: &ByteSpan,
-//     ) -> Result<AST<OutputT, V, ByteSpan>, ()> {
+//     ) -> Result<AST<O, V, ByteSpan>, ()> {
 //         match self {
 //             U8SliceTerminal::Char(c) => {
 //                 let start = pos;
@@ -55,7 +55,7 @@
 //                 if pos + len <= all_of_the_span.hi().0 as usize
 //                     && &input[pos..pos + len] == c.to_string()[..].as_bytes()
 //                 {
-//                     Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
+//                     Ok(AST::<O, V, ByteSpan>::from_leaf_node(
 //                         LeafNode::from_m(Metasymbol::Epsilon),
 //                         ByteSpan::from_start_len(start, len as u16),
 //                     ))
@@ -71,7 +71,7 @@
 //                 if pos + len <= all_of_the_span.hi().0 as usize
 //                     && &input[pos..pos + len] == s.as_bytes()
 //                 {
-//                     Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
+//                     Ok(AST::<O, V, ByteSpan>::from_leaf_node(
 //                         LeafNode::from_m(Metasymbol::Epsilon),
 //                         ByteSpan::from_start_len(start, len as u16),
 //                     ))
@@ -87,7 +87,7 @@
 //                 if pos + len <= all_of_the_span.hi().0 as usize
 //                     && &input[pos..pos + len] == s.as_bytes()
 //                 {
-//                     Ok(AST::<OutputT, V, ByteSpan>::from_leaf_node(
+//                     Ok(AST::<O, V, ByteSpan>::from_leaf_node(
 //                         LeafNode::from_m(Metasymbol::Epsilon),
 //                         ByteSpan::from_start_len(start, len as u16),
 //                     ))

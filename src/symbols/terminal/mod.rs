@@ -6,9 +6,9 @@ pub mod str_terminal;
 pub mod terminal_symbol;
 // pub mod u8slice_terminal;
 
-pub trait Terminal<'input, I, OutputT, V, S, P>
+pub trait Terminal<'input, I, O, V, S, P>
 where
     I: ?Sized,
 {
-    fn eval(&'input self, input: &'input I, pos: P, max_pos: &P) -> Result<AST<OutputT, V, S>, ()>;
+    fn eval(&'input self, input: &'input I, pos: P, max_pos: &P) -> Result<AST<O, V, S>, ()>;
 }

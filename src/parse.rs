@@ -8,16 +8,16 @@ use crate::symbols::{Metasymbol, Terminal, TerminalSymbol, VAndE, Variable, E};
 use crate::tree::{AST, CST};
 
 /// T is terminal symbols.
-/// OutputT is output type.
+/// O is output type.
 /// V is (enum of) Variables.
 /// S is Span.
 /// P is position.
-pub trait Parse<'input, T, OutputT, V, S, P>: Input
+pub trait Parse<'input, T, O, V, S, P>: Input
 where
-    T: Terminal<'input, Self, OutputT, V, S, P>,
+    T: Terminal<'input, Self, O, V, S, P>,
     //TODO
-    // OutputT: TryFrom<(&'input Self, V, S, Choice<AST<OutputT, V, S>>)>,
-    OutputT: Output<'input, Self, V, S>,
+    // O: TryFrom<(&'input Self, V, S, Choice<AST<O, V, S>>)>,
+    O: Output<'input, Self, V, S>,
     V: Variable,
     S: Span<Self, P>,
     P: Position,
@@ -28,7 +28,7 @@ where
         rules: &'input Rules<T, V>,
         start_variable: &V,
         all_of_the_span: S,
-    ) -> Result<AST<OutputT, V, S>, ()> {
+    ) -> Result<AST<O, V, S>, ()> {
         let ast = self.eval(
             &all_of_the_span.lo(self),
             &rules,
@@ -43,14 +43,14 @@ where
         }
     }
 
-    fn into_epsilon_ast(&'input self, pos: P) -> Result<AST<OutputT, V, S>, ()> {
+    fn into_epsilon_ast(&'input self, pos: P) -> Result<AST<O, V, S>, ()> {
         Ok(AST::from_leaf_node(
             TerminalSymbol::M(Metasymbol::Epsilon),
             Span::from_lo_hi(pos.clone(), pos, self),
         ))
     }
 
-    fn into_failed_ast(&'input self, _pos: P) -> Result<AST<OutputT, V, S>, ()> {
+    fn into_failed_ast(&'input self, _pos: P) -> Result<AST<O, V, S>, ()> {
         // Ok(AST::from_leaf_node(
         //     TerminalSymbol::M(Metasymbol::Failure),
         //     Span::from_lo_hi(pos.clone(), pos)
@@ -58,7 +58,7 @@ where
         Err(())
     }
 
-    fn into_any_ast(&'input self, pos: P, max_pos: &P, n: usize) -> Result<AST<OutputT, V, S>, ()> {
+    fn into_any_ast(&'input self, pos: P, max_pos: &P, n: usize) -> Result<AST<O, V, S>, ()> {
         let span_with_len_added = S::from_lo_len(pos, n, self);
         if &span_with_len_added.hi(self) <= max_pos {
             Ok(AST::from_leaf_node(
@@ -70,7 +70,7 @@ where
         }
     }
 
-    fn into_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<OutputT, V, S>, ()> {
+    fn into_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<O, V, S>, ()> {
         Ok(AST::from_leaf_node(
             TerminalSymbol::M(Metasymbol::All),
             Span::from_lo_hi(pos, max_pos, self),
@@ -82,7 +82,7 @@ where
         terminal_symbol: &'input TerminalSymbol<T>,
         pos: P,
         max_pos: &P,
-    ) -> Result<AST<OutputT, V, S>, ()> {
+    ) -> Result<AST<O, V, S>, ()> {
         match terminal_symbol {
             TerminalSymbol::Original(t) => t.eval(self, pos, max_pos),
             TerminalSymbol::M(metasymbol) => match metasymbol {
@@ -101,7 +101,7 @@ where
         rules: &'input Rules<T, V>,
         variable: &V,
         max_pos: &P,
-    ) -> Result<AST<OutputT, V, S>, ()> {
+    ) -> Result<AST<O, V, S>, ()> {
         let right_rule = rules
             .0
             .get(variable)
@@ -109,7 +109,7 @@ where
 
         // First choice
         // left-hand side of first choice
-        let left_ast: Result<AST<OutputT, V, S>, ()> = match &right_rule.first.lhs {
+        let left_ast: Result<AST<O, V, S>, ()> = match &right_rule.first.lhs {
             E::T(terminal_symbol) => {
                 self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
             }
@@ -118,7 +118,7 @@ where
 
         if let Ok(left_ast) = left_ast {
             // right-hand side of first choice
-            let right_ast: Result<AST<OutputT, V, S>, ()> = match &right_rule.first.rhs {
+            let right_ast: Result<AST<O, V, S>, ()> = match &right_rule.first.rhs {
                 E::T(terminal_symbol) => {
                     self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
                 }
@@ -133,11 +133,11 @@ where
                 let variable_and_choice =
                     VAndE::new(variable.clone(), Choice::first(left_ast, right_ast));
 
-                // let output = OutputT::try_from((self, *variable, merged_span.clone(), Choice::first(left_ast, right_ast)));
+                // let output = O::try_from((self, *variable, merged_span.clone(), Choice::first(left_ast, right_ast)));
 
                 let cst = CST::new(variable_and_choice, merged_span);
 
-                let output_ast = OutputT::output_ast(&self, cst);
+                let output_ast = O::output_ast(&self, cst);
 
                 return Ok(output_ast);
 
@@ -161,7 +161,7 @@ where
 
                 let cst = CST::new(variable_and_choice, span);
 
-                let output_ast = OutputT::output_ast(self, cst);
+                let output_ast = O::output_ast(self, cst);
 
                 Ok(output_ast)
                 // Ok(AST::from_internal_node(
