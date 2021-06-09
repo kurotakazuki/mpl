@@ -20,8 +20,7 @@ impl<'a> From<&'a str> for StrTerminal<'a> {
     }
 }
 
-impl<'a, O, V, P, L> Terminal<'a, str, O, V, StartAndLenSpan<P, L>, P>
-    for StrTerminal<'a>
+impl<'a, O, V, P, L> Terminal<'a, str, O, V, StartAndLenSpan<P, L>, P> for StrTerminal<'a>
 where
     P: Start<str, L>,
     L: Len<str, P>,
@@ -55,7 +54,7 @@ where
                 let s_bytes = s.as_bytes();
                 let len = s_bytes.len();
                 let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos && &input.as_bytes()[pos..pos + len] == s.as_bytes() {
+                if &span.hi(input) <= max_pos && &input.as_bytes()[pos..pos + len] == s_bytes {
                     Ok(AST::from_leaf_node(
                         LeafNode::from_m(Metasymbol::Omit),
                         span,

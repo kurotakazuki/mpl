@@ -65,14 +65,6 @@ where
     pub fn insert_rule(&mut self, rule: Rule<T, V>) -> Option<RightRule<T, V>> {
         self.0.insert(rule.value, rule.equal)
     }
-    // pub fn insert_rules(&mut self, rules: Vec<Rule<T, V>>) {
-    //     for rule in rules {
-    //         self.0.insert(
-    //             rule.value,
-    //             rule.equal
-    //         );
-    //     }
-    // }
 }
 
 #[cfg(test)]

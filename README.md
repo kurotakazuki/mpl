@@ -177,7 +177,6 @@ Space = " "
 
 ## TODO
 - Add RowColSpan
-- Add U8SliceTerminal
 - Create parser from MPLG file.
 - Error Handling
 - Packrat Parsing

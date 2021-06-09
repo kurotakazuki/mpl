@@ -16,11 +16,7 @@ pub type InternalNode<O, V, S> = VAndE<(V, Option<O>), Box<Choice<AST<O, V, S>>>
 // }
 
 impl<O, V, S> InternalNode<O, V, S> {
-    pub fn from_first(
-        value: (V, Option<O>),
-        l: AST<O, V, S>,
-        r: AST<O, V, S>,
-    ) -> Self {
+    pub fn from_first(value: (V, Option<O>), l: AST<O, V, S>, r: AST<O, V, S>) -> Self {
         VAndE::new(value, Box::new(Choice::first(l, r)))
     }
 

@@ -12,11 +12,10 @@ use crate::tree::{AST, CST};
 /// V is (enum of) Variables.
 /// S is Span.
 /// P is position.
+// TODO: Create Error types
 pub trait Parse<'input, T, O, V, S, P>: Input
 where
     T: Terminal<'input, Self, O, V, S, P>,
-    //TODO
-    // O: TryFrom<(&'input Self, V, S, Choice<AST<O, V, S>>)>,
     O: Output<'input, Self, V, S>,
     V: Variable,
     S: Span<Self, P>,
@@ -51,7 +50,7 @@ where
     }
 
     fn into_failed_ast(&'input self, _pos: P) -> Result<AST<O, V, S>, ()> {
-        // Ok(AST::from_leaf_node(
+        // Err(AST::from_leaf_node(
         //     TerminalSymbol::M(Metasymbol::Failure),
         //     Span::from_lo_hi(pos.clone(), pos)
         // ))
@@ -133,18 +132,11 @@ where
                 let variable_and_choice =
                     VAndE::new(variable.clone(), Choice::first(left_ast, right_ast));
 
-                // let output = O::try_from((self, *variable, merged_span.clone(), Choice::first(left_ast, right_ast)));
-
                 let cst = CST::new(variable_and_choice, merged_span);
 
                 let output_ast = O::output_ast(&self, cst);
 
                 return Ok(output_ast);
-
-                // return Ok(AST::from_internal_node(
-                //     InternalNode::from_first((*variable, output), left_ast, right_ast),
-                //     merged_span,
-                // ));
             }
         }
 
@@ -164,10 +156,6 @@ where
                 let output_ast = O::output_ast(self, cst);
 
                 Ok(output_ast)
-                // Ok(AST::from_internal_node(
-                //     InternalNode::from_second((*variable, output), ast),
-                //     span,
-                // ))
             }
         }
     }
