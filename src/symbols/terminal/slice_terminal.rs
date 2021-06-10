@@ -59,7 +59,7 @@ where
                 let span = StartAndLenSpan::from_lo_len(start, len, input);
                 if &span.hi(input) <= max_pos {
                     if let Some(ref s) = input.get(pos..pos + len) {
-                        if slice == s {
+                        if s == slice {
                             return Ok(AST::from_leaf_node(
                                 LeafNode::from_m(Metasymbol::Omit),
                                 span,
