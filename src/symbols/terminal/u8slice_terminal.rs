@@ -70,22 +70,23 @@ where
         pos: P,
         max_pos: &P,
     ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
-        let eval_from = |len: usize, slice: &[u8]| -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
-            let start = pos.clone();
-            let pos: usize = P::into_usize(pos, input);
-            let span = StartAndLenSpan::from_lo_len(start, len, input);
-            if &span.hi(input) <= max_pos {
-                if let Some(s) = input.get(pos..pos + len) {
-                    if s == slice {
-                        return Ok(AST::from_leaf_node(
-                            LeafNode::from_m(Metasymbol::Omit),
-                            span,
-                        ));
+        let eval_from =
+            |len: usize, slice: &[u8]| -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
+                let start = pos.clone();
+                let pos: usize = P::into_usize(pos, input);
+                let span = StartAndLenSpan::from_lo_len(start, len, input);
+                if &span.hi(input) <= max_pos {
+                    if let Some(s) = input.get(pos..pos + len) {
+                        if s == slice {
+                            return Ok(AST::from_leaf_node(
+                                LeafNode::from_m(Metasymbol::Omit),
+                                span,
+                            ));
+                        }
                     }
                 }
-            }
-            Err(())
-        };
+                Err(())
+            };
 
         match self {
             // TODO: create test

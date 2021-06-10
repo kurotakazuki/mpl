@@ -31,23 +31,24 @@ where
         pos: P,
         max_pos: &P,
     ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
-        let eval_from = |len: usize, string: &str| -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
-            let start = pos.clone();
-            let pos: usize = P::into_usize(pos, input);
-            let span = StartAndLenSpan::from_lo_len(start, len, input);
-            if &span.hi(input) <= max_pos {
-                if let Some(s) = input.get(pos..pos + len) {
-                    if s == string {
-                        return Ok(AST::from_leaf_node(
-                            LeafNode::from_m(Metasymbol::Omit),
-                            span,
-                        ));
+        let eval_from =
+            |len: usize, string: &str| -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
+                let start = pos.clone();
+                let pos: usize = P::into_usize(pos, input);
+                let span = StartAndLenSpan::from_lo_len(start, len, input);
+                if &span.hi(input) <= max_pos {
+                    if let Some(s) = input.get(pos..pos + len) {
+                        if s == string {
+                            return Ok(AST::from_leaf_node(
+                                LeafNode::from_m(Metasymbol::Omit),
+                                span,
+                            ));
+                        }
                     }
                 }
-            }
-            Err(())
-        };
-        
+                Err(())
+            };
+
         match self {
             StrTerminal::Char(c) => eval_from(c.len_utf8(), &c.to_string()),
             StrTerminal::Str(s) => eval_from(s.len(), s),
