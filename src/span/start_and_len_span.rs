@@ -158,23 +158,24 @@ mod tests {
             .map(|n: usize| n.to_string())
             .collect::<Vec<String>>()
             .join("");
+        let input: &str = &input;
 
-        let lhs = StartAndLenSpan::<u16, f64>::from_lo_hi(5, 100, &input);
-        let rhs = StartAndLenSpan::from_lo_hi(100, 1000, &input);
+        let lhs = StartAndLenSpan::<u16, f64>::from_lo_hi(5, 100, input);
+        let rhs = StartAndLenSpan::from_lo_hi(100, 1000, input);
 
-        let merged_span = Span::merge_lhs_and_rhs(&lhs, &rhs, &input);
+        let merged_span = Span::merge_lhs_and_rhs(&lhs, &rhs, input);
 
         assert_eq!(5, merged_span.start);
-        assert_eq!(1000, merged_span.hi(&input));
+        assert_eq!(1000, merged_span.hi(input));
 
-        let lhs = StartAndLenSpan::<u16, f64>::from_lo_hi(0, 5, &input);
-        let rhs = StartAndLenSpan::from_lo_hi(5, 10, &input);
+        let lhs = StartAndLenSpan::<u16, f64>::from_lo_hi(0, 5, input);
+        let rhs = StartAndLenSpan::from_lo_hi(5, 10, input);
 
-        let merged_span = Span::merge_lhs_and_rhs(&lhs, &rhs, &input);
+        let merged_span = Span::merge_lhs_and_rhs(&lhs, &rhs, input);
 
         assert_eq!(0, merged_span.start);
-        assert_eq!(10, merged_span.hi(&input));
+        assert_eq!(10, merged_span.hi(input));
 
-        assert_eq!(StartAndLenSpan::from_lo_hi(0, 10, &input), merged_span);
+        assert_eq!(StartAndLenSpan::from_lo_hi(0, 10, input), merged_span);
     }
 }

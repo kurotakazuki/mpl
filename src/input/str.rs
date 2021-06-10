@@ -5,7 +5,6 @@ use crate::span::{Len, Start, StartAndLenSpan};
 use crate::symbols::{StrTerminal, Variable};
 
 impl Input for str {}
-impl Input for String {}
 
 impl<'input, O, V, P, L> Parse<'input, StrTerminal<'input>, O, V, StartAndLenSpan<P, L>, P> for str
 where
