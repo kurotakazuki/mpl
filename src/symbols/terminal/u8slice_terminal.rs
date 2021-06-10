@@ -70,545 +70,64 @@ where
         pos: P,
         max_pos: &P,
     ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
+        let eval_from = |len: usize, n: &[u8]| -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
+            let start = pos.clone();
+            let pos: usize = P::into_usize(pos, input);
+            let span = StartAndLenSpan::from_lo_len(start, len, input);
+            if &span.hi(input) <= max_pos {
+                if let Some(s) = input.get(pos..pos + len) {
+                    if s == n {
+                        return Ok(AST::from_leaf_node(
+                            LeafNode::from_m(Metasymbol::Omit),
+                            span,
+                        ));
+                    }
+                }
+            }
+            Err(())
+        };
+
         match self {
-            Self::Char(c) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = c.len_utf8();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos
-                    && &input[pos..pos + len] == c.to_string()[..].as_bytes()
-                {
-                    Ok(AST::from_leaf_node(
-                        LeafNode::from_m(Metasymbol::Omit),
-                        span,
-                    ))
-                } else {
-                    Err(())
-                }
-            }
-            Self::Str(s) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let s_bytes = s.as_bytes();
-                let len = s_bytes.len();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos && &input[pos..pos + len] == s_bytes {
-                    Ok(AST::from_leaf_node(
-                        LeafNode::from_m(Metasymbol::Omit),
-                        span,
-                    ))
-                } else {
-                    Err(())
-                }
-            }
-            Self::U8Slice(slice) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = slice.len();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(ref s) = input.get(pos..pos + len) {
-                        if slice == s {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            // TODO
-            Self::BEf32(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<f32>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEf32(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<f32>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
+            // TODO: create test
+            Self::Char(c) => eval_from(c.len_utf8(), c.to_string().as_bytes()),
+            // TODO: create test
+            Self::Str(s) => eval_from(s.len(), s.as_bytes()),
+            Self::U8Slice(slice) => eval_from(slice.len(), slice),
 
-            Self::BEf64(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<f64>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEf64(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<f64>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
+            Self::BEf32(n) => eval_from(mem::size_of::<f32>(), &n.to_be_bytes()),
+            Self::LEf32(n) => eval_from(mem::size_of::<f32>(), &n.to_le_bytes()),
+            Self::BEf64(n) => eval_from(mem::size_of::<f64>(), &n.to_be_bytes()),
+            Self::LEf64(n) => eval_from(mem::size_of::<f64>(), &n.to_le_bytes()),
 
-            Self::BEu8(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<u8>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEu8(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<u8>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
+            Self::BEu8(n) => eval_from(mem::size_of::<u8>(), &n.to_be_bytes()),
+            Self::LEu8(n) => eval_from(mem::size_of::<u8>(), &n.to_le_bytes()),
+            Self::BEi8(n) => eval_from(mem::size_of::<i8>(), &n.to_be_bytes()),
+            Self::LEi8(n) => eval_from(mem::size_of::<i8>(), &n.to_le_bytes()),
 
-            Self::BEi8(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<i8>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEi8(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<i8>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
+            Self::BEu16(n) => eval_from(mem::size_of::<u16>(), &n.to_be_bytes()),
+            Self::LEu16(n) => eval_from(mem::size_of::<u16>(), &n.to_le_bytes()),
+            Self::BEi16(n) => eval_from(mem::size_of::<i16>(), &n.to_be_bytes()),
+            Self::LEi16(n) => eval_from(mem::size_of::<i16>(), &n.to_le_bytes()),
 
-            Self::BEu16(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<u16>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEu16(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<u16>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
+            Self::BEu32(n) => eval_from(mem::size_of::<u32>(), &n.to_be_bytes()),
+            Self::LEu32(n) => eval_from(mem::size_of::<u32>(), &n.to_le_bytes()),
+            Self::BEi32(n) => eval_from(mem::size_of::<i32>(), &n.to_be_bytes()),
+            Self::LEi32(n) => eval_from(mem::size_of::<i32>(), &n.to_le_bytes()),
 
-            Self::BEi16(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<i16>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEi16(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<i16>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
+            Self::BEu64(n) => eval_from(mem::size_of::<u64>(), &n.to_be_bytes()),
+            Self::LEu64(n) => eval_from(mem::size_of::<u64>(), &n.to_le_bytes()),
+            Self::BEi64(n) => eval_from(mem::size_of::<i64>(), &n.to_be_bytes()),
+            Self::LEi64(n) => eval_from(mem::size_of::<i64>(), &n.to_le_bytes()),
 
-            Self::BEu32(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<u32>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEu32(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<u32>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
+            Self::BEu128(n) => eval_from(mem::size_of::<u128>(), &n.to_be_bytes()),
+            Self::LEu128(n) => eval_from(mem::size_of::<u128>(), &n.to_le_bytes()),
+            Self::BEi128(n) => eval_from(mem::size_of::<i128>(), &n.to_be_bytes()),
+            Self::LEi128(n) => eval_from(mem::size_of::<i128>(), &n.to_le_bytes()),
 
-            Self::BEi32(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<i32>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEi32(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<i32>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-
-            Self::BEu64(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<u64>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEu64(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<u64>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-
-            Self::BEi64(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<i64>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEi64(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<i64>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-
-            Self::BEu128(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<u128>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEu128(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<u128>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-
-            Self::BEi128(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<i128>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEi128(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<i128>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-
-            Self::BEusize(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<usize>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEusize(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<usize>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-
-            Self::BEisize(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<isize>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_be_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
-            Self::LEisize(n) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
-                let len = mem::size_of::<isize>();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
-                    if let Some(s) = input.get(pos..pos + len) {
-                        if s == n.to_le_bytes() {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
-                        }
-                    }
-                }
-                Err(())
-            }
+            Self::BEusize(n) => eval_from(mem::size_of::<usize>(), &n.to_be_bytes()),
+            Self::LEusize(n) => eval_from(mem::size_of::<usize>(), &n.to_le_bytes()),
+            Self::BEisize(n) => eval_from(mem::size_of::<isize>(), &n.to_be_bytes()),
+            Self::LEisize(n) => eval_from(mem::size_of::<isize>(), &n.to_le_bytes()),
         }
     }
 }
