@@ -33,10 +33,10 @@ where
         pos: P,
         max_pos: &P,
     ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
+        let start = pos.clone();
+        let pos: usize = P::into_usize(pos, input);
         match self {
             SliceTerminal::Element(element) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
                 // Length is 1.
                 let span = StartAndLenSpan::from_lo_len(start, 1, input);
                 if &span.hi(input) <= max_pos {
@@ -53,8 +53,6 @@ where
                 Err(())
             }
             SliceTerminal::Slice(slice) => {
-                let start = pos.clone();
-                let pos: usize = P::into_usize(pos, input);
                 let len = slice.len();
                 let span = StartAndLenSpan::from_lo_len(start, len, input);
                 if &span.hi(input) <= max_pos {

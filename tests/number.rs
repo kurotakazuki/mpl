@@ -3,7 +3,7 @@ use mpl::output::Output;
 use mpl::parse::Parse;
 use mpl::position::Position;
 use mpl::rules::{RightRule, RightRuleKind, Rule, Rules};
-use mpl::span::{Len, Start, StartAndLenSpan};
+use mpl::span::{Len, Span, Start, StartAndLenSpan};
 use mpl::symbols::{Metasymbol, Terminal, Variable};
 use mpl::tree::{InternalNode, LeafNode, AST, CST};
 use std::ops::{Add, Sub};
@@ -94,42 +94,29 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
         pos: BytePos,
         max_pos: &BytePos,
     ) -> Result<AST<NumberTerminal<'a>, NumberVariable, ByteSpan>, ()> {
-        match self {
-            NumberTerminal::Str(digit) => {
-                let start = pos;
-                let pos: usize = pos.0 as usize;
-                let len = digit.len();
-                if pos + len <= max_pos.0 as usize
-                    && &input.0.as_bytes()[pos..pos + len] == digit.as_bytes()
-                {
-                    Ok(
-                        AST::<NumberTerminal, NumberVariable, ByteSpan>::from_leaf_node(
-                            LeafNode::from_t(NumberTerminal::Str(digit)),
-                            ByteSpan::from_start_len(start, len as u16),
-                        ),
-                    )
-                } else {
-                    Err(())
-                }
-            }
-            NumberTerminal::Char(digit) => {
-                let start = pos;
-                let pos: usize = pos.0 as usize;
-                let len = digit.len_utf8();
+        let eval_from = |len: usize, value: &str, number_terminal: NumberTerminal<'a>| {
+            let start = pos;
+            let pos: usize = pos.0 as usize;
 
-                if pos + len <= max_pos.0 as usize
-                    && &input.0.as_bytes()[pos..pos + len] == digit.to_string()[..].as_bytes()
-                {
-                    Ok(
-                        AST::<NumberTerminal, NumberVariable, ByteSpan>::from_leaf_node(
-                            LeafNode::from_t(NumberTerminal::Char(*digit)),
-                            ByteSpan::from_start_len(start, len as u16),
-                        ),
-                    )
-                } else {
-                    Err(())
+            let span = ByteSpan::from_start_len(start, len as u16);
+
+            if &span.hi(input) <= max_pos {
+                if let Some(s) = input.0.get(pos..pos + len) {
+                    if s == value {
+                        return Ok(AST::from_leaf_node(LeafNode::from_t(number_terminal), span));
+                    }
                 }
             }
+            Err(())
+        };
+
+        match self {
+            NumberTerminal::Str(digit) => eval_from(digit.len(), digit, NumberTerminal::Str(digit)),
+            NumberTerminal::Char(digit) => eval_from(
+                digit.len_utf8(),
+                &digit.to_string(),
+                NumberTerminal::Char(*digit),
+            ),
         }
     }
 }
@@ -161,8 +148,6 @@ impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal
                     InternalNode::from_second((cst.node.value, Some(NumberTerminal::Str(s))), omit);
 
                 AST::from_internal_node(internal_node, span)
-
-                // AST::from_vandchoice_and_output(v_and_choice, Some(NumberTerminal::Str(s)))
             }
             _ => AST::from_cst(cst),
         }
