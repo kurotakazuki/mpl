@@ -5,16 +5,6 @@ use crate::symbols::{TerminalSymbol, VAndE};
 pub type LeafNode<O> = TerminalSymbol<O>;
 pub type InternalNode<O, V, S> = VAndE<(V, Option<O>), Box<Choice<AST<O, V, S>>>>;
 
-// impl LeafNode {
-//     pub fn from_t() -> Self {
-//         TerminalSymbol::from_t(())
-//     }
-
-//     pub fn from_m(metasymbol: Metasymbol) -> Self {
-//         TerminalSymbol::from_m(metasymbol)
-//     }
-// }
-
 impl<O, V, S> InternalNode<O, V, S> {
     pub fn from_first(value: (V, Option<O>), l: AST<O, V, S>, r: AST<O, V, S>) -> Self {
         VAndE::new(value, Box::new(Choice::first(l, r)))
@@ -31,7 +21,6 @@ pub enum ASTKind<O, V, S> {
     LeafNode(LeafNode<O>),
     /// Viriable
     InternalNode(InternalNode<O, V, S>),
-    // InternalNode { variable: V, choice: Box<Choice<AST<O, V, S, L>>> },
 }
 
 pub type AST<O, V, S> = Spanned<ASTKind<O, V, S>, S>;

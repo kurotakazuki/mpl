@@ -13,10 +13,6 @@ enum WaveFmtVariable {
     Riff,
     FileSize,
     Wave,
-
-    // Lexical analysis
-    // U16,
-    // RawU16,
     U32,
 }
 
@@ -56,7 +52,7 @@ impl<'input> Output<'input, [u8], WaveFmtVariable, StartAndLenSpan<u32, u16>> fo
 /// U32 = ???? () / f
 /// ```
 #[test]
-fn wave_fmt() {
+fn wave_riff() {
     let riff_rule: Rule<SliceTerminal<u8>, WaveFmtVariable> = Rule::new(
         WaveFmtVariable::Riff,
         RightRule::from_right_rule_kind(

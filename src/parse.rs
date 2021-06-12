@@ -3,8 +3,11 @@ use crate::input::Input;
 use crate::output::Output;
 use crate::position::Position;
 use crate::rules::Rules;
-use crate::span::Span;
-use crate::symbols::{Metasymbol, Terminal, TerminalSymbol, VAndE, Variable, E};
+use crate::span::{Len, Span, Start, StartAndLenSpan};
+use crate::symbols::{
+    Metasymbol, SliceTerminal, StrTerminal, Terminal, TerminalSymbol, U8SliceTerminal, VAndE,
+    Variable, E,
+};
 use crate::tree::{AST, CST};
 
 /// T is terminal symbols.
@@ -101,10 +104,7 @@ where
         variable: &V,
         max_pos: &P,
     ) -> Result<AST<O, V, S>, ()> {
-        let right_rule = rules
-            .0
-            .get(variable)
-            .expect("Get the right_rule from a variable");
+        let right_rule = rules.0.get(variable).expect("right_rule from a variable");
 
         // First choice
         // left-hand side of first choice
@@ -159,4 +159,35 @@ where
             }
         }
     }
+}
+
+/// T represents the element type.
+impl<'input, T, O, V, P, L> Parse<'input, SliceTerminal<'input, T>, O, V, StartAndLenSpan<P, L>, P>
+    for [T]
+where
+    T: PartialEq,
+    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
+    V: Variable,
+    P: Start<Self, L>,
+    L: Len<Self, P>,
+{
+}
+
+impl<'input, O, V, P, L> Parse<'input, U8SliceTerminal<'input>, O, V, StartAndLenSpan<P, L>, P>
+    for [u8]
+where
+    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
+    V: Variable,
+    P: Start<Self, L>,
+    L: Len<Self, P>,
+{
+}
+
+impl<'input, O, V, P, L> Parse<'input, StrTerminal<'input>, O, V, StartAndLenSpan<P, L>, P> for str
+where
+    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
+    V: Variable,
+    P: Start<Self, L>,
+    L: Len<Self, P>,
+{
 }

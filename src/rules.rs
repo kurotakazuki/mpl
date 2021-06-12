@@ -33,7 +33,6 @@ pub enum RightRuleKind<T, V> {
     Any(usize),
     All,
     T(T),
-    // M(Metasymbol),
     V(V),
 }
 
