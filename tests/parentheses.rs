@@ -1,10 +1,9 @@
+use mpl::output::Output;
 use mpl::parse::Parse;
 use mpl::rules::{RightRule, RightRuleKind, Rule, Rules};
 use mpl::span::{Span, StartAndLenSpan};
 use mpl::symbols::{StrTerminal, Variable};
 use mpl::tree::{AST, CST};
-
-use mpl::output::Output;
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 enum ParenthesesVariable {

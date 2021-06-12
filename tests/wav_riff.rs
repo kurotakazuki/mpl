@@ -1,3 +1,4 @@
+use mpl::output::Output;
 use mpl::parse::Parse;
 use mpl::rules::{RightRule, RightRuleKind, Rule, Rules};
 use mpl::span::{Span, StartAndLenSpan};
@@ -5,10 +6,8 @@ use mpl::symbols::{SliceTerminal, Variable};
 use mpl::tree::{AST, CST};
 use std::convert::TryInto;
 
-use mpl::output::Output;
-
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-enum WaveFmtVariable {
+enum WavRiffVariable {
     // RIFF chunk
     Riff,
     FileSize,
@@ -22,15 +21,15 @@ enum U16OrU32 {
     U32(u32),
 }
 
-impl Variable for WaveFmtVariable {}
+impl Variable for WavRiffVariable {}
 
-impl<'input> Output<'input, [u8], WaveFmtVariable, StartAndLenSpan<u32, u16>> for U16OrU32 {
+impl<'input> Output<'input, [u8], WavRiffVariable, StartAndLenSpan<u32, u16>> for U16OrU32 {
     fn output_ast(
         input: &'input [u8],
-        cst: CST<Self, WaveFmtVariable, StartAndLenSpan<u32, u16>>,
-    ) -> AST<Self, WaveFmtVariable, StartAndLenSpan<u32, u16>> {
+        cst: CST<Self, WavRiffVariable, StartAndLenSpan<u32, u16>>,
+    ) -> AST<Self, WavRiffVariable, StartAndLenSpan<u32, u16>> {
         match cst.node.value {
-            WaveFmtVariable::U32 => {
+            WavRiffVariable::U32 => {
                 let lo = cst.span.start as usize;
                 let hi = cst.span.hi(input) as usize;
 
@@ -52,29 +51,29 @@ impl<'input> Output<'input, [u8], WaveFmtVariable, StartAndLenSpan<u32, u16>> fo
 /// U32 = ???? () / f
 /// ```
 #[test]
-fn wave_riff() {
-    let riff_rule: Rule<SliceTerminal<u8>, WaveFmtVariable> = Rule::new(
-        WaveFmtVariable::Riff,
+fn wav_riff() {
+    let riff_rule: Rule<SliceTerminal<u8>, WavRiffVariable> = Rule::new(
+        WavRiffVariable::Riff,
         RightRule::from_right_rule_kind(
             (
                 RightRuleKind::T(SliceTerminal::<u8>::Slice(b"RIFF")),
-                RightRuleKind::V(WaveFmtVariable::FileSize),
+                RightRuleKind::V(WavRiffVariable::FileSize),
             ),
             RightRuleKind::Failure,
         ),
     );
-    let file_size_rule: Rule<SliceTerminal<u8>, WaveFmtVariable> = Rule::new(
-        WaveFmtVariable::FileSize,
+    let file_size_rule: Rule<SliceTerminal<u8>, WavRiffVariable> = Rule::new(
+        WavRiffVariable::FileSize,
         RightRule::from_right_rule_kind(
             (
-                RightRuleKind::V(WaveFmtVariable::U32),
-                RightRuleKind::V(WaveFmtVariable::Wave),
+                RightRuleKind::V(WavRiffVariable::U32),
+                RightRuleKind::V(WavRiffVariable::Wave),
             ),
             RightRuleKind::Failure,
         ),
     );
-    let wave_rule: Rule<SliceTerminal<u8>, WaveFmtVariable> = Rule::new(
-        WaveFmtVariable::Wave,
+    let wave_rule: Rule<SliceTerminal<u8>, WavRiffVariable> = Rule::new(
+        WavRiffVariable::Wave,
         RightRule::from_right_rule_kind(
             (
                 RightRuleKind::T(SliceTerminal::<u8>::Slice(b"WAVE")),
@@ -84,8 +83,8 @@ fn wave_riff() {
         ),
     );
 
-    let u32_rule: Rule<SliceTerminal<u8>, WaveFmtVariable> = Rule::new(
-        WaveFmtVariable::U32,
+    let u32_rule: Rule<SliceTerminal<u8>, WavRiffVariable> = Rule::new(
+        WavRiffVariable::U32,
         RightRule::from_right_rule_kind(
             (RightRuleKind::Any(4), RightRuleKind::Epsilon),
             RightRuleKind::Failure,
@@ -106,8 +105,8 @@ fn wave_riff() {
     // all of the span
     let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
 
-    let result: Result<AST<U16OrU32, WaveFmtVariable, StartAndLenSpan<u32, u16>>, ()> =
-        input.minimal_parse(&rules, &WaveFmtVariable::Riff, all_of_the_span);
+    let result: Result<AST<U16OrU32, WavRiffVariable, StartAndLenSpan<u32, u16>>, ()> =
+        input.minimal_parse(&rules, &WavRiffVariable::Riff, all_of_the_span);
 
     assert!(result.is_ok());
 
@@ -117,8 +116,8 @@ fn wave_riff() {
     // all of the span
     let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
 
-    let result: Result<AST<U16OrU32, WaveFmtVariable, StartAndLenSpan<u32, u16>>, ()> =
-        input.minimal_parse(&rules, &WaveFmtVariable::Riff, all_of_the_span);
+    let result: Result<AST<U16OrU32, WavRiffVariable, StartAndLenSpan<u32, u16>>, ()> =
+        input.minimal_parse(&rules, &WavRiffVariable::Riff, all_of_the_span);
 
     assert!(result.is_err());
 }
