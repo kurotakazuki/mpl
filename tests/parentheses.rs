@@ -80,8 +80,10 @@ fn parentheses() {
     // all of the span
     let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
 
-    let result: Result<AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>, ()> =
-        input.minimal_parse(&rules, &ParenthesesVariable::Open, all_of_the_span);
+    let result: Result<
+        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
+        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
+    > = input.minimal_parse(&rules, &ParenthesesVariable::Open, all_of_the_span);
     assert_eq!(
         result.unwrap().span,
         StartAndLenSpan::from_lo_hi(0, 2, input)
@@ -92,8 +94,10 @@ fn parentheses() {
     // all of the span
     let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
 
-    let result: Result<AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>, ()> =
-        input.minimal_parse(&rules, &ParenthesesVariable::Open, all_of_the_span);
+    let result: Result<
+        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
+        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
+    > = input.minimal_parse(&rules, &ParenthesesVariable::Open, all_of_the_span);
     assert_eq!(
         result.unwrap().span,
         StartAndLenSpan::from_lo_hi(0, 8, input)
@@ -104,7 +108,9 @@ fn parentheses() {
     // all of the span
     let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
 
-    let result: Result<AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>, ()> =
-        input.minimal_parse(&rules, &ParenthesesVariable::Open, all_of_the_span);
-    assert_eq!(result, Err(()));
+    let result: Result<
+        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
+        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
+    > = input.minimal_parse(&rules, &ParenthesesVariable::Open, all_of_the_span);
+    assert!(result.is_err());
 }

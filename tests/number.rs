@@ -93,21 +93,27 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
         input: &'a ExtStr,
         pos: BytePos,
         max_pos: &BytePos,
-    ) -> Result<AST<NumberTerminal<'a>, NumberVariable, ByteSpan>, ()> {
+    ) -> Result<
+        AST<NumberTerminal<'a>, NumberVariable, ByteSpan>,
+        AST<NumberTerminal<'a>, NumberVariable, ByteSpan>,
+    > {
         let eval_from = |len: usize, value: &str, number_terminal: NumberTerminal<'a>| {
             let start = pos;
             let pos: usize = pos.0 as usize;
 
             let span = ByteSpan::from_start_len(start, len as u16);
+            let hi = span.hi(input);
 
-            if &span.hi(input) <= max_pos {
+            let ast = AST::from_leaf_node(LeafNode::from_t(number_terminal), span);
+
+            if &hi <= max_pos {
                 if let Some(s) = input.0.get(pos..pos + len) {
                     if s == value {
-                        return Ok(AST::from_leaf_node(LeafNode::from_t(number_terminal), span));
+                        return Ok(ast);
                     }
                 }
             }
-            Err(())
+            Err(ast)
         };
 
         match self {
@@ -259,7 +265,7 @@ fn main() {
     let all_of_the_span = StartAndLenSpan::from_start_len(BytePos(0), input.0.len() as u16);
     let result = input.minimal_parse(&rules, &NumberVariable::Number, all_of_the_span);
 
-    assert_eq!(result, Err(()));
+    assert!(result.is_err());
 
     let input = ExtStr(String::from("0１0０1"));
     // all of the span

@@ -32,40 +32,41 @@ where
         input: &'a [T],
         pos: P,
         max_pos: &P,
-    ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
-        let start = pos.clone();
-        let pos: usize = P::into_usize(pos, input);
+    ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, AST<O, V, StartAndLenSpan<P, L>>> {
+        let ast_hi_pos = |pos: P, len| {
+            let start = pos.clone();
+            let pos: usize = P::into_usize(pos, input);
+            let span = StartAndLenSpan::from_lo_len(start, len, input);
+            let hi = span.hi(input);
+            let ast = AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), span);
+            (ast, hi, pos)
+        };
+
         match self {
             SliceTerminal::Element(element) => {
                 // Length is 1.
-                let span = StartAndLenSpan::from_lo_len(start, 1, input);
-                if &span.hi(input) <= max_pos {
+                let (ast, hi, pos) = ast_hi_pos(pos, 1);
+                if &hi <= max_pos {
                     // let e = unsafe { input.get_unchecked(pos) };
                     if let Some(e) = input.get(pos) {
                         if element == e {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
+                            return Ok(ast);
                         }
                     }
                 }
-                Err(())
+                Err(ast)
             }
             SliceTerminal::Slice(slice) => {
                 let len = slice.len();
-                let span = StartAndLenSpan::from_lo_len(start, len, input);
-                if &span.hi(input) <= max_pos {
+                let (ast, hi, pos) = ast_hi_pos(pos, len);
+                if &hi <= max_pos {
                     if let Some(ref s) = input.get(pos..pos + len) {
                         if s == slice {
-                            return Ok(AST::from_leaf_node(
-                                LeafNode::from_m(Metasymbol::Omit),
-                                span,
-                            ));
+                            return Ok(ast);
                         }
                     }
                 }
-                Err(())
+                Err(ast)
             }
         }
     }

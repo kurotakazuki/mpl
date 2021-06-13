@@ -30,7 +30,7 @@ where
         rules: &'input Rules<T, V>,
         start_variable: &V,
         all_of_the_span: S,
-    ) -> Result<AST<O, V, S>, ()> {
+    ) -> Result<AST<O, V, S>, AST<O, V, S>> {
         let ast = self.eval(
             &all_of_the_span.lo(self),
             &rules,
@@ -41,38 +41,42 @@ where
         if ast.span == all_of_the_span {
             Ok(ast)
         } else {
-            Err(())
+            Err(ast)
         }
     }
 
-    fn into_epsilon_ast(&'input self, pos: P) -> Result<AST<O, V, S>, ()> {
+    fn into_epsilon_ast(&'input self, pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
         Ok(AST::from_leaf_node(
             TerminalSymbol::M(Metasymbol::Epsilon),
             Span::from_lo_hi(pos.clone(), pos, self),
         ))
     }
 
-    fn into_failed_ast(&'input self, _pos: P) -> Result<AST<O, V, S>, ()> {
-        // Err(AST::from_leaf_node(
-        //     TerminalSymbol::M(Metasymbol::Failure),
-        //     Span::from_lo_hi(pos.clone(), pos)
-        // ))
-        Err(())
+    fn into_failed_ast(&'input self, pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
+        Err(AST::from_leaf_node(
+            TerminalSymbol::M(Metasymbol::Failure),
+            Span::from_lo_hi(pos.clone(), pos, self),
+        ))
     }
 
-    fn into_any_ast(&'input self, pos: P, max_pos: &P, n: usize) -> Result<AST<O, V, S>, ()> {
+    // TODO: Decide return Any or Failure
+    fn into_any_ast(
+        &'input self,
+        pos: P,
+        max_pos: &P,
+        n: usize,
+    ) -> Result<AST<O, V, S>, AST<O, V, S>> {
         let span_with_len_added = S::from_lo_len(pos, n, self);
-        if &span_with_len_added.hi(self) <= max_pos {
-            Ok(AST::from_leaf_node(
-                TerminalSymbol::M(Metasymbol::Any(n)),
-                span_with_len_added,
-            ))
+        let hi = span_with_len_added.hi(self);
+        let ast = AST::from_leaf_node(TerminalSymbol::M(Metasymbol::Any(n)), span_with_len_added);
+        if &hi <= max_pos {
+            Ok(ast)
         } else {
-            Err(())
+            Err(ast)
         }
     }
 
-    fn into_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<O, V, S>, ()> {
+    fn into_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
         Ok(AST::from_leaf_node(
             TerminalSymbol::M(Metasymbol::All),
             Span::from_lo_hi(pos, max_pos, self),
@@ -84,7 +88,7 @@ where
         terminal_symbol: &'input TerminalSymbol<T>,
         pos: P,
         max_pos: &P,
-    ) -> Result<AST<O, V, S>, ()> {
+    ) -> Result<AST<O, V, S>, AST<O, V, S>> {
         match terminal_symbol {
             TerminalSymbol::Original(t) => t.eval(self, pos, max_pos),
             TerminalSymbol::M(metasymbol) => match metasymbol {
@@ -103,12 +107,12 @@ where
         rules: &'input Rules<T, V>,
         variable: &V,
         max_pos: &P,
-    ) -> Result<AST<O, V, S>, ()> {
+    ) -> Result<AST<O, V, S>, AST<O, V, S>> {
         let right_rule = rules.0.get(variable).expect("right_rule from a variable");
 
         // First choice
         // left-hand side of first choice
-        let left_ast: Result<AST<O, V, S>, ()> = match &right_rule.first.lhs {
+        let left_ast: Result<AST<O, V, S>, AST<O, V, S>> = match &right_rule.first.lhs {
             E::T(terminal_symbol) => {
                 self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
             }
@@ -117,7 +121,7 @@ where
 
         if let Ok(left_ast) = left_ast {
             // right-hand side of first choice
-            let right_ast: Result<AST<O, V, S>, ()> = match &right_rule.first.rhs {
+            let right_ast: Result<AST<O, V, S>, AST<O, V, S>> = match &right_rule.first.rhs {
                 E::T(terminal_symbol) => {
                     self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
                 }

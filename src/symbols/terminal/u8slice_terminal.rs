@@ -69,22 +69,21 @@ where
         input: &'a [u8],
         pos: P,
         max_pos: &P,
-    ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, ()> {
+    ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, AST<O, V, StartAndLenSpan<P, L>>> {
         let eval_from = |len: usize, slice: &[u8]| {
             let start = pos.clone();
             let pos: usize = P::into_usize(pos, input);
             let span = StartAndLenSpan::from_lo_len(start, len, input);
-            if &span.hi(input) <= max_pos {
+            let hi = span.hi(input);
+            let ast = AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), span);
+            if &hi <= max_pos {
                 if let Some(s) = input.get(pos..pos + len) {
                     if s == slice {
-                        return Ok(AST::from_leaf_node(
-                            LeafNode::from_m(Metasymbol::Omit),
-                            span,
-                        ));
+                        return Ok(ast);
                     }
                 }
             }
-            Err(())
+            Err(ast)
         };
 
         match self {
