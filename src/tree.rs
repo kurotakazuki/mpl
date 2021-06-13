@@ -1,6 +1,6 @@
 use crate::choice::Choice;
 use crate::span::Spanned;
-use crate::symbols::{TerminalSymbol, VAndE};
+use crate::symbols::{Metasymbol, TerminalSymbol, VAndE};
 
 pub type LeafNode<O> = TerminalSymbol<O>;
 pub type InternalNode<O, V, S> = VAndE<(V, Option<O>), Box<Choice<AST<O, V, S>>>>;
@@ -53,5 +53,13 @@ impl<O, V, S> AST<O, V, S> {
 
     pub fn from_cst(cst: CST<O, V, S>) -> Self {
         Self::from_cst_and_output(cst, None)
+    }
+}
+
+
+impl<O, V, S: Clone> CST<O, V, S> {
+    pub fn into_omit(mut self) -> Self {
+        self.node.equal = Choice::second(AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), self.span.clone()));
+        self
     }
 }
