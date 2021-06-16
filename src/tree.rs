@@ -1,17 +1,17 @@
 use crate::choice::Choice;
 use crate::span::Spanned;
-use crate::symbols::{Metasymbol, TerminalSymbol, VAndE};
+use crate::symbols::{Equivalence, Metasymbol, TerminalSymbol};
 
 pub type LeafNode<O> = TerminalSymbol<O>;
-pub type InternalNode<O, V, S> = VAndE<(V, Option<O>), Box<Choice<AST<O, V, S>>>>;
+pub type InternalNode<O, V, S> = Equivalence<(V, Option<O>), Box<Choice<AST<O, V, S>>>>;
 
 impl<O, V, S> InternalNode<O, V, S> {
     pub fn from_first(value: (V, Option<O>), l: AST<O, V, S>, r: AST<O, V, S>) -> Self {
-        VAndE::new(value, Box::new(Choice::first(l, r)))
+        Equivalence::new(value, Box::new(Choice::first(l, r)))
     }
 
     pub fn from_second(value: (V, Option<O>), e: AST<O, V, S>) -> Self {
-        VAndE::new(value, Box::new(Choice::second(e)))
+        Equivalence::new(value, Box::new(Choice::second(e)))
     }
 }
 
@@ -23,19 +23,31 @@ pub enum ASTKind<O, V, S> {
     InternalNode(InternalNode<O, V, S>),
 }
 
+impl<O, V, S> From<LeafNode<O>> for ASTKind<O, V, S> {
+    fn from(leaf_node: LeafNode<O>) -> Self {
+        Self::LeafNode(leaf_node)
+    }
+}
+
+impl<O, V, S> From<InternalNode<O, V, S>> for ASTKind<O, V, S> {
+    fn from(internal_node: InternalNode<O, V, S>) -> Self {
+        Self::InternalNode(internal_node)
+    }
+}
+
 pub type AST<O, V, S> = Spanned<ASTKind<O, V, S>, S>;
 
-pub type CST<O, V, S> = Spanned<VAndE<V, Choice<AST<O, V, S>>>, S>;
+pub type CST<O, V, S> = Spanned<Equivalence<V, Choice<AST<O, V, S>>>, S>;
 
 impl<O, V, S> AST<O, V, S> {
     // Leaf Node
     pub fn from_leaf_node(leaf_node: LeafNode<O>, span: S) -> Self {
-        Self::new(ASTKind::LeafNode(leaf_node), span)
+        Self::new(leaf_node.into(), span)
     }
 
     // Internal Node
     pub fn from_internal_node(internal_node: InternalNode<O, V, S>, span: S) -> Self {
-        Self::new(ASTKind::InternalNode(internal_node), span)
+        Self::new(internal_node.into(), span)
     }
 
     pub fn from_cst_and_output(cst: CST<O, V, S>, output: Option<O>) -> Self {
@@ -56,10 +68,12 @@ impl<O, V, S> AST<O, V, S> {
     }
 }
 
-
 impl<O, V, S: Clone> CST<O, V, S> {
     pub fn into_omit(mut self) -> Self {
-        self.node.equal = Choice::second(AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), self.span.clone()));
+        self.node.equal = Choice::second(AST::from_leaf_node(
+            LeafNode::from_m(Metasymbol::Omit),
+            self.span.clone(),
+        ));
         self
     }
 }

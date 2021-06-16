@@ -3,7 +3,7 @@ pub use self::terminal::{
     metasymbol::Metasymbol, slice_terminal::SliceTerminal, str_terminal::StrTerminal,
     terminal_symbol::TerminalSymbol, u8slice_terminal::U8SliceTerminal, Terminal,
 };
-pub use self::variable::{VAndE, Variable};
+pub use self::variable::{Equivalence, Variable};
 
 mod e;
 mod terminal;

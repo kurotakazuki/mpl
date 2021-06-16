@@ -5,7 +5,7 @@ use crate::position::Position;
 use crate::rules::Rules;
 use crate::span::{Len, Span, Start, StartAndLenSpan};
 use crate::symbols::{
-    Metasymbol, SliceTerminal, StrTerminal, Terminal, TerminalSymbol, U8SliceTerminal, VAndE,
+    Equivalence, Metasymbol, SliceTerminal, StrTerminal, Terminal, TerminalSymbol, U8SliceTerminal,
     Variable, E,
 };
 use crate::tree::{AST, CST};
@@ -134,7 +134,7 @@ where
                 let merged_span = Span::merge_lhs_and_rhs(&left_ast.span, &right_ast.span, self);
 
                 let variable_and_choice =
-                    VAndE::new(variable.clone(), Choice::first(left_ast, right_ast));
+                    Equivalence::new(variable.clone(), Choice::first(left_ast, right_ast));
 
                 let cst = CST::new(variable_and_choice, merged_span);
 
@@ -153,7 +153,7 @@ where
                 let ast = self.eval(pos, rules, &sc_v, max_pos)?;
                 let span = ast.span.clone();
 
-                let variable_and_choice = VAndE::new(variable.clone(), Choice::second(ast));
+                let variable_and_choice = Equivalence::new(variable.clone(), Choice::second(ast));
 
                 let cst = CST::new(variable_and_choice, span);
 
