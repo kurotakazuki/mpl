@@ -1,4 +1,3 @@
-use crate::choice::Choice;
 use crate::input::Input;
 use crate::output::Output;
 use crate::position::Position;
@@ -134,7 +133,7 @@ where
                 let merged_span = Span::merge_lhs_and_rhs(&left_ast.span, &right_ast.span, self);
 
                 let variable_and_choice =
-                    Equivalence::new(variable.clone(), Choice::first(left_ast, right_ast));
+                    Equivalence::new(variable.clone(), (left_ast, right_ast).into());
 
                 let cst = CST::new(variable_and_choice, merged_span);
 
@@ -153,7 +152,7 @@ where
                 let ast = self.eval(pos, rules, &sc_v, max_pos)?;
                 let span = ast.span.clone();
 
-                let variable_and_choice = Equivalence::new(variable.clone(), Choice::second(ast));
+                let variable_and_choice = Equivalence::new(variable.clone(), ast.into());
 
                 let cst = CST::new(variable_and_choice, span);
 

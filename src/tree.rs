@@ -7,11 +7,11 @@ pub type InternalNode<O, V, S> = Equivalence<(V, Option<O>), Box<Choice<AST<O, V
 
 impl<O, V, S> InternalNode<O, V, S> {
     pub fn from_first(value: (V, Option<O>), l: AST<O, V, S>, r: AST<O, V, S>) -> Self {
-        Equivalence::new(value, Box::new(Choice::first(l, r)))
+        Equivalence::new(value, Box::new((l, r).into()))
     }
 
     pub fn from_second(value: (V, Option<O>), e: AST<O, V, S>) -> Self {
-        Equivalence::new(value, Box::new(Choice::second(e)))
+        Equivalence::new(value, Box::new(e.into()))
     }
 }
 
@@ -70,10 +70,8 @@ impl<O, V, S> AST<O, V, S> {
 
 impl<O, V, S: Clone> CST<O, V, S> {
     pub fn into_omit(mut self) -> Self {
-        self.node.equal = Choice::second(AST::from_leaf_node(
-            LeafNode::from_m(Metasymbol::Omit),
-            self.span.clone(),
-        ));
+        self.node.equal =
+            AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), self.span.clone()).into();
         self
     }
 }

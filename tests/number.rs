@@ -177,7 +177,8 @@ impl<'a> Parse<'a, NumberTerminal<'a>, NumberTerminal<'a>, NumberVariable, ByteS
 /// One = '1' () / FOne
 /// FOne = "１" () / f
 /// ```
-fn main() {
+#[test]
+fn number() {
     let number_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
         NumberVariable::Number,
         RightRule::from_right_rule_kind(
