@@ -6,16 +6,15 @@ pub struct First<E> {
     pub rhs: E,
 }
 
-impl<O, V, S> From<(AST<O, V, S>, AST<O, V, S>)> for First<AST<O, V, S>> {
-    fn from(e: (AST<O, V, S>, AST<O, V, S>)) -> Self {
-        let (lhs, rhs) = e;
+impl<E> First<E> {
+    pub fn new(lhs: E, rhs: E) -> Self {
         Self { lhs, rhs }
     }
 }
 
-impl<E> First<E> {
-    pub fn new(lhs: E, rhs: E) -> Self {
-        Self { lhs, rhs }
+impl<O, V, S> From<(AST<O, V, S>, AST<O, V, S>)> for First<AST<O, V, S>> {
+    fn from(e: (AST<O, V, S>, AST<O, V, S>)) -> Self {
+        Self::new(e.0, e.1)
     }
 }
 
@@ -24,7 +23,7 @@ pub struct Second<E>(pub E);
 
 impl<O, V, S> From<AST<O, V, S>> for Second<AST<O, V, S>> {
     fn from(e: AST<O, V, S>) -> Self {
-        Self(e)
+        Self::new(e)
     }
 }
 
@@ -45,33 +44,25 @@ impl<E> From<First<E>> for Choice<E> {
     }
 }
 
-impl<O, V, S> From<(AST<O, V, S>, AST<O, V, S>)> for Choice<AST<O, V, S>> {
-    fn from(e: (AST<O, V, S>, AST<O, V, S>)) -> Self {
-        e.into()
-    }
-}
-
 impl<E> From<Second<E>> for Choice<E> {
     fn from(second: Second<E>) -> Self {
         Self::Second(second)
     }
 }
 
+impl<O, V, S> From<(AST<O, V, S>, AST<O, V, S>)> for Choice<AST<O, V, S>> {
+    fn from(e: (AST<O, V, S>, AST<O, V, S>)) -> Self {
+        First::from(e).into()
+    }
+}
+
 impl<O, V, S> From<AST<O, V, S>> for Choice<AST<O, V, S>> {
     fn from(e: AST<O, V, S>) -> Self {
-        e.into()
+        Second::from(e).into()
     }
 }
 
 impl<E> Choice<E> {
-    // pub fn first(lhs: E, rhs: E) -> Self {
-    //     Self::First(First::new(lhs, rhs))
-    // }
-
-    // pub fn second(e: E) -> Self {
-    //     Self::Second(Second::new(e))
-    // }
-
     /// Returns true if Self::First
     pub fn is_first(&self) -> bool {
         match self {
