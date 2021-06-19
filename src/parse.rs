@@ -122,7 +122,7 @@ where
             // right-hand side of first choice
             let right_ast: Result<AST<O, V, S>, AST<O, V, S>> = match &right_rule.first.rhs {
                 E::T(terminal_symbol) => {
-                    self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
+                    self.eval_terminal_symbol(terminal_symbol, left_ast.span.hi(self), max_pos)
                 }
                 E::V(rhs_of_fc_v) => {
                     self.eval(&left_ast.span.hi(self), rules, rhs_of_fc_v, max_pos)
