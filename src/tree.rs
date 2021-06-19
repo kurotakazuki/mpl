@@ -121,14 +121,6 @@ impl<O, V, S> AST<O, V, S> {
         self.node.as_internal_node()
     }
 
-    pub fn as_first(&self) -> Option<&First<AST<O, V, S>>> {
-        self.as_internal_node().and_then(|n| n.as_first())
-    }
-
-    pub fn as_second(&self) -> Option<&Second<AST<O, V, S>>> {
-        self.as_internal_node().and_then(|n| n.as_second())
-    }
-
     pub fn into_leaf_node(self) -> Option<LeafNode<O>> {
         self.node.into_leaf_node()
     }
@@ -137,12 +129,36 @@ impl<O, V, S> AST<O, V, S> {
         self.node.into_internal_node()
     }
 
+    pub fn as_first(&self) -> Option<&First<AST<O, V, S>>> {
+        self.as_internal_node().and_then(|n| n.as_first())
+    }
+
+    pub fn as_second(&self) -> Option<&Second<AST<O, V, S>>> {
+        self.as_internal_node().and_then(|n| n.as_second())
+    }
+
     pub fn into_first(self) -> Option<First<AST<O, V, S>>> {
         self.into_internal_node().and_then(|n| n.into_first())
     }
 
     pub fn into_second(self) -> Option<Second<AST<O, V, S>>> {
         self.into_internal_node().and_then(|n| n.into_second())
+    }
+
+    pub fn as_original(&self) -> Option<&O> {
+        self.as_leaf_node().and_then(|n| n.as_original())
+    }
+
+    pub fn as_metasymbol(&self) -> Option<&Metasymbol> {
+        self.as_leaf_node().and_then(|n| n.as_metasymbol())
+    }
+
+    pub fn into_original(self) -> Option<O> {
+        self.into_leaf_node().and_then(|n| n.into_original())
+    }
+
+    pub fn into_metasymbol(self) -> Option<Metasymbol> {
+        self.into_leaf_node().and_then(|n| n.into_metasymbol())
     }
 }
 

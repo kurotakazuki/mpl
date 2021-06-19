@@ -17,3 +17,33 @@ impl<T> TerminalSymbol<T> {
         Self::Original(t)
     }
 }
+
+impl<T> TerminalSymbol<T> {
+    pub fn as_original(&self) -> Option<&T> {
+        match self {
+            Self::Original(original) => Some(original),
+            Self::Metasymbol(_) => None,
+        }
+    }
+
+    pub fn as_metasymbol(&self) -> Option<&Metasymbol> {
+        match self {
+            Self::Original(_) => None,
+            Self::Metasymbol(metasymbol) => Some(metasymbol),
+        }
+    }
+
+    pub fn into_original(self) -> Option<T> {
+        match self {
+            Self::Original(original) => Some(original),
+            Self::Metasymbol(_) => None,
+        }
+    }
+
+    pub fn into_metasymbol(self) -> Option<Metasymbol> {
+        match self {
+            Self::Original(_) => None,
+            Self::Metasymbol(metasymbol) => Some(metasymbol),
+        }
+    }
+}
