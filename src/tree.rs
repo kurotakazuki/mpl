@@ -166,8 +166,7 @@ impl<O, V, S> CST<O, V, S> {
 
 impl<O, V, S: Clone> CST<O, V, S> {
     pub fn into_omit(mut self) -> Self {
-        self.node.equal =
-            AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), self.span.clone()).into();
+        self.node.equal = AST::from_leaf_node(Metasymbol::Omit.into(), self.span.clone()).into();
         self
     }
 }

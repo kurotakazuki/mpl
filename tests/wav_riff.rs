@@ -108,7 +108,7 @@ fn wav_riff() {
     let result: Result<
         AST<U16OrU32, WavRiffVariable, StartAndLenSpan<u32, u16>>,
         AST<U16OrU32, WavRiffVariable, StartAndLenSpan<u32, u16>>,
-    > = input.minimal_parse(&rules, &WavRiffVariable::Riff, all_of_the_span);
+    > = input.minimal_parse(&rules, &WavRiffVariable::Riff, &all_of_the_span);
 
     assert!(result.is_ok());
 
@@ -121,7 +121,7 @@ fn wav_riff() {
     let result: Result<
         AST<U16OrU32, WavRiffVariable, StartAndLenSpan<u32, u16>>,
         AST<U16OrU32, WavRiffVariable, StartAndLenSpan<u32, u16>>,
-    > = input.minimal_parse(&rules, &WavRiffVariable::Riff, all_of_the_span);
+    > = input.minimal_parse(&rules, &WavRiffVariable::Riff, &all_of_the_span);
 
     assert!(result.is_err());
 }

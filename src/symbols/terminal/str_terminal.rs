@@ -1,6 +1,7 @@
 use crate::span::{Len, Span, Start, StartAndLenSpan};
+use crate::symbols::terminal::StartAndLenResult;
 use crate::symbols::{Metasymbol, Terminal};
-use crate::tree::{LeafNode, AST};
+use crate::tree::AST;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum StrTerminal<'a> {
@@ -25,18 +26,13 @@ where
     P: Start<str, L>,
     L: Len<str, P>,
 {
-    fn eval(
-        &'a self,
-        input: &'a str,
-        pos: P,
-        max_pos: &P,
-    ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, AST<O, V, StartAndLenSpan<P, L>>> {
+    fn eval(&'a self, input: &'a str, pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
         let eval_from = |len: usize, string: &str| {
             let start = pos.clone();
             let pos: usize = P::into_usize(pos, input);
             let span = StartAndLenSpan::from_lo_len(start, len, input);
             let hi = span.hi(input);
-            let ast = AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), span);
+            let ast = AST::from_leaf_node(Metasymbol::Omit.into(), span);
             if &hi <= max_pos {
                 if let Some(s) = input.get(pos..pos + len) {
                     if s == string {

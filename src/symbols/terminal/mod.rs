@@ -1,3 +1,4 @@
+use crate::span::StartAndLenSpan;
 use crate::tree::AST;
 
 pub mod metasymbol;
@@ -17,3 +18,6 @@ where
         max_pos: &P,
     ) -> Result<AST<O, V, S>, AST<O, V, S>>;
 }
+
+type StartAndLenResult<O, V, P, L> =
+    Result<AST<O, V, StartAndLenSpan<P, L>>, AST<O, V, StartAndLenSpan<P, L>>>;

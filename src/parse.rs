@@ -28,38 +28,38 @@ where
         &'input self,
         rules: &'input Rules<T, V>,
         start_variable: &V,
-        all_of_the_span: S,
+        all_of_the_span: &S,
     ) -> Result<AST<O, V, S>, AST<O, V, S>> {
         let ast = self.eval(
             &all_of_the_span.lo(self),
-            &rules,
-            &start_variable,
+            rules,
+            start_variable,
             &all_of_the_span.hi(self),
         )?;
 
-        if ast.span == all_of_the_span {
+        if &ast.span == all_of_the_span {
             Ok(ast)
         } else {
             Err(ast)
         }
     }
 
-    fn into_epsilon_ast(&'input self, pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
+    fn to_epsilon_ast(&'input self, pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
         Ok(AST::from_leaf_node(
-            TerminalSymbol::M(Metasymbol::Epsilon),
+            Metasymbol::Epsilon.into(),
             Span::from_lo_hi(pos.clone(), pos, self),
         ))
     }
 
-    fn into_failed_ast(&'input self, pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
+    fn to_failed_ast(&'input self, pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
         Err(AST::from_leaf_node(
-            TerminalSymbol::M(Metasymbol::Failure),
+            Metasymbol::Failure.into(),
             Span::from_lo_hi(pos.clone(), pos, self),
         ))
     }
 
     // TODO: Decide return Any or Failure
-    fn into_any_ast(
+    fn to_any_ast(
         &'input self,
         pos: P,
         max_pos: &P,
@@ -67,7 +67,7 @@ where
     ) -> Result<AST<O, V, S>, AST<O, V, S>> {
         let span_with_len_added = S::from_lo_len(pos, n, self);
         let hi = span_with_len_added.hi(self);
-        let ast = AST::from_leaf_node(TerminalSymbol::M(Metasymbol::Any(n)), span_with_len_added);
+        let ast = AST::from_leaf_node(Metasymbol::Any(n).into(), span_with_len_added);
         if &hi <= max_pos {
             Ok(ast)
         } else {
@@ -75,9 +75,9 @@ where
         }
     }
 
-    fn into_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
+    fn to_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
         Ok(AST::from_leaf_node(
-            TerminalSymbol::M(Metasymbol::All),
+            Metasymbol::All.into(),
             Span::from_lo_hi(pos, max_pos, self),
         ))
     }
@@ -90,11 +90,11 @@ where
     ) -> Result<AST<O, V, S>, AST<O, V, S>> {
         match terminal_symbol {
             TerminalSymbol::Original(t) => t.eval(self, pos, max_pos),
-            TerminalSymbol::M(metasymbol) => match metasymbol {
-                Metasymbol::Epsilon => self.into_epsilon_ast(pos),
-                Metasymbol::Failure => self.into_failed_ast(pos),
-                Metasymbol::Any(n) => self.into_any_ast(pos, max_pos, *n),
-                Metasymbol::All => self.into_all_ast(pos, max_pos.clone()),
+            TerminalSymbol::Metasymbol(metasymbol) => match metasymbol {
+                Metasymbol::Epsilon => self.to_epsilon_ast(pos),
+                Metasymbol::Failure => self.to_failed_ast(pos),
+                Metasymbol::Any(n) => self.to_any_ast(pos, max_pos, *n),
+                Metasymbol::All => self.to_all_ast(pos, max_pos.clone()),
                 Metasymbol::Omit => unimplemented!(),
             },
         }
@@ -115,7 +115,7 @@ where
             E::T(terminal_symbol) => {
                 self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
             }
-            E::V(lhs_of_fc_v) => self.eval(pos, rules, &lhs_of_fc_v, max_pos),
+            E::V(lhs_of_fc_v) => self.eval(pos, rules, lhs_of_fc_v, max_pos),
         };
 
         if let Ok(left_ast) = left_ast {
@@ -125,7 +125,7 @@ where
                     self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
                 }
                 E::V(rhs_of_fc_v) => {
-                    self.eval(&left_ast.span.hi(self), rules, &rhs_of_fc_v, max_pos)
+                    self.eval(&left_ast.span.hi(self), rules, rhs_of_fc_v, max_pos)
                 }
             };
 
@@ -137,7 +137,7 @@ where
 
                 let cst = CST::new(variable_and_choice, merged_span);
 
-                let output_ast = O::output_ast(&self, cst);
+                let output_ast = O::output_ast(self, cst);
 
                 return Ok(output_ast);
             }
@@ -149,7 +149,7 @@ where
                 self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
             }
             E::V(sc_v) => {
-                let ast = self.eval(pos, rules, &sc_v, max_pos)?;
+                let ast = self.eval(pos, rules, sc_v, max_pos)?;
                 let span = ast.span.clone();
 
                 let variable_and_choice = Equivalence::new(variable.clone(), ast.into());

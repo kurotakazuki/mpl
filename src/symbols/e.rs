@@ -1,4 +1,4 @@
-use crate::symbols::TerminalSymbol;
+use crate::symbols::{Metasymbol, TerminalSymbol};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum E<T, V> {
@@ -6,12 +6,20 @@ pub enum E<T, V> {
     V(V),
 }
 
-impl<T, V> E<T, V> {
-    pub fn t(t: TerminalSymbol<T>) -> Self {
+impl<T, V> From<TerminalSymbol<T>> for E<T, V> {
+    fn from(t: TerminalSymbol<T>) -> Self {
         Self::T(t)
     }
+}
 
-    pub fn v(v: V) -> Self {
+impl<T, V> From<Metasymbol> for E<T, V> {
+    fn from(m: Metasymbol) -> Self {
+        Self::T(m.into())
+    }
+}
+
+impl<T, V> E<T, V> {
+    pub fn from_v(v: V) -> Self {
         Self::V(v)
     }
 }

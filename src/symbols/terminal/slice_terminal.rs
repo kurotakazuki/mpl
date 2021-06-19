@@ -1,6 +1,7 @@
 use crate::span::{Len, Span, Start, StartAndLenSpan};
+use crate::symbols::terminal::StartAndLenResult;
 use crate::symbols::{Metasymbol, Terminal};
-use crate::tree::{LeafNode, AST};
+use crate::tree::AST;
 use std::cmp::PartialEq;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -27,18 +28,13 @@ where
     P: Start<[T], L>,
     L: Len<[T], P>,
 {
-    fn eval(
-        &'a self,
-        input: &'a [T],
-        pos: P,
-        max_pos: &P,
-    ) -> Result<AST<O, V, StartAndLenSpan<P, L>>, AST<O, V, StartAndLenSpan<P, L>>> {
+    fn eval(&'a self, input: &'a [T], pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
         let ast_hi_pos = |pos: P, len| {
             let start = pos.clone();
             let pos: usize = P::into_usize(pos, input);
             let span = StartAndLenSpan::from_lo_len(start, len, input);
             let hi = span.hi(input);
-            let ast = AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), span);
+            let ast = AST::from_leaf_node(Metasymbol::Omit.into(), span);
             (ast, hi, pos)
         };
 

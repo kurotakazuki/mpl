@@ -39,10 +39,10 @@ pub enum RightRuleKind<T, V> {
 impl<T, V> From<RightRuleKind<T, V>> for E<T, V> {
     fn from(right_rule_kind: RightRuleKind<T, V>) -> Self {
         match right_rule_kind {
-            RightRuleKind::Epsilon => E::T(TerminalSymbol::M(Metasymbol::Epsilon)),
-            RightRuleKind::Failure => E::T(TerminalSymbol::M(Metasymbol::Failure)),
-            RightRuleKind::Any(n) => E::T(TerminalSymbol::M(Metasymbol::Any(n))),
-            RightRuleKind::All => E::T(TerminalSymbol::M(Metasymbol::All)),
+            RightRuleKind::Epsilon => Metasymbol::Epsilon.into(),
+            RightRuleKind::Failure => Metasymbol::Failure.into(),
+            RightRuleKind::Any(n) => Metasymbol::Any(n).into(),
+            RightRuleKind::All => Metasymbol::All.into(),
             RightRuleKind::T(t) => E::T(TerminalSymbol::Original(t)),
             RightRuleKind::V(v) => E::V(v),
         }
@@ -94,20 +94,20 @@ mod tests {
             BinDigitVariable::BinDigit,
             RightRule::new(
                 choice::First::new(
-                    E::t(TerminalSymbol::from_t(BinDigitTerminal::Char('0'))),
-                    E::t(TerminalSymbol::from_m(Metasymbol::Epsilon)),
+                    TerminalSymbol::from_original(BinDigitTerminal::Char('0')).into(),
+                    Metasymbol::Epsilon.into(),
                 ),
-                choice::Second::new(E::v(BinDigitVariable::One)),
+                choice::Second::new(E::from_v(BinDigitVariable::One)),
             ),
         );
         rules.0.insert(
             BinDigitVariable::One,
             RightRule::new(
                 choice::First::new(
-                    E::t(TerminalSymbol::from_t(BinDigitTerminal::Char('1'))),
-                    E::t(TerminalSymbol::from_m(Metasymbol::Epsilon)),
+                    TerminalSymbol::from_original(BinDigitTerminal::Char('1')).into(),
+                    Metasymbol::Epsilon.into(),
                 ),
-                choice::Second::new(E::t(TerminalSymbol::from_m(Metasymbol::Failure))),
+                choice::Second::new(Metasymbol::Failure.into()),
             ),
         );
 

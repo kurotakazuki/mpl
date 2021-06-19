@@ -104,7 +104,7 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
             let span = ByteSpan::from_start_len(start, len as u16);
             let hi = span.hi(input);
 
-            let ast = AST::from_leaf_node(LeafNode::from_t(number_terminal), span);
+            let ast = AST::from_leaf_node(LeafNode::from_original(number_terminal), span);
 
             if &hi <= max_pos {
                 if let Some(s) = input.0.get(pos..pos + len) {
@@ -148,7 +148,7 @@ impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal
                 let s = &input.0[lo..hi];
 
                 let omit: AST<Self, NumberVariable, ByteSpan> =
-                    AST::from_leaf_node(LeafNode::from_m(Metasymbol::Omit), span.clone());
+                    AST::from_leaf_node(Metasymbol::Omit.into(), span.clone());
 
                 let internal_node =
                     InternalNode::from_second((cst.node.value, Some(NumberTerminal::Str(s))), omit);
@@ -264,14 +264,14 @@ fn number() {
     let input = ExtStr(String::from("012001"));
     // all of the span
     let all_of_the_span = StartAndLenSpan::from_start_len(BytePos(0), input.0.len() as u16);
-    let result = input.minimal_parse(&rules, &NumberVariable::Number, all_of_the_span);
+    let result = input.minimal_parse(&rules, &NumberVariable::Number, &all_of_the_span);
 
     assert!(result.is_err());
 
     let input = ExtStr(String::from("0１0０1"));
     // all of the span
     let all_of_the_span = StartAndLenSpan::from_start_len(BytePos(0), input.0.len() as u16);
-    let result = input.minimal_parse(&rules, &NumberVariable::Number, all_of_the_span);
+    let result = input.minimal_parse(&rules, &NumberVariable::Number, &all_of_the_span);
 
     assert_eq!(result.unwrap().span.len, 9);
 }
