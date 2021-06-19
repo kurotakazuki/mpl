@@ -15,7 +15,7 @@ This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Dow
 ### Definition of MPL grammar
 A MPL grammar `G` is a tuple `G = (V, Σ, R, S)` in which:
 - `V` is a finite set of variables.
-- `Σ` is a finite set of terminal symbols.
+- `Σ` is a finite set of original terminal symbols.
 - `T` is an union of `Σ` or `M` (Σ &cup; M) (`M` (= {(), f}) is a finite set of metasymbols).
 - `R` is a finite set of rules of the form
     - `A = B C / D`  

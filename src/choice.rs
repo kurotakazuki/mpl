@@ -78,4 +78,32 @@ impl<E> Choice<E> {
             Self::Second(_) => true,
         }
     }
+
+    pub fn as_first(&self) -> Option<&First<E>> {
+        match self {
+            Self::First(first) => Some(first),
+            Self::Second(_) => None,
+        }
+    }
+
+    pub fn as_second(&self) -> Option<&Second<E>> {
+        match self {
+            Self::First(_) => None,
+            Self::Second(second) => Some(second),
+        }
+    }
+
+    pub fn into_first(self) -> Option<First<E>> {
+        match self {
+            Self::First(first) => Some(first),
+            Self::Second(_) => None,
+        }
+    }
+
+    pub fn into_second(self) -> Option<Second<E>> {
+        match self {
+            Self::First(_) => None,
+            Self::Second(second) => Some(second),
+        }
+    }
 }
