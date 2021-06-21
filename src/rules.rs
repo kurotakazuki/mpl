@@ -51,18 +51,16 @@ impl<T, V> From<RightRuleKind<T, V>> for E<T, V> {
 
 pub type Rule<T, V> = Equivalence<V, RightRule<T, V>>;
 
-pub struct Rules<T, V: Eq + Hash>(pub HashMap<V, RightRule<T, V>>);
+pub trait Rules<T, V> {
+    fn get(&self, variable: &V) -> Option<&RightRule<T, V>>;
+}
 
-impl<T, V> Rules<T, V>
+impl<T, V> Rules<T, V> for HashMap<V, RightRule<T, V>>
 where
     V: Eq + Hash,
 {
-    pub fn new() -> Self {
-        Rules(HashMap::new())
-    }
-
-    pub fn insert_rule(&mut self, rule: Rule<T, V>) -> Option<RightRule<T, V>> {
-        self.0.insert(rule.value, rule.equal)
+    fn get(&self, variable: &V) -> Option<&RightRule<T, V>> {
+        self.get(variable)
     }
 }
 
@@ -88,9 +86,10 @@ mod tests {
             One,
         }
 
-        let mut rules: Rules<BinDigitTerminal, BinDigitVariable> = Rules::new();
+        let mut rules: HashMap<BinDigitVariable, RightRule<BinDigitTerminal, BinDigitVariable>> =
+            HashMap::new();
 
-        rules.0.insert(
+        rules.insert(
             BinDigitVariable::BinDigit,
             RightRule::new(
                 choice::First::new(
@@ -100,7 +99,7 @@ mod tests {
                 choice::Second::new(E::from_v(BinDigitVariable::One)),
             ),
         );
-        rules.0.insert(
+        rules.insert(
             BinDigitVariable::One,
             RightRule::new(
                 choice::First::new(
@@ -111,9 +110,10 @@ mod tests {
             ),
         );
 
-        let mut rules2: Rules<BinDigitTerminal, BinDigitVariable> = Rules::new();
+        let mut rules2: HashMap<BinDigitVariable, RightRule<BinDigitTerminal, BinDigitVariable>> =
+            HashMap::new();
 
-        rules2.0.insert(
+        rules2.insert(
             BinDigitVariable::BinDigit,
             RightRule::from_right_rule_kind(
                 (
@@ -123,7 +123,7 @@ mod tests {
                 RightRuleKind::V(BinDigitVariable::One),
             ),
         );
-        rules2.0.insert(
+        rules2.insert(
             BinDigitVariable::One,
             RightRule::from_right_rule_kind(
                 (
@@ -135,12 +135,12 @@ mod tests {
         );
 
         assert_eq!(
-            rules.0[&BinDigitVariable::BinDigit],
-            rules2.0[&BinDigitVariable::BinDigit]
+            rules[&BinDigitVariable::BinDigit],
+            rules2[&BinDigitVariable::BinDigit]
         );
         assert_eq!(
-            rules.0[&BinDigitVariable::One],
-            rules2.0[&BinDigitVariable::One]
+            rules[&BinDigitVariable::One],
+            rules2[&BinDigitVariable::One]
         );
     }
 }

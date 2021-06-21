@@ -11,12 +11,7 @@ pub trait Terminal<'input, I, O, V, S, P>
 where
     I: ?Sized,
 {
-    fn eval(
-        &'input self,
-        input: &'input I,
-        pos: P,
-        max_pos: &P,
-    ) -> Result<AST<O, V, S>, AST<O, V, S>>;
+    fn eval(&self, input: &'input I, pos: P, max_pos: &P) -> Result<AST<O, V, S>, AST<O, V, S>>;
 }
 
 type StartAndLenResult<O, V, P, L> =

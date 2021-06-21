@@ -1,9 +1,10 @@
 use mpl::output::Output;
 use mpl::parse::Parse;
-use mpl::rules::{RightRule, RightRuleKind, Rule, Rules};
+use mpl::rules::{RightRule, RightRuleKind};
 use mpl::span::{Span, StartAndLenSpan};
 use mpl::symbols::{StrTerminal, Variable};
 use mpl::tree::{AST, CST};
+use std::collections::HashMap;
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 enum ParenthesesVariable {
@@ -38,7 +39,9 @@ impl<'input> Output<'input, str, ParenthesesVariable, StartAndLenSpan<u32, u16>>
 /// ```
 #[test]
 fn parentheses() {
-    let open_rule: Rule<StrTerminal, ParenthesesVariable> = Rule::new(
+    let mut rules = HashMap::new();
+
+    rules.insert(
         ParenthesesVariable::Open,
         RightRule::from_right_rule_kind(
             (
@@ -48,7 +51,7 @@ fn parentheses() {
             RightRuleKind::Epsilon,
         ),
     );
-    let parentheses_rule: Rule<StrTerminal, ParenthesesVariable> = Rule::new(
+    rules.insert(
         ParenthesesVariable::Parentheses,
         RightRule::from_right_rule_kind(
             (
@@ -58,7 +61,7 @@ fn parentheses() {
             RightRuleKind::Failure,
         ),
     );
-    let close_rule: Rule<StrTerminal, ParenthesesVariable> = Rule::new(
+    rules.insert(
         ParenthesesVariable::Close,
         RightRule::from_right_rule_kind(
             (
@@ -68,12 +71,6 @@ fn parentheses() {
             RightRuleKind::Failure,
         ),
     );
-
-    let mut rules = Rules::new();
-
-    rules.insert_rule(open_rule);
-    rules.insert_rule(parentheses_rule);
-    rules.insert_rule(close_rule);
 
     let input = "()";
 

@@ -28,7 +28,7 @@ where
     P: Start<[T], L>,
     L: Len<[T], P>,
 {
-    fn eval(&'a self, input: &'a [T], pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
+    fn eval(&self, input: &'a [T], pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
         let ast_hi_pos = |pos: P, len| {
             let start = pos.clone();
             let pos: usize = P::into_usize(pos, input);

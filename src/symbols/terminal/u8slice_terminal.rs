@@ -65,7 +65,7 @@ where
     P: Start<[u8], L>,
     L: Len<[u8], P>,
 {
-    fn eval(&'a self, input: &'a [u8], pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
+    fn eval(&self, input: &'a [u8], pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
         let eval_from = |len: usize, slice: &[u8]| {
             let start = pos.clone();
             let pos: usize = P::into_usize(pos, input);

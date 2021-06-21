@@ -15,18 +15,19 @@ use crate::tree::{AST, CST};
 /// S is Span.
 /// P is position.
 // TODO: Create Error types
-pub trait Parse<'input, T, O, V, S, P>: Input
+pub trait Parse<'input, T, O, V, S, P, R>: Input
 where
     T: Terminal<'input, Self, O, V, S, P>,
     O: Output<'input, Self, V, S>,
     V: Variable,
     S: Span<Self, P>,
     P: Position,
+    R: Rules<T, V>,
 {
     // all_of_the_span.unwarp().hi() < input.len()
     fn minimal_parse(
         &'input self,
-        rules: &'input Rules<T, V>,
+        rules: &R,
         start_variable: &V,
         all_of_the_span: &S,
     ) -> Result<AST<O, V, S>, AST<O, V, S>> {
@@ -84,7 +85,7 @@ where
 
     fn eval_terminal_symbol(
         &'input self,
-        terminal_symbol: &'input TerminalSymbol<T>,
+        terminal_symbol: &TerminalSymbol<T>,
         pos: P,
         max_pos: &P,
     ) -> Result<AST<O, V, S>, AST<O, V, S>> {
@@ -103,11 +104,11 @@ where
     fn eval(
         &'input self,
         pos: &P,
-        rules: &'input Rules<T, V>,
+        rules: &R,
         variable: &V,
         max_pos: &P,
     ) -> Result<AST<O, V, S>, AST<O, V, S>> {
-        let right_rule = rules.0.get(variable).expect("right_rule from a variable");
+        let right_rule = rules.get(variable).expect("right_rule from a variable");
 
         // First choice
         // left-hand side of first choice
@@ -165,32 +166,36 @@ where
 }
 
 /// T represents the element type.
-impl<'input, T, O, V, P, L> Parse<'input, SliceTerminal<'input, T>, O, V, StartAndLenSpan<P, L>, P>
-    for [T]
+impl<'input, T, O, V, P, L, R>
+    Parse<'input, SliceTerminal<'input, T>, O, V, StartAndLenSpan<P, L>, P, R> for [T]
 where
     T: PartialEq,
     O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
     V: Variable,
     P: Start<Self, L>,
     L: Len<Self, P>,
+    R: Rules<SliceTerminal<'input, T>, V>,
 {
 }
 
-impl<'input, O, V, P, L> Parse<'input, U8SliceTerminal<'input>, O, V, StartAndLenSpan<P, L>, P>
-    for [u8]
+impl<'input, O, V, P, L, R>
+    Parse<'input, U8SliceTerminal<'input>, O, V, StartAndLenSpan<P, L>, P, R> for [u8]
 where
     O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
     V: Variable,
     P: Start<Self, L>,
     L: Len<Self, P>,
+    R: Rules<U8SliceTerminal<'input>, V>,
 {
 }
 
-impl<'input, O, V, P, L> Parse<'input, StrTerminal<'input>, O, V, StartAndLenSpan<P, L>, P> for str
+impl<'input, O, V, P, L, R> Parse<'input, StrTerminal<'input>, O, V, StartAndLenSpan<P, L>, P, R>
+    for str
 where
     O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
     V: Variable,
     P: Start<Self, L>,
     L: Len<Self, P>,
+    R: Rules<StrTerminal<'input>, V>,
 {
 }

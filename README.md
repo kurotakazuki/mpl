@@ -180,7 +180,6 @@ Space = " "
 
 ## TODO
 - Visualize AST
-- Create Rules trait
 - Rename Epsilon
 - Add RowColSpan
 - Create parser from MPLG file.

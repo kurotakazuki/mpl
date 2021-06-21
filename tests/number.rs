@@ -2,10 +2,11 @@ use mpl::input::Input;
 use mpl::output::Output;
 use mpl::parse::Parse;
 use mpl::position::Position;
-use mpl::rules::{RightRule, RightRuleKind, Rule, Rules};
+use mpl::rules::{RightRule, RightRuleKind, Rules};
 use mpl::span::{Len, Span, Start, StartAndLenSpan};
 use mpl::symbols::{Metasymbol, Terminal, Variable};
 use mpl::tree::{InternalNode, LeafNode, AST, CST};
+use std::collections::HashMap;
 use std::ops::{Add, Sub};
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
@@ -89,7 +90,7 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
     for NumberTerminal<'a>
 {
     fn eval(
-        &'a self,
+        &self,
         input: &'a ExtStr,
         pos: BytePos,
         max_pos: &BytePos,
@@ -162,8 +163,10 @@ impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal
 
 impl Variable for NumberVariable {}
 
-impl<'a> Parse<'a, NumberTerminal<'a>, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos>
+impl<'a, R> Parse<'a, NumberTerminal<'a>, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos, R>
     for ExtStr
+where
+    R: Rules<NumberTerminal<'a>, NumberVariable>,
 {
 }
 
@@ -179,7 +182,9 @@ impl<'a> Parse<'a, NumberTerminal<'a>, NumberTerminal<'a>, NumberVariable, ByteS
 /// ```
 #[test]
 fn number() {
-    let number_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+    let mut rules = HashMap::new();
+
+    rules.insert(
         NumberVariable::Number,
         RightRule::from_right_rule_kind(
             (
@@ -189,7 +194,7 @@ fn number() {
             RightRuleKind::Failure,
         ),
     );
-    let numeral_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+    rules.insert(
         NumberVariable::Numeral,
         RightRule::from_right_rule_kind(
             (
@@ -199,7 +204,7 @@ fn number() {
             RightRuleKind::Epsilon,
         ),
     );
-    let digit_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+    rules.insert(
         NumberVariable::Digit,
         RightRule::from_right_rule_kind(
             (
@@ -209,8 +214,7 @@ fn number() {
             RightRuleKind::Failure,
         ),
     );
-
-    let zero_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+    rules.insert(
         NumberVariable::Zero,
         RightRule::from_right_rule_kind(
             (
@@ -220,7 +224,7 @@ fn number() {
             RightRuleKind::V(NumberVariable::FZero),
         ),
     );
-    let f_zero_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+    rules.insert(
         NumberVariable::FZero,
         RightRule::from_right_rule_kind(
             (
@@ -230,7 +234,7 @@ fn number() {
             RightRuleKind::V(NumberVariable::One),
         ),
     );
-    let one_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+    rules.insert(
         NumberVariable::One,
         RightRule::from_right_rule_kind(
             (
@@ -240,7 +244,7 @@ fn number() {
             RightRuleKind::V(NumberVariable::FOne),
         ),
     );
-    let f_one_rule: Rule<NumberTerminal, NumberVariable> = Rule::new(
+    rules.insert(
         NumberVariable::FOne,
         RightRule::from_right_rule_kind(
             (
@@ -250,16 +254,6 @@ fn number() {
             RightRuleKind::Failure,
         ),
     );
-
-    let mut rules = Rules::new();
-
-    rules.insert_rule(number_rule);
-    rules.insert_rule(numeral_rule);
-    rules.insert_rule(digit_rule);
-    rules.insert_rule(zero_rule);
-    rules.insert_rule(f_zero_rule);
-    rules.insert_rule(one_rule);
-    rules.insert_rule(f_one_rule);
 
     let input = ExtStr(String::from("012001"));
     // all of the span

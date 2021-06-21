@@ -26,7 +26,7 @@ where
     P: Start<str, L>,
     L: Len<str, P>,
 {
-    fn eval(&'a self, input: &'a str, pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
+    fn eval(&self, input: &'a str, pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
         let eval_from = |len: usize, string: &str| {
             let start = pos.clone();
             let pos: usize = P::into_usize(pos, input);

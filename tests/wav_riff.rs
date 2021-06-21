@@ -1,9 +1,10 @@
 use mpl::output::Output;
 use mpl::parse::Parse;
-use mpl::rules::{RightRule, RightRuleKind, Rule, Rules};
+use mpl::rules::{RightRule, RightRuleKind};
 use mpl::span::{Span, StartAndLenSpan};
 use mpl::symbols::{SliceTerminal, Variable};
 use mpl::tree::{AST, CST};
+use std::collections::HashMap;
 use std::convert::TryInto;
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
@@ -52,7 +53,9 @@ impl<'input> Output<'input, [u8], WavRiffVariable, StartAndLenSpan<u32, u16>> fo
 /// ```
 #[test]
 fn wav_riff() {
-    let riff_rule: Rule<SliceTerminal<u8>, WavRiffVariable> = Rule::new(
+    let mut rules = HashMap::new();
+
+    rules.insert(
         WavRiffVariable::Riff,
         RightRule::from_right_rule_kind(
             (
@@ -62,7 +65,7 @@ fn wav_riff() {
             RightRuleKind::Failure,
         ),
     );
-    let file_size_rule: Rule<SliceTerminal<u8>, WavRiffVariable> = Rule::new(
+    rules.insert(
         WavRiffVariable::FileSize,
         RightRule::from_right_rule_kind(
             (
@@ -72,7 +75,7 @@ fn wav_riff() {
             RightRuleKind::Failure,
         ),
     );
-    let wave_rule: Rule<SliceTerminal<u8>, WavRiffVariable> = Rule::new(
+    rules.insert(
         WavRiffVariable::Wave,
         RightRule::from_right_rule_kind(
             (
@@ -82,22 +85,13 @@ fn wav_riff() {
             RightRuleKind::Failure,
         ),
     );
-
-    let u32_rule: Rule<SliceTerminal<u8>, WavRiffVariable> = Rule::new(
+    rules.insert(
         WavRiffVariable::U32,
         RightRule::from_right_rule_kind(
             (RightRuleKind::Any(4), RightRuleKind::Epsilon),
             RightRuleKind::Failure,
         ),
     );
-
-    let mut rules = Rules::new();
-
-    rules.insert_rule(riff_rule);
-    rules.insert_rule(file_size_rule);
-    rules.insert_rule(wave_rule);
-
-    rules.insert_rule(u32_rule);
 
     let input: &[u8] = &[
         0x52, 0x49, 0x46, 0x46, 0x04, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,
