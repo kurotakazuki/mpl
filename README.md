@@ -24,11 +24,11 @@ A MPL grammar `G` is a tuple `G = (V, Σ, R, S)` in which:
     For any variable A there is exactly one rule with A to the left of `=`.
 - S in V (S &isin; V) is the start variable.
 
-#### Epsilon
+#### Empty
 `()` is a metasymbol that always succeeds without consuming input.
 
 ```
-Epsilon = () () / ()
+Empty = () () / ()
 ```
 
 #### Failure
@@ -180,7 +180,6 @@ Space = " "
 
 ## TODO
 - Visualize AST
-- Rename Epsilon
 - Add RowColSpan
 - Create parser from MPLG file.
 - Error Handling

@@ -28,7 +28,7 @@ impl<T, V> RightRule<T, V> {
 
 /// This is used when creating a RightRule.
 pub enum RightRuleKind<T, V> {
-    Epsilon,
+    Empty,
     Failure,
     Any(usize),
     All,
@@ -39,7 +39,7 @@ pub enum RightRuleKind<T, V> {
 impl<T, V> From<RightRuleKind<T, V>> for E<T, V> {
     fn from(right_rule_kind: RightRuleKind<T, V>) -> Self {
         match right_rule_kind {
-            RightRuleKind::Epsilon => Metasymbol::Epsilon.into(),
+            RightRuleKind::Empty => Metasymbol::Empty.into(),
             RightRuleKind::Failure => Metasymbol::Failure.into(),
             RightRuleKind::Any(n) => Metasymbol::Any(n).into(),
             RightRuleKind::All => Metasymbol::All.into(),
@@ -94,7 +94,7 @@ mod tests {
             RightRule::new(
                 choice::First::new(
                     TerminalSymbol::from_original(BinDigitTerminal::Char('0')).into(),
-                    Metasymbol::Epsilon.into(),
+                    Metasymbol::Empty.into(),
                 ),
                 choice::Second::new(E::from_v(BinDigitVariable::One)),
             ),
@@ -104,7 +104,7 @@ mod tests {
             RightRule::new(
                 choice::First::new(
                     TerminalSymbol::from_original(BinDigitTerminal::Char('1')).into(),
-                    Metasymbol::Epsilon.into(),
+                    Metasymbol::Empty.into(),
                 ),
                 choice::Second::new(Metasymbol::Failure.into()),
             ),
@@ -118,7 +118,7 @@ mod tests {
             RightRule::from_right_rule_kind(
                 (
                     RightRuleKind::T(BinDigitTerminal::Char('0')),
-                    RightRuleKind::Epsilon,
+                    RightRuleKind::Empty,
                 ),
                 RightRuleKind::V(BinDigitVariable::One),
             ),
@@ -128,7 +128,7 @@ mod tests {
             RightRule::from_right_rule_kind(
                 (
                     RightRuleKind::T(BinDigitTerminal::Char('1')),
-                    RightRuleKind::Epsilon,
+                    RightRuleKind::Empty,
                 ),
                 RightRuleKind::Failure,
             ),

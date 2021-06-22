@@ -201,16 +201,13 @@ fn number() {
                 RightRuleKind::V(NumberVariable::Digit),
                 RightRuleKind::V(NumberVariable::Numeral),
             ),
-            RightRuleKind::Epsilon,
+            RightRuleKind::Empty,
         ),
     );
     rules.insert(
         NumberVariable::Digit,
         RightRule::from_right_rule_kind(
-            (
-                RightRuleKind::V(NumberVariable::Zero),
-                RightRuleKind::Epsilon,
-            ),
+            (RightRuleKind::V(NumberVariable::Zero), RightRuleKind::Empty),
             RightRuleKind::Failure,
         ),
     );
@@ -219,7 +216,7 @@ fn number() {
         RightRule::from_right_rule_kind(
             (
                 RightRuleKind::T(NumberTerminal::Str("0")),
-                RightRuleKind::Epsilon,
+                RightRuleKind::Empty,
             ),
             RightRuleKind::V(NumberVariable::FZero),
         ),
@@ -229,7 +226,7 @@ fn number() {
         RightRule::from_right_rule_kind(
             (
                 RightRuleKind::T(NumberTerminal::Char('０')),
-                RightRuleKind::Epsilon,
+                RightRuleKind::Empty,
             ),
             RightRuleKind::V(NumberVariable::One),
         ),
@@ -239,7 +236,7 @@ fn number() {
         RightRule::from_right_rule_kind(
             (
                 RightRuleKind::T(NumberTerminal::Char('1')),
-                RightRuleKind::Epsilon,
+                RightRuleKind::Empty,
             ),
             RightRuleKind::V(NumberVariable::FOne),
         ),
@@ -249,7 +246,7 @@ fn number() {
         RightRule::from_right_rule_kind(
             (
                 RightRuleKind::T(NumberTerminal::Str("１")),
-                RightRuleKind::Epsilon,
+                RightRuleKind::Empty,
             ),
             RightRuleKind::Failure,
         ),

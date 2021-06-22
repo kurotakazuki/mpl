@@ -48,7 +48,7 @@ fn parentheses() {
                 RightRuleKind::T(StrTerminal::Char('(')),
                 RightRuleKind::V(ParenthesesVariable::Parentheses),
             ),
-            RightRuleKind::Epsilon,
+            RightRuleKind::Empty,
         ),
     );
     rules.insert(

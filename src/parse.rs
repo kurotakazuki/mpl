@@ -47,7 +47,7 @@ where
 
     fn to_epsilon_ast(&'input self, pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
         Ok(AST::from_leaf_node(
-            Metasymbol::Epsilon.into(),
+            Metasymbol::Empty.into(),
             Span::from_lo_hi(pos.clone(), pos, self),
         ))
     }
@@ -92,7 +92,7 @@ where
         match terminal_symbol {
             TerminalSymbol::Original(t) => t.eval(self, pos, max_pos),
             TerminalSymbol::Metasymbol(metasymbol) => match metasymbol {
-                Metasymbol::Epsilon => self.to_epsilon_ast(pos),
+                Metasymbol::Empty => self.to_epsilon_ast(pos),
                 Metasymbol::Failure => self.to_failed_ast(pos),
                 Metasymbol::Any(n) => self.to_any_ast(pos, max_pos, *n),
                 Metasymbol::All => self.to_all_ast(pos, max_pos.clone()),

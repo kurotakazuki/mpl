@@ -1,6 +1,6 @@
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Metasymbol {
-    Epsilon,
+    Empty,
     Failure,
     Any(usize),
     All,

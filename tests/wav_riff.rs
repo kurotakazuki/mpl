@@ -80,7 +80,7 @@ fn wav_riff() {
         RightRule::from_right_rule_kind(
             (
                 RightRuleKind::T(SliceTerminal::<u8>::Slice(b"WAVE")),
-                RightRuleKind::Epsilon,
+                RightRuleKind::Empty,
             ),
             RightRuleKind::Failure,
         ),
@@ -88,7 +88,7 @@ fn wav_riff() {
     rules.insert(
         WavRiffVariable::U32,
         RightRule::from_right_rule_kind(
-            (RightRuleKind::Any(4), RightRuleKind::Epsilon),
+            (RightRuleKind::Any(4), RightRuleKind::Empty),
             RightRuleKind::Failure,
         ),
     );
