@@ -2,6 +2,7 @@
 This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Down Parsing Language (TDPL). It creates a abstract syntax tree (AST) for each input.
 
 ## Getting Started
+1. implement `Variable`
 
 ### Test Examples
 - [Number](tests/number.rs)
@@ -213,8 +214,6 @@ B = e * / ()
 ```
 
 ## References
-These are references that I read. (I may have misunderstood the content because I haven't read some reference completely or have no reading comprehension. Please let me know if there are any mistakes.)
-
 - Alexander Birman. The TMG Recognition Schema. PhD thesis, Princeton University, February 1970
 - Alfred V. Aho and Jeffrey D. Ullman. The Theory of Parsing, Translation and Compiling - Vol. I: Parsing. Prentice Hall, Englewood Cliffs, N.J., 1972.
 - Bryan Ford. 2002. Packrat parsing: a practical linear-time algorithm with backtracking. Ph.D. Dissertation. Massachusetts Institute of Technology.
