@@ -60,12 +60,12 @@ impl<'a> From<&'a [u8]> for U8SliceTerminal<'a> {
     }
 }
 
-impl<'a, O, V, P, L> Terminal<'a, [u8], O, V, StartAndLenSpan<P, L>, P> for U8SliceTerminal<'a>
+impl<'a, V, P, L, O> Terminal<'a, [u8], V, StartAndLenSpan<P, L>, P, O> for U8SliceTerminal<'a>
 where
     P: Start<[u8], L>,
     L: Len<[u8], P>,
 {
-    fn eval(&self, input: &'a [u8], pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
+    fn eval(&self, input: &'a [u8], pos: P, max_pos: &P) -> StartAndLenResult<V, P, L, O> {
         let eval_from = |len: usize, slice: &[u8]| {
             let start = pos.clone();
             let pos: usize = P::into_usize(pos, input);

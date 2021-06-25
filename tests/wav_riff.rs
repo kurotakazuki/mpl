@@ -27,8 +27,8 @@ impl Variable for WavRiffVariable {}
 impl<'input> Output<'input, [u8], WavRiffVariable, StartAndLenSpan<u32, u16>> for U16OrU32 {
     fn output_ast(
         input: &'input [u8],
-        cst: CST<Self, WavRiffVariable, StartAndLenSpan<u32, u16>>,
-    ) -> AST<Self, WavRiffVariable, StartAndLenSpan<u32, u16>> {
+        cst: CST<WavRiffVariable, StartAndLenSpan<u32, u16>, Self>,
+    ) -> AST<WavRiffVariable, StartAndLenSpan<u32, u16>, Self> {
         match cst.node.value {
             WavRiffVariable::U32 => {
                 let lo = cst.span.start as usize;
@@ -100,8 +100,8 @@ fn wav_riff() {
     let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
 
     let result: Result<
-        AST<U16OrU32, WavRiffVariable, StartAndLenSpan<u32, u16>>,
-        AST<U16OrU32, WavRiffVariable, StartAndLenSpan<u32, u16>>,
+        AST<WavRiffVariable, StartAndLenSpan<u32, u16>, U16OrU32>,
+        AST<WavRiffVariable, StartAndLenSpan<u32, u16>, U16OrU32>,
     > = input.minimal_parse(&rules, &WavRiffVariable::Riff, &all_of_the_span);
 
     assert!(result.is_ok());
@@ -113,8 +113,8 @@ fn wav_riff() {
     let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
 
     let result: Result<
-        AST<U16OrU32, WavRiffVariable, StartAndLenSpan<u32, u16>>,
-        AST<U16OrU32, WavRiffVariable, StartAndLenSpan<u32, u16>>,
+        AST<WavRiffVariable, StartAndLenSpan<u32, u16>, U16OrU32>,
+        AST<WavRiffVariable, StartAndLenSpan<u32, u16>, U16OrU32>,
     > = input.minimal_parse(&rules, &WavRiffVariable::Riff, &all_of_the_span);
 
     assert!(result.is_err());

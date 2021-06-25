@@ -7,12 +7,12 @@ pub mod str_terminal;
 pub mod terminal_symbol;
 pub mod u8slice_terminal;
 
-pub trait Terminal<'input, I, O, V, S, P>
+pub trait Terminal<'input, I, V, S, P, O>
 where
     I: ?Sized,
 {
-    fn eval(&self, input: &'input I, pos: P, max_pos: &P) -> Result<AST<O, V, S>, AST<O, V, S>>;
+    fn eval(&self, input: &'input I, pos: P, max_pos: &P) -> Result<AST<V, S, O>, AST<V, S, O>>;
 }
 
-type StartAndLenResult<O, V, P, L> =
-    Result<AST<O, V, StartAndLenSpan<P, L>>, AST<O, V, StartAndLenSpan<P, L>>>;
+type StartAndLenResult<V, P, L, O> =
+    Result<AST<V, StartAndLenSpan<P, L>, O>, AST<V, StartAndLenSpan<P, L>, O>>;

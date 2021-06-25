@@ -10,7 +10,7 @@ use crate::symbols::{
 use crate::tree::{AST, CST};
 
 /// Types that can be parsed.
-/// 
+///
 /// T is terminal symbols.
 /// O is output type.
 /// V is (enum of) Variables.
@@ -19,7 +19,7 @@ use crate::tree::{AST, CST};
 // TODO: Create Error types
 pub trait Parse<'input, T, V, S, P, R, O = ()>: Input
 where
-    T: Terminal<'input, Self, O, V, S, P>,
+    T: Terminal<'input, Self, V, S, P, O>,
     V: Variable,
     S: Span<Self, P>,
     P: Position,
@@ -32,7 +32,7 @@ where
         rules: &R,
         start_variable: &V,
         all_of_the_span: &S,
-    ) -> Result<AST<O, V, S>, AST<O, V, S>> {
+    ) -> Result<AST<V, S, O>, AST<V, S, O>> {
         let ast = self.eval(
             &all_of_the_span.lo(self),
             rules,
@@ -47,14 +47,14 @@ where
         }
     }
 
-    fn to_epsilon_ast(&'input self, pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
+    fn to_epsilon_ast(&'input self, pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
         Ok(AST::from_leaf_node(
             Metasymbol::Empty.into(),
             Span::from_lo_hi(pos.clone(), pos, self),
         ))
     }
 
-    fn to_failed_ast(&'input self, pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
+    fn to_failed_ast(&'input self, pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
         Err(AST::from_leaf_node(
             Metasymbol::Failure.into(),
             Span::from_lo_hi(pos.clone(), pos, self),
@@ -67,7 +67,7 @@ where
         pos: P,
         max_pos: &P,
         n: usize,
-    ) -> Result<AST<O, V, S>, AST<O, V, S>> {
+    ) -> Result<AST<V, S, O>, AST<V, S, O>> {
         let span_with_len_added = S::from_lo_len(pos, n, self);
         let hi = span_with_len_added.hi(self);
         let ast = AST::from_leaf_node(Metasymbol::Any(n).into(), span_with_len_added);
@@ -78,7 +78,7 @@ where
         }
     }
 
-    fn to_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<O, V, S>, AST<O, V, S>> {
+    fn to_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
         Ok(AST::from_leaf_node(
             Metasymbol::All.into(),
             Span::from_lo_hi(pos, max_pos, self),
@@ -90,7 +90,7 @@ where
         terminal_symbol: &TerminalSymbol<T>,
         pos: P,
         max_pos: &P,
-    ) -> Result<AST<O, V, S>, AST<O, V, S>> {
+    ) -> Result<AST<V, S, O>, AST<V, S, O>> {
         match terminal_symbol {
             TerminalSymbol::Original(t) => t.eval(self, pos, max_pos),
             TerminalSymbol::Metasymbol(metasymbol) => match metasymbol {
@@ -109,12 +109,12 @@ where
         rules: &R,
         variable: &V,
         max_pos: &P,
-    ) -> Result<AST<O, V, S>, AST<O, V, S>> {
+    ) -> Result<AST<V, S, O>, AST<V, S, O>> {
         let right_rule = rules.get(variable).expect("right_rule from a variable");
 
         // First choice
         // left-hand side of first choice
-        let left_ast: Result<AST<O, V, S>, AST<O, V, S>> = match &right_rule.first.lhs {
+        let left_ast: Result<AST<V, S, O>, AST<V, S, O>> = match &right_rule.first.lhs {
             E::T(terminal_symbol) => {
                 self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
             }
@@ -123,7 +123,7 @@ where
 
         if let Ok(left_ast) = left_ast {
             // right-hand side of first choice
-            let right_ast: Result<AST<O, V, S>, AST<O, V, S>> = match &right_rule.first.rhs {
+            let right_ast: Result<AST<V, S, O>, AST<V, S, O>> = match &right_rule.first.rhs {
                 E::T(terminal_symbol) => {
                     self.eval_terminal_symbol(terminal_symbol, left_ast.span.hi(self), max_pos)
                 }

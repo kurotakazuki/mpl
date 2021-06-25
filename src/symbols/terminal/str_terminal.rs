@@ -21,12 +21,12 @@ impl<'a> From<&'a str> for StrTerminal<'a> {
     }
 }
 
-impl<'a, O, V, P, L> Terminal<'a, str, O, V, StartAndLenSpan<P, L>, P> for StrTerminal<'a>
+impl<'a, V, P, L, O> Terminal<'a, str, V, StartAndLenSpan<P, L>, P, O> for StrTerminal<'a>
 where
     P: Start<str, L>,
     L: Len<str, P>,
 {
-    fn eval(&self, input: &'a str, pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
+    fn eval(&self, input: &'a str, pos: P, max_pos: &P) -> StartAndLenResult<V, P, L, O> {
         let eval_from = |len: usize, string: &str| {
             let start = pos.clone();
             let pos: usize = P::into_usize(pos, input);

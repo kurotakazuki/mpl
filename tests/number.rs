@@ -86,7 +86,7 @@ impl Len<ExtStr, BytePos> for u16 {
     }
 }
 
-impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos>
+impl<'a> Terminal<'a, ExtStr, NumberVariable, ByteSpan, BytePos, NumberTerminal<'a>>
     for NumberTerminal<'a>
 {
     fn eval(
@@ -95,8 +95,8 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
         pos: BytePos,
         max_pos: &BytePos,
     ) -> Result<
-        AST<NumberTerminal<'a>, NumberVariable, ByteSpan>,
-        AST<NumberTerminal<'a>, NumberVariable, ByteSpan>,
+        AST<NumberVariable, ByteSpan, NumberTerminal<'a>>,
+        AST<NumberVariable, ByteSpan, NumberTerminal<'a>>,
     > {
         let eval_from = |len: usize, value: &str, number_terminal: NumberTerminal<'a>| {
             let start = pos;
@@ -131,8 +131,8 @@ impl<'a> Terminal<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, Byte
 impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal<'input> {
     fn output_ast(
         input: &'input ExtStr,
-        cst: CST<Self, NumberVariable, ByteSpan>,
-    ) -> AST<Self, NumberVariable, ByteSpan> {
+        cst: CST<NumberVariable, ByteSpan, Self>,
+    ) -> AST<NumberVariable, ByteSpan, Self> {
         match cst.node.value {
             NumberVariable::Number => {
                 let lo = cst.span.start.0 as usize;
@@ -148,7 +148,7 @@ impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal
                 let hi = lo + span.len as usize;
                 let s = &input.0[lo..hi];
 
-                let omit: AST<Self, NumberVariable, ByteSpan> =
+                let omit: AST<NumberVariable, ByteSpan, Self> =
                     AST::from_leaf_node(Metasymbol::Omit.into(), span.clone());
 
                 let internal_node =

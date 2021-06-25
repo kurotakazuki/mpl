@@ -22,13 +22,13 @@ impl<'a, T> From<&'a [T]> for SliceTerminal<'a, T> {
     }
 }
 
-impl<'a, T: PartialEq, O, V, P, L> Terminal<'a, [T], O, V, StartAndLenSpan<P, L>, P>
+impl<'a, T: PartialEq, V, P, L, O> Terminal<'a, [T], V, StartAndLenSpan<P, L>, P, O>
     for SliceTerminal<'a, T>
 where
     P: Start<[T], L>,
     L: Len<[T], P>,
 {
-    fn eval(&self, input: &'a [T], pos: P, max_pos: &P) -> StartAndLenResult<O, V, P, L> {
+    fn eval(&self, input: &'a [T], pos: P, max_pos: &P) -> StartAndLenResult<V, P, L, O> {
         let ast_hi_pos = |pos: P, len| {
             let start = pos.clone();
             let pos: usize = P::into_usize(pos, input);

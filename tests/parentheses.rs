@@ -18,8 +18,8 @@ impl Variable for ParenthesesVariable {}
 impl<'input> Output<'input, str, ParenthesesVariable, StartAndLenSpan<u32, u16>> for String {
     fn output_ast(
         _input: &'input str,
-        cst: CST<Self, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
-    ) -> AST<Self, ParenthesesVariable, StartAndLenSpan<u32, u16>> {
+        cst: CST<ParenthesesVariable, StartAndLenSpan<u32, u16>, Self>,
+    ) -> AST<ParenthesesVariable, StartAndLenSpan<u32, u16>, Self> {
         match cst.node.value {
             ParenthesesVariable::Open => AST::from_cst_and_output(cst, Some(String::from("open"))),
             ParenthesesVariable::Parentheses => {
@@ -78,8 +78,8 @@ fn parentheses() {
     let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
 
     let result: Result<
-        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
-        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
+        AST<ParenthesesVariable, StartAndLenSpan<u32, u16>, String>,
+        AST<ParenthesesVariable, StartAndLenSpan<u32, u16>, String>,
     > = input.minimal_parse(&rules, &ParenthesesVariable::Open, &all_of_the_span);
     assert_eq!(
         result.unwrap().span,
@@ -92,8 +92,8 @@ fn parentheses() {
     let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
 
     let result: Result<
-        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
-        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
+        AST<ParenthesesVariable, StartAndLenSpan<u32, u16>, String>,
+        AST<ParenthesesVariable, StartAndLenSpan<u32, u16>, String>,
     > = input.minimal_parse(&rules, &ParenthesesVariable::Open, &all_of_the_span);
     assert_eq!(
         result.unwrap().span,
@@ -106,8 +106,8 @@ fn parentheses() {
     let all_of_the_span = StartAndLenSpan::<u32, u16>::from_start_len(0, input.len() as u16);
 
     let result: Result<
-        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
-        AST<String, ParenthesesVariable, StartAndLenSpan<u32, u16>>,
+        AST<ParenthesesVariable, StartAndLenSpan<u32, u16>, String>,
+        AST<ParenthesesVariable, StartAndLenSpan<u32, u16>, String>,
     > = input.minimal_parse(&rules, &ParenthesesVariable::Open, &all_of_the_span);
     assert!(result.is_err());
 }

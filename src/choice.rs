@@ -13,8 +13,8 @@ impl<E> First<E> {
     }
 }
 
-impl<O, V, S> From<(AST<O, V, S>, AST<O, V, S>)> for First<AST<O, V, S>> {
-    fn from(e: (AST<O, V, S>, AST<O, V, S>)) -> Self {
+impl<V, S, O> From<(AST<V, S, O>, AST<V, S, O>)> for First<AST<V, S, O>> {
+    fn from(e: (AST<V, S, O>, AST<V, S, O>)) -> Self {
         Self::new(e.0, e.1)
     }
 }
@@ -23,8 +23,8 @@ impl<O, V, S> From<(AST<O, V, S>, AST<O, V, S>)> for First<AST<O, V, S>> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Second<E>(pub E);
 
-impl<O, V, S> From<AST<O, V, S>> for Second<AST<O, V, S>> {
-    fn from(e: AST<O, V, S>) -> Self {
+impl<V, S, O> From<AST<V, S, O>> for Second<AST<V, S, O>> {
+    fn from(e: AST<V, S, O>) -> Self {
         Self::new(e)
     }
 }
@@ -54,14 +54,14 @@ impl<E> From<Second<E>> for Choice<E> {
     }
 }
 
-impl<O, V, S> From<(AST<O, V, S>, AST<O, V, S>)> for Choice<AST<O, V, S>> {
-    fn from(e: (AST<O, V, S>, AST<O, V, S>)) -> Self {
+impl<V, S, O> From<(AST<V, S, O>, AST<V, S, O>)> for Choice<AST<V, S, O>> {
+    fn from(e: (AST<V, S, O>, AST<V, S, O>)) -> Self {
         First::from(e).into()
     }
 }
 
-impl<O, V, S> From<AST<O, V, S>> for Choice<AST<O, V, S>> {
-    fn from(e: AST<O, V, S>) -> Self {
+impl<V, S, O> From<AST<V, S, O>> for Choice<AST<V, S, O>> {
+    fn from(e: AST<V, S, O>) -> Self {
         Second::from(e).into()
     }
 }
