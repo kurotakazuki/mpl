@@ -81,9 +81,9 @@ impl<V, S, O> ASTKind<V, S, O> {
     }
 }
 
-pub type AST<V, S, O> = Spanned<ASTKind<V, S, O>, S>;
+pub type AST<V, S, O = ()> = Spanned<ASTKind<V, S, O>, S>;
 
-pub type CST<V, S, O> = Spanned<Equivalence<V, Choice<AST<V, S, O>>>, S>;
+pub type CST<V, S, O = ()> = Spanned<Equivalence<V, Choice<AST<V, S, O>>>, S>;
 
 impl<V, S, O> AST<V, S, O> {
     // Leaf Node

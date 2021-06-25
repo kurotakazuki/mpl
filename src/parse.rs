@@ -17,7 +17,7 @@ use crate::tree::{AST, CST};
 /// S is Span.
 /// P is position.
 // TODO: Create Error types
-pub trait Parse<'input, T, V, S, P, R, O = ()>: Input
+pub trait Parse<'input, T, V, S, P, R, O>: Input
 where
     T: Terminal<'input, Self, V, S, P, O>,
     V: Variable,
