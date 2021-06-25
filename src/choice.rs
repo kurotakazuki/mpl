@@ -1,5 +1,6 @@
 use crate::tree::AST;
 
+/// First choice of right rule.
 #[derive(Clone, Debug, PartialEq)]
 pub struct First<E> {
     pub lhs: E,
@@ -18,6 +19,7 @@ impl<O, V, S> From<(AST<O, V, S>, AST<O, V, S>)> for First<AST<O, V, S>> {
     }
 }
 
+/// Second choice of right rule.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Second<E>(pub E);
 
@@ -32,6 +34,8 @@ impl<E> Second<E> {
         Self(e)
     }
 }
+
+/// `Choice` is either `First` or `Second`.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Choice<E> {
     First(First<E>),

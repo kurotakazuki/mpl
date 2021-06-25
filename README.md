@@ -3,6 +3,7 @@ This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Dow
 
 ## Getting Started
 1. implement `Variable`
+2. implement `Output`
 
 ### Test Examples
 - [Number](tests/number.rs)

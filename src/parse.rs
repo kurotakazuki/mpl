@@ -9,20 +9,22 @@ use crate::symbols::{
 };
 use crate::tree::{AST, CST};
 
+/// Types that can be parsed.
+/// 
 /// T is terminal symbols.
 /// O is output type.
 /// V is (enum of) Variables.
 /// S is Span.
 /// P is position.
 // TODO: Create Error types
-pub trait Parse<'input, T, O, V, S, P, R>: Input
+pub trait Parse<'input, T, V, S, P, R, O = ()>: Input
 where
     T: Terminal<'input, Self, O, V, S, P>,
-    O: Output<'input, Self, V, S>,
     V: Variable,
     S: Span<Self, P>,
     P: Position,
     R: Rules<T, V>,
+    O: Output<'input, Self, V, S>,
 {
     // all_of_the_span.unwarp().hi() < input.len()
     fn minimal_parse(
@@ -166,36 +168,36 @@ where
 }
 
 /// T represents the element type.
-impl<'input, T, O, V, P, L, R>
-    Parse<'input, SliceTerminal<'input, T>, O, V, StartAndLenSpan<P, L>, P, R> for [T]
+impl<'input, T, V, P, L, R, O>
+    Parse<'input, SliceTerminal<'input, T>, V, StartAndLenSpan<P, L>, P, R, O> for [T]
 where
     T: PartialEq,
-    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
     V: Variable,
     P: Start<Self, L>,
     L: Len<Self, P>,
     R: Rules<SliceTerminal<'input, T>, V>,
+    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
 {
 }
 
-impl<'input, O, V, P, L, R>
-    Parse<'input, U8SliceTerminal<'input>, O, V, StartAndLenSpan<P, L>, P, R> for [u8]
+impl<'input, V, P, L, R, O>
+    Parse<'input, U8SliceTerminal<'input>, V, StartAndLenSpan<P, L>, P, R, O> for [u8]
 where
-    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
     V: Variable,
     P: Start<Self, L>,
     L: Len<Self, P>,
     R: Rules<U8SliceTerminal<'input>, V>,
+    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
 {
 }
 
-impl<'input, O, V, P, L, R> Parse<'input, StrTerminal<'input>, O, V, StartAndLenSpan<P, L>, P, R>
+impl<'input, V, P, L, R, O> Parse<'input, StrTerminal<'input>, V, StartAndLenSpan<P, L>, P, R, O>
     for str
 where
-    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
     V: Variable,
     P: Start<Self, L>,
     L: Len<Self, P>,
     R: Rules<StrTerminal<'input>, V>,
+    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
 {
 }

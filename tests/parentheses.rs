@@ -6,7 +6,7 @@ use mpl::symbols::{StrTerminal, Variable};
 use mpl::tree::{AST, CST};
 use std::collections::HashMap;
 
-#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 enum ParenthesesVariable {
     Open,
     Parentheses,

@@ -1,12 +1,17 @@
 /// Variable types.
 /// 
+/// # Examples
+/// 
 /// ```
-/// #[derive(Debug)]
-/// enum Paren {
+/// use mpl::symbols::Variable;
+/// 
+/// #[derive(Clone, Debug, Hash, Eq, PartialEq)]
+/// enum ParenthesesVariable {
 ///     Open,
+///     Parentheses,
 ///     Close,
 /// }
 /// 
-/// impl Variable for Paren {}
+/// impl Variable for ParenthesesVariable {}
 /// ```
 pub trait Variable: Clone {}

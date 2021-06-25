@@ -163,7 +163,7 @@ impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal
 
 impl Variable for NumberVariable {}
 
-impl<'a, R> Parse<'a, NumberTerminal<'a>, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos, R>
+impl<'a, R> Parse<'a, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos, R, NumberTerminal<'a>>
     for ExtStr
 where
     R: Rules<NumberTerminal<'a>, NumberVariable>,
