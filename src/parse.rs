@@ -1,3 +1,5 @@
+//! Parse
+
 use crate::input::Input;
 use crate::output::Output;
 use crate::position::Position;
@@ -7,7 +9,7 @@ use crate::symbols::{
     Equivalence, Metasymbol, SliceTerminal, StrTerminal, Terminal, TerminalSymbol, U8SliceTerminal,
     Variable, E,
 };
-use crate::tree::{AST, CST};
+use crate::trees::{AST, CST};
 
 /// Types that can be parsed.
 ///
@@ -17,7 +19,7 @@ use crate::tree::{AST, CST};
 /// S is Span.
 /// P is position.
 // TODO: Create Error types
-pub trait Parse<'input, T, V, S, P, R, O>: Input
+pub trait Parse<'input, T, V, S, P, R, O = ()>: Input
 where
     T: Terminal<'input, Self, V, S, P, O>,
     V: Variable,
@@ -26,7 +28,11 @@ where
     R: Rules<T, V>,
     O: Output<'input, Self, V, S>,
 {
-    // all_of_the_span.unwarp().hi() < input.len()
+    /// Minimal parse.
+    ///
+    /// # Warning
+    ///
+    /// `all_of_the_span.hi(self)` must be smaller than its length.
     fn minimal_parse(
         &'input self,
         rules: &R,
@@ -180,17 +186,6 @@ where
 {
 }
 
-impl<'input, V, P, L, R, O>
-    Parse<'input, U8SliceTerminal<'input>, V, StartAndLenSpan<P, L>, P, R, O> for [u8]
-where
-    V: Variable,
-    P: Start<Self, L>,
-    L: Len<Self, P>,
-    R: Rules<U8SliceTerminal<'input>, V>,
-    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
-{
-}
-
 impl<'input, V, P, L, R, O> Parse<'input, StrTerminal<'input>, V, StartAndLenSpan<P, L>, P, R, O>
     for str
 where
@@ -198,6 +193,17 @@ where
     P: Start<Self, L>,
     L: Len<Self, P>,
     R: Rules<StrTerminal<'input>, V>,
+    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
+{
+}
+
+impl<'input, V, P, L, R, O>
+    Parse<'input, U8SliceTerminal<'input>, V, StartAndLenSpan<P, L>, P, R, O> for [u8]
+where
+    V: Variable,
+    P: Start<Self, L>,
+    L: Len<Self, P>,
+    R: Rules<U8SliceTerminal<'input>, V>,
     O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
 {
 }

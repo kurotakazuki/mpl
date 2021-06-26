@@ -1,3 +1,5 @@
+//! Symbols
+
 pub use self::e::E;
 pub use self::terminal::{
     metasymbol::Metasymbol, slice_terminal::SliceTerminal, str_terminal::StrTerminal,

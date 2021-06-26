@@ -1,3 +1,5 @@
+//! Span
+
 pub use self::spanned::Spanned;
 pub use self::start_and_len_span::{Len, Start, StartAndLenSpan};
 
@@ -7,6 +9,7 @@ use crate::position::Position;
 mod spanned;
 mod start_and_len_span;
 
+/// Span types.
 pub trait Span<I, P>: Clone + PartialEq
 where
     I: Input + ?Sized,

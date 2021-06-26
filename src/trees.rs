@@ -1,9 +1,11 @@
-use crate::choice::{Choice, First, Second};
+//! Trees
+
+use crate::choices::{Choice, First, Second};
 use crate::span::Spanned;
 use crate::symbols::{Equivalence, Metasymbol, TerminalSymbol};
 
-pub type LeafNode<O> = TerminalSymbol<O>;
-pub type InternalNode<V, S, O> = Equivalence<(V, Option<O>), Box<Choice<AST<V, S, O>>>>;
+pub type LeafNode<O = ()> = TerminalSymbol<O>;
+pub type InternalNode<V, S, O = ()> = Equivalence<(V, Option<O>), Box<Choice<AST<V, S, O>>>>;
 
 impl<V, S, O> InternalNode<V, S, O> {
     pub fn from_first(value: (V, Option<O>), l: AST<V, S, O>, r: AST<V, S, O>) -> Self {
@@ -32,7 +34,7 @@ impl<V, S, O> InternalNode<V, S, O> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum ASTKind<V, S, O> {
+pub enum ASTKind<V, S, O = ()> {
     /// Terminal symbol
     LeafNode(LeafNode<O>),
     /// Viriable

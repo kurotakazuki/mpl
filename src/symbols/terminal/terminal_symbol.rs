@@ -1,5 +1,6 @@
 use crate::symbols::Metasymbol;
 
+/// Terminal symbol.
 #[derive(Clone, Debug, PartialEq)]
 pub enum TerminalSymbol<T> {
     Original(T),

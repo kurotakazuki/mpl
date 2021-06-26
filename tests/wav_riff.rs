@@ -3,7 +3,7 @@ use mpl::parse::Parse;
 use mpl::rules::{RightRule, RightRuleKind};
 use mpl::span::{Span, StartAndLenSpan};
 use mpl::symbols::{SliceTerminal, Variable};
-use mpl::tree::{AST, CST};
+use mpl::trees::{AST, CST};
 use std::collections::HashMap;
 use std::convert::TryInto;
 

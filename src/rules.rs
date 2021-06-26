@@ -1,17 +1,19 @@
-use crate::choice;
+//! Rules
+
+use crate::choices::{First, Second};
 use crate::symbols::{Equivalence, Metasymbol, TerminalSymbol, E};
 use std::collections::HashMap;
 use std::hash::Hash;
 
-/// This structure is used when defining the rule for a variable.
+/// This structure is used when defining the right rule for a variable.
 #[derive(Clone, Debug, PartialEq)]
 pub struct RightRule<T, V> {
-    pub first: choice::First<E<T, V>>,
-    pub second: choice::Second<E<T, V>>,
+    pub first: First<E<T, V>>,
+    pub second: Second<E<T, V>>,
 }
 
 impl<T, V> RightRule<T, V> {
-    pub fn new(first: choice::First<E<T, V>>, second: choice::Second<E<T, V>>) -> Self {
+    pub fn new(first: First<E<T, V>>, second: Second<E<T, V>>) -> Self {
         Self { first, second }
     }
 
@@ -20,13 +22,13 @@ impl<T, V> RightRule<T, V> {
         second: RightRuleKind<T, V>,
     ) -> Self {
         Self {
-            first: choice::First::new(first.0.into(), first.1.into()),
-            second: choice::Second::new(second.into()),
+            first: First::new(first.0.into(), first.1.into()),
+            second: Second::new(second.into()),
         }
     }
 }
 
-/// This is used when creating a RightRule.
+/// This is used when creating a `RightRule`.
 pub enum RightRuleKind<T, V> {
     Empty,
     Failure,
@@ -51,6 +53,9 @@ impl<T, V> From<RightRuleKind<T, V>> for E<T, V> {
 
 pub type Rule<T, V> = Equivalence<V, RightRule<T, V>>;
 
+/// Rules types.
+///
+/// `R` is a finite set of rules of the form.
 pub trait Rules<T, V> {
     fn get(&self, variable: &V) -> Option<&RightRule<T, V>>;
 }
@@ -92,21 +97,21 @@ mod tests {
         rules.insert(
             BinDigitVariable::BinDigit,
             RightRule::new(
-                choice::First::new(
+                First::new(
                     TerminalSymbol::from_original(BinDigitTerminal::Char('0')).into(),
                     Metasymbol::Empty.into(),
                 ),
-                choice::Second::new(E::from_v(BinDigitVariable::One)),
+                Second::new(E::from_v(BinDigitVariable::One)),
             ),
         );
         rules.insert(
             BinDigitVariable::One,
             RightRule::new(
-                choice::First::new(
+                First::new(
                     TerminalSymbol::from_original(BinDigitTerminal::Char('1')).into(),
                     Metasymbol::Empty.into(),
                 ),
-                choice::Second::new(Metasymbol::Failure.into()),
+                Second::new(Metasymbol::Failure.into()),
             ),
         );
 

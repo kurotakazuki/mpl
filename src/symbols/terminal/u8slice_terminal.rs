@@ -1,7 +1,7 @@
 use crate::span::{Len, Span, Start, StartAndLenSpan};
 use crate::symbols::terminal::StartAndLenResult;
 use crate::symbols::{Metasymbol, Terminal};
-use crate::tree::AST;
+use crate::trees::AST;
 use std::cmp::PartialEq;
 use std::mem;
 

@@ -1,5 +1,8 @@
 use crate::symbols::{Metasymbol, TerminalSymbol};
 
+/// Terminal symbol or Variable.
+///
+/// { e | e &isin; E, E = T &cup; V }
 #[derive(Clone, Debug, PartialEq)]
 pub enum E<T, V> {
     T(TerminalSymbol<T>),

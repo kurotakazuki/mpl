@@ -1,3 +1,17 @@
+//! Position
+
+/// Position types.
+///
+/// # Examples
+///
+/// ```
+/// use mpl::position::Position;
+///
+/// #[derive(Clone, PartialEq, PartialOrd)]
+/// struct BytePos(u32);
+///
+/// impl Position for BytePos {}
+/// ```
 pub trait Position: Clone + PartialOrd {}
 
 macro_rules! position_impl {

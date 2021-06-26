@@ -1,4 +1,6 @@
-use crate::tree::AST;
+//! Choices
+
+use crate::trees::AST;
 
 /// First choice of right rule.
 #[derive(Clone, Debug, PartialEq)]

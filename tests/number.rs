@@ -5,7 +5,7 @@ use mpl::position::Position;
 use mpl::rules::{RightRule, RightRuleKind, Rules};
 use mpl::span::{Len, Span, Start, StartAndLenSpan};
 use mpl::symbols::{Metasymbol, Terminal, Variable};
-use mpl::tree::{InternalNode, LeafNode, AST, CST};
+use mpl::trees::{InternalNode, LeafNode, AST, CST};
 use std::collections::HashMap;
 use std::ops::{Add, Sub};
 
