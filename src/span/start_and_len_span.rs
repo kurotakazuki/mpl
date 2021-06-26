@@ -4,12 +4,14 @@ use crate::span::Span;
 use std::fmt::Debug;
 use std::ops;
 
+/// This structure includes start and length data.
 #[derive(Clone, Debug, PartialEq)]
 pub struct StartAndLenSpan<P, L> {
     pub start: P,
     pub len: L,
 }
 
+/// This trait is used in [`StartAndLenSpan`].
 pub trait Start<I, L>: Position
 where
     I: Input + ?Sized,
@@ -19,6 +21,7 @@ where
     fn hi_from_start_and_len(start: Self, len: L, input: &I) -> Self;
 }
 
+/// This trait is used in [`StartAndLenSpan`].
 pub trait Len<I, P>: Clone + ops::Add<Output = Self> + PartialEq
 where
     I: Input + ?Sized,
