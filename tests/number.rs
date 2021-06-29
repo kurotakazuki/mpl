@@ -5,7 +5,7 @@ use mpl::position::Position;
 use mpl::rules::{RightRule, RightRuleKind, Rules};
 use mpl::span::{Len, Span, Start, StartAndLenSpan};
 use mpl::symbols::{Metasymbol, Terminal, Variable};
-use mpl::trees::{InternalNode, LeafNode, AST, CST};
+use mpl::trees::{Internal, Leaf, AST, CST};
 use std::collections::HashMap;
 use std::ops::{Add, Sub};
 
@@ -105,7 +105,7 @@ impl<'a> Terminal<'a, ExtStr, NumberVariable, ByteSpan, BytePos, NumberTerminal<
             let span = ByteSpan::from_start_len(start, len as u16);
             let hi = span.hi(input);
 
-            let ast = AST::from_leaf_node(LeafNode::from_original(number_terminal), span);
+            let ast = AST::from_leaf(Leaf::from_original(number_terminal), span);
 
             if &hi <= max_pos {
                 if let Some(s) = input.0.get(pos..pos + len) {
@@ -149,12 +149,12 @@ impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal
                 let s = &input.0[lo..hi];
 
                 let omit: AST<NumberVariable, ByteSpan, Self> =
-                    AST::from_leaf_node(Metasymbol::Omit.into(), span.clone());
+                    AST::from_leaf(Metasymbol::Omit.into(), span.clone());
 
-                let internal_node =
-                    InternalNode::from_second((cst.node.value, Some(NumberTerminal::Str(s))), omit);
+                let internal =
+                    Internal::from_second((cst.node.value, Some(NumberTerminal::Str(s))), omit);
 
-                AST::from_internal_node(internal_node, span)
+                AST::from_internal(internal, span)
             }
             _ => AST::from_cst(cst),
         }

@@ -71,7 +71,7 @@ where
             let pos: usize = P::into_usize(pos, input);
             let span = StartAndLenSpan::from_lo_len(start, len, input);
             let hi = span.hi(input);
-            let ast = AST::from_leaf_node(Metasymbol::Omit.into(), span);
+            let ast = AST::from_leaf(Metasymbol::Omit.into(), span);
             if &hi <= max_pos {
                 if let Some(s) = input.get(pos..pos + len) {
                     if s == slice {

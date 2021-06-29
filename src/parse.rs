@@ -54,14 +54,14 @@ where
     }
 
     fn to_epsilon_ast(&'input self, pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
-        Ok(AST::from_leaf_node(
+        Ok(AST::from_leaf(
             Metasymbol::Empty.into(),
             Span::from_lo_hi(pos.clone(), pos, self),
         ))
     }
 
     fn to_failed_ast(&'input self, pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
-        Err(AST::from_leaf_node(
+        Err(AST::from_leaf(
             Metasymbol::Failure.into(),
             Span::from_lo_hi(pos.clone(), pos, self),
         ))
@@ -76,7 +76,7 @@ where
     ) -> Result<AST<V, S, O>, AST<V, S, O>> {
         let span_with_len_added = S::from_lo_len(pos, n, self);
         let hi = span_with_len_added.hi(self);
-        let ast = AST::from_leaf_node(Metasymbol::Any(n).into(), span_with_len_added);
+        let ast = AST::from_leaf(Metasymbol::Any(n).into(), span_with_len_added);
         if &hi <= max_pos {
             Ok(ast)
         } else {
@@ -85,7 +85,7 @@ where
     }
 
     fn to_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
-        Ok(AST::from_leaf_node(
+        Ok(AST::from_leaf(
             Metasymbol::All.into(),
             Span::from_lo_hi(pos, max_pos, self),
         ))

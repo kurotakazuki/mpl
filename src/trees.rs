@@ -4,10 +4,12 @@ use crate::choices::{Choice, First, Second};
 use crate::span::Spanned;
 use crate::symbols::{Equivalence, Metasymbol, TerminalSymbol};
 
-pub type LeafNode<O = ()> = TerminalSymbol<O>;
-pub type InternalNode<V, S, O = ()> = Equivalence<(V, Option<O>), Box<Choice<AST<V, S, O>>>>;
+/// Leaf Node
+pub type Leaf<O = ()> = TerminalSymbol<O>;
+/// Internal Node
+pub type Internal<V, S, O = ()> = Equivalence<(V, Option<O>), Box<Choice<AST<V, S, O>>>>;
 
-impl<V, S, O> InternalNode<V, S, O> {
+impl<V, S, O> Internal<V, S, O> {
     pub fn from_first(value: (V, Option<O>), l: AST<V, S, O>, r: AST<V, S, O>) -> Self {
         Equivalence::new(value, Box::new((l, r).into()))
     }
@@ -34,78 +36,79 @@ impl<V, S, O> InternalNode<V, S, O> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum ASTKind<V, S, O = ()> {
-    /// Terminal symbol
-    LeafNode(LeafNode<O>),
-    /// Viriable
-    InternalNode(InternalNode<V, S, O>),
+pub enum Node<V, S, O = ()> {
+    /// Leaf Node
+    Leaf(Leaf<O>),
+    /// Internal Node
+    Internal(Internal<V, S, O>),
 }
 
-impl<V, S, O> From<LeafNode<O>> for ASTKind<V, S, O> {
-    fn from(leaf_node: LeafNode<O>) -> Self {
-        Self::LeafNode(leaf_node)
-    }
-}
-
-impl<V, S, O> From<InternalNode<V, S, O>> for ASTKind<V, S, O> {
-    fn from(internal_node: InternalNode<V, S, O>) -> Self {
-        Self::InternalNode(internal_node)
+impl<V, S, O> From<Leaf<O>> for Node<V, S, O> {
+    fn from(leaf: Leaf<O>) -> Self {
+        Self::Leaf(leaf)
     }
 }
 
-impl<V, S, O> ASTKind<V, S, O> {
-    pub fn as_leaf_node(&self) -> Option<&LeafNode<O>> {
+impl<V, S, O> From<Internal<V, S, O>> for Node<V, S, O> {
+    fn from(internal: Internal<V, S, O>) -> Self {
+        Self::Internal(internal)
+    }
+}
+
+impl<V, S, O> Node<V, S, O> {
+    pub fn as_leaf(&self) -> Option<&Leaf<O>> {
         match self {
-            Self::LeafNode(leaf_node) => Some(leaf_node),
-            Self::InternalNode(_) => None,
+            Self::Leaf(leaf) => Some(leaf),
+            Self::Internal(_) => None,
         }
     }
 
-    pub fn as_internal_node(&self) -> Option<&InternalNode<V, S, O>> {
+    pub fn as_internal(&self) -> Option<&Internal<V, S, O>> {
         match self {
-            Self::LeafNode(_) => None,
-            Self::InternalNode(internal_node) => Some(internal_node),
+            Self::Leaf(_) => None,
+            Self::Internal(internal) => Some(internal),
         }
     }
 
-    pub fn into_leaf_node(self) -> Option<LeafNode<O>> {
+    pub fn into_leaf(self) -> Option<Leaf<O>> {
         match self {
-            Self::LeafNode(leaf_node) => Some(leaf_node),
-            Self::InternalNode(_) => None,
+            Self::Leaf(leaf) => Some(leaf),
+            Self::Internal(_) => None,
         }
     }
 
-    pub fn into_internal_node(self) -> Option<InternalNode<V, S, O>> {
+    pub fn into_internal(self) -> Option<Internal<V, S, O>> {
         match self {
-            Self::LeafNode(_) => None,
-            Self::InternalNode(internal_node) => Some(internal_node),
+            Self::Leaf(_) => None,
+            Self::Internal(internal) => Some(internal),
         }
     }
 }
 
-pub type AST<V, S, O = ()> = Spanned<ASTKind<V, S, O>, S>;
-
+/// AST
+pub type AST<V, S, O = ()> = Spanned<Node<V, S, O>, S>;
+/// CST
 pub type CST<V, S, O = ()> = Spanned<Equivalence<V, Choice<AST<V, S, O>>>, S>;
 
 impl<V, S, O> AST<V, S, O> {
     // Leaf Node
-    pub fn from_leaf_node(leaf_node: LeafNode<O>, span: S) -> Self {
-        Self::new(leaf_node.into(), span)
+    pub fn from_leaf(leaf: Leaf<O>, span: S) -> Self {
+        Self::new(leaf.into(), span)
     }
 
     // Internal Node
-    pub fn from_internal_node(internal_node: InternalNode<V, S, O>, span: S) -> Self {
-        Self::new(internal_node.into(), span)
+    pub fn from_internal(internal: Internal<V, S, O>, span: S) -> Self {
+        Self::new(internal.into(), span)
     }
 
     pub fn from_cst_and_output(cst: CST<V, S, O>, output: Option<O>) -> Self {
         match cst.node.equal {
-            Choice::First(first) => Self::from_internal_node(
-                InternalNode::from_first((cst.node.value, output), first.lhs, first.rhs),
+            Choice::First(first) => Self::from_internal(
+                Internal::from_first((cst.node.value, output), first.lhs, first.rhs),
                 cst.span,
             ),
-            Choice::Second(second) => Self::from_internal_node(
-                InternalNode::from_second((cst.node.value, output), second.0),
+            Choice::Second(second) => Self::from_internal(
+                Internal::from_second((cst.node.value, output), second.0),
                 cst.span,
             ),
         }
@@ -115,52 +118,52 @@ impl<V, S, O> AST<V, S, O> {
         Self::from_cst_and_output(cst, None)
     }
 
-    pub fn as_leaf_node(&self) -> Option<&LeafNode<O>> {
-        self.node.as_leaf_node()
+    pub fn as_leaf(&self) -> Option<&Leaf<O>> {
+        self.node.as_leaf()
     }
 
-    pub fn as_internal_node(&self) -> Option<&InternalNode<V, S, O>> {
-        self.node.as_internal_node()
+    pub fn as_internal(&self) -> Option<&Internal<V, S, O>> {
+        self.node.as_internal()
     }
 
-    pub fn into_leaf_node(self) -> Option<LeafNode<O>> {
-        self.node.into_leaf_node()
+    pub fn into_leaf(self) -> Option<Leaf<O>> {
+        self.node.into_leaf()
     }
 
-    pub fn into_internal_node(self) -> Option<InternalNode<V, S, O>> {
-        self.node.into_internal_node()
+    pub fn into_internal(self) -> Option<Internal<V, S, O>> {
+        self.node.into_internal()
     }
 
     pub fn as_first(&self) -> Option<&First<AST<V, S, O>>> {
-        self.as_internal_node().and_then(|n| n.as_first())
+        self.as_internal().and_then(|n| n.as_first())
     }
 
     pub fn as_second(&self) -> Option<&Second<AST<V, S, O>>> {
-        self.as_internal_node().and_then(|n| n.as_second())
+        self.as_internal().and_then(|n| n.as_second())
     }
 
     pub fn into_first(self) -> Option<First<AST<V, S, O>>> {
-        self.into_internal_node().and_then(|n| n.into_first())
+        self.into_internal().and_then(|n| n.into_first())
     }
 
     pub fn into_second(self) -> Option<Second<AST<V, S, O>>> {
-        self.into_internal_node().and_then(|n| n.into_second())
+        self.into_internal().and_then(|n| n.into_second())
     }
 
     pub fn as_original(&self) -> Option<&O> {
-        self.as_leaf_node().and_then(|n| n.as_original())
+        self.as_leaf().and_then(|n| n.as_original())
     }
 
     pub fn as_metasymbol(&self) -> Option<&Metasymbol> {
-        self.as_leaf_node().and_then(|n| n.as_metasymbol())
+        self.as_leaf().and_then(|n| n.as_metasymbol())
     }
 
     pub fn into_original(self) -> Option<O> {
-        self.into_leaf_node().and_then(|n| n.into_original())
+        self.into_leaf().and_then(|n| n.into_original())
     }
 
     pub fn into_metasymbol(self) -> Option<Metasymbol> {
-        self.into_leaf_node().and_then(|n| n.into_metasymbol())
+        self.into_leaf().and_then(|n| n.into_metasymbol())
     }
 }
 
@@ -184,7 +187,7 @@ impl<V, S, O> CST<V, S, O> {
 
 impl<O, V, S: Clone> CST<V, S, O> {
     pub fn into_omit(mut self) -> Self {
-        self.node.equal = AST::from_leaf_node(Metasymbol::Omit.into(), self.span.clone()).into();
+        self.node.equal = AST::from_leaf(Metasymbol::Omit.into(), self.span.clone()).into();
         self
     }
 }
