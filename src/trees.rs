@@ -3,6 +3,7 @@
 use crate::choices::{Choice, First, Second};
 use crate::span::Spanned;
 use crate::symbols::{Equivalence, Metasymbol, TerminalSymbol};
+use std::fmt;
 
 /// Leaf Node
 pub type Leaf<O = ()> = TerminalSymbol<O>;
@@ -164,6 +165,48 @@ impl<V, S, O> AST<V, S, O> {
 
     pub fn into_metasymbol(self) -> Option<Metasymbol> {
         self.into_leaf().and_then(|n| n.into_metasymbol())
+    }
+}
+
+impl<V: fmt::Debug, S, O: fmt::Debug> AST<V, S, O> {
+    fn write_tree(&self, f: &mut fmt::Formatter<'_>, mut prefix: String) -> fmt::Result {
+        match &self.node {
+            Node::Leaf(leaf) => match leaf {
+                TerminalSymbol::Original(o) => {
+                    writeln!(f, "{:?}", o)
+                }
+                TerminalSymbol::Metasymbol(m) => {
+                    writeln!(f, "{:?}", m)
+                }
+            },
+            Node::Internal(internal) => {
+                writeln!(f, "{:?}", internal.value.0)?;
+                match &*internal.equal {
+                    Choice::First(first) => {
+                        // Left
+                        write!(f, "{}├── ", prefix)?;
+                        let mut lhs_prefix = prefix.clone();
+                        lhs_prefix.push('|');
+                        first.lhs.write_tree(f, lhs_prefix)?;
+                        // Right
+                        write!(f, "{}└── ", prefix)?;
+                        prefix.push(' ');
+                        first.rhs.write_tree(f, prefix)
+                    }
+                    Choice::Second(second) => {
+                        write!(f, "{}└── ", prefix)?;
+                        prefix.push(' ');
+                        second.0.write_tree(f, prefix)
+                    }
+                }
+            }
+        }
+    }
+}
+
+impl<V: fmt::Debug, S, O: fmt::Debug> fmt::Display for AST<V, S, O> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.write_tree(f, String::new())
     }
 }
 

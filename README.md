@@ -72,7 +72,9 @@ fn main() {
         AST<ParenthesesVariable, StartAndLenSpan<u32, u16>, ()>,
     > = input.minimal_parse(&rules, &Open, &all_of_the_span);
 
-    println!("{:#?}", result);
+    if let Ok(ast) = result {
+        println!("{}", ast);
+    }
 }
 ```
 
