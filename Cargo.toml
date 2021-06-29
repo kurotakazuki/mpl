@@ -8,6 +8,6 @@ description = "Minimal parser combinator of Minimal Parsing Language (MPL) like 
 readme = "README.md"
 repository = "https://github.com/kurotakazuki/mpl"
 categories = ["parsing"]
-keywords = ["combinator", "generator", "grammar", "parser", "parsing", "tdpl"]
+keywords = ["combinator", "generator", "grammar", "parser", "tdpl"]
 
 [dependencies]
