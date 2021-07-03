@@ -1,4 +1,8 @@
 # Minimal Parsing Language (MPL)
+
+[![Crate](https://img.shields.io/crates/v/mpl.svg)](https://crates.io/crates/mpl)
+[![API](https://docs.rs/mpl/badge.svg)](https://docs.rs/mpl)
+
 This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Down Parsing Language (TDPL). It creates a abstract syntax tree (AST) for each input.
 
 ## Getting Started
@@ -254,7 +258,6 @@ Space = " "
 --->
 
 ## TODO
-- Visualize AST
 - Add RowColSpan
 - Create parser from MPLG file.
 - Error Handling
