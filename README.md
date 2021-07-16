@@ -258,11 +258,16 @@ Space = " "
 --->
 
 ## TODO
+- Can be Variable in Leaf Node
 - Add RowColSpan
 - Create parser from MPLG file.
 - Error Handling
 - Packrat Parsing
 - Left Recursion
+
+## Next implementation
+- [ ] Can be Variable in Leaf Node
+- [ ] Error Handling
 
 ## Practice
 ### Sequence
