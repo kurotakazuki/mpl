@@ -258,6 +258,7 @@ Space = " "
 --->
 
 ## TODO
+- Add functions that easy to get Variable from AST
 - Can be Variable in Leaf Node
 - Add RowColSpan
 - Create parser from MPLG file.
@@ -266,6 +267,7 @@ Space = " "
 - Left Recursion
 
 ## Next implementation
+- [ ] Add functions that easy to get Variable from AST
 - [ ] Can be Variable in Leaf Node
 - [ ] Error Handling
 
