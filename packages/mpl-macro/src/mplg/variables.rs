@@ -26,11 +26,11 @@ pub enum MplgVariables {
     // Terminal symbol
     TerminalSymbol,
 
-    // Expression
-    Expression,
+    // Expr
+    Expr,
 
     // Literal
-    LiteralExpression,
+    LiteralExpr,
 
     // String
     StringLiteral,

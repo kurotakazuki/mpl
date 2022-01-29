@@ -194,13 +194,13 @@ E = TerminalSymbol / Variable
 Variable = Uppercase (Alphabet / DecDigit)*
 
 // Terminal symbol
-TerminalSymbol = Expression
+TerminalSymbol = Expr
 
-// Expression
-Expression = LiteralExpression
+// Expr
+Expr = LiteralExpr
 
 // Literal
-LiteralExpression = StringLiteral
+LiteralExpr = StringLiteral
 
 // String
 StringLiteral = "\"" (QuoteEscape / ?)* "\""
@@ -254,13 +254,13 @@ VariableContinue =  Alphabet () / DecDigit
 
 
 // Terminal symbol
-TerminalSymbol = Expression () / f
+TerminalSymbol = Expr () / f
 
-// Expression
-Expression = LiteralExpression () / f
+// Expr
+Expr = LiteralExpr () / f
 
 // Literal
-LiteralExpression = StringLiteral () / f
+LiteralExpr = StringLiteral () / f
 
 // String
 StringLiteral = "\"" StringLiteral1 / f
@@ -347,7 +347,7 @@ DecDigit1 = "8" () / DecDigit2
 DecDigit2 = "9" () / f
 
 // Comment
-LineComment = "//" (!('\n') ?)*
+LineComment = "//" InnerLineComment / f
 InnerLineComment = AnyExceptLF InnerLineComment / ()
 AnyExceptLF = AnyExceptLF1 ? / f
 AnyExceptLF1 = '\n' * / ()
@@ -366,18 +366,18 @@ E = TerminalSymbol / Variable
 Variable = Uppercase (Alphabet / DecDigit)*
 
 // Terminal symbol
-TerminalSymbol = Expression
+TerminalSymbol = Expr
 
-// Expression
-Expression = LiteralExpression / ArrayExpression
+// Expr
+Expr = LiteralExpr / ArrayExpr
 
 // Array
-ArrayExpression = "[" ArrayElements? "]"
-ArrayElements = Expression ("," Expression)* ","? / Expression ";" Expression
+ArrayExpr = "[" ArrayElements? "]"
+ArrayElements = Expr ("," Expr)* ","? / Expr ";" Expr
 
 // Literal
-LiteralExpression = StringLiteral / IntegerLiteral
-// LiteralExpression = CharLiteral / StringLiteral / IntegerLiteral / FloatLiteral
+LiteralExpr = StringLiteral / IntegerLiteral
+// LiteralExpr = CharLiteral / StringLiteral / IntegerLiteral / FloatLiteral
 
 // String
 // TODO Multibyte character may not work.
