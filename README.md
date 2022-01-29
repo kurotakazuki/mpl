@@ -180,15 +180,186 @@ The biggest difference between the two grammars is the rule form. There are two 
 MPL, on the other hand, has one rule form.
 
 
-<!---
 ## MPLG (MPL Grammar) syntax
 ### In PEG like grammar
 ```rust
 // Hierarchical syntax
 MPLG = (Line)*
+Line = (LineComment / Rule / ()) EndOfLine
+Rule = Variable " = " E Space E " / " E
+E = TerminalSymbol / Variable
+
+// Lexical syntax
+// Variable
+Variable = Uppercase (Alphabet / DecDigit)*
+
+// Terminal symbol
+TerminalSymbol = Expression
+
+// Expression
+Expression = LiteralExpression
+
+// Literal
+LiteralExpression = StringLiteral
+
+// String
+StringLiteral = "\"" (QuoteEscape / ?)* "\""
+
+// Letters
+Alphabet = Lowercase / Uppercase
+UppercaseAToF = "A" / "B" / "C" / "D" / "E" / "F"
+LowercaseAToF = "a" / "b" / "c" / "d" / "e" / "f"
+Uppercase = UppercaseAToF / "G" / "H" / "I" / "J" / "K" / "L" / "M" / "N" / "O" / "P" / "Q" / "R" / "S" / "T" / "U" / "V" / "W" / "X" / "Y" / "Z"
+Lowercase = LowercaseAToF / "g" / "h" / "i" / "j" / "k" / "l" / "m" / "n" / "o" / "p" / "q" / "r" / "s" / "t" / "u" / "v" / "w" / "x" / "y" / "z"
+
+QuoteEscape = "\\'" / "\\\""
+EndOfLine = "\n" / "\r\n"
+Space = " "
+
+// Digits
+BinDigit = "0" / "1"
+OctDigit = BinDigit / "2" / "3" / "4" / "5" / "6" / "7"
+DecDigit = OctDigit / "8" / "9"
+HexDigit = DecDigit / UppercaseAToF / LowercaseAToF
+
+// Comment
+LineComment = "//" (!("\n") ?)*
+```
+
+### In MPL grammar
+```rust
+// Hierarchical syntax
+Mplg = Line Mplg / f
+
+Line = Line1 EndOfLine / f
+Line1 = LineComment () / Line2
+Line2 = Rule () / ()
+
+Rule = Variable Rule1 / f
+Rule1 = Variable Rule2 / f
+Rule2 = " = " Rule3 / f
+Rule3 = E Rule4 / f
+Rule4 = Space Rule5 / f
+Rule5 = E Rule6 / f
+Rule6 = " = " Rule7 / f
+Rule7 = E () / f
+E = TerminalSymbol () / Variable
+
+
+// Lexical syntax
+// Variable
+Variable = Uppercase VariableContinue / f
+ZeroOrMoreVariableContinue =  VariableContinue ZeroOrMoreVariableContinue / ()
+VariableContinue =  Alphabet () / DecDigit
+
+
+// Terminal symbol
+TerminalSymbol = Expression () / f
+
+// Expression
+Expression = LiteralExpression () / f
+
+// Literal
+LiteralExpression = StringLiteral () / f
+
+// String
+StringLiteral = "\"" StringLiteral1 / f
+StringLiteral1 = InnerStringLiteral "\"" / f
+InnerStringLiteral = InnerInnerStringLiteral InnerStringLiteral / ()
+InnerInnerStringLiteral = QuoteEscape () / ?
+
+// Letters
+Alphabet = Lowercase () / Uppercase
+// Lowercase
+LowercaseAToF = LowercaseAToF1 () / f
+LowercaseAToF1 = 'a' () / LowercaseAToF2
+LowercaseAToF2 = 'b' () / LowercaseAToF3
+LowercaseAToF3 = 'c' () / LowercaseAToF4
+LowercaseAToF4 = 'd' () / LowercaseAToF5
+LowercaseAToF5 = 'e' () / LowercaseAToF6
+LowercaseAToF6 = 'f' () / f
+Lowercase = LowercaseAToF () / Lowercase1
+Lowercase1 = 'g' () / Lowercase2
+Lowercase2 = 'h' () / Lowercase3
+Lowercase3 = 'i' () / Lowercase4
+Lowercase4 = 'j' () / Lowercase5
+Lowercase5 = 'k' () / Lowercase6
+Lowercase6 = 'l' () / Lowercase7
+Lowercase7 = 'm' () / Lowercase8
+Lowercase8 = 'n' () / Lowercase9
+Lowercase9 = 'o' () / Lowercase10
+Lowercase10 = 'p' () / Lowercase11
+Lowercase11 = 'q' () / Lowercase12
+Lowercase12 = 'r' () / Lowercase13
+Lowercase13 = 's' () / Lowercase14
+Lowercase14 = 't' () / Lowercase15
+Lowercase15 = 'u' () / Lowercase16
+Lowercase16 = 'v' () / Lowercase17
+Lowercase17 = 'w' () / Lowercase18
+Lowercase18 = 'x' () / Lowercase19
+Lowercase19 = 'y' () / Lowercase20
+Lowercase20 = 'z' () / f
+// Uppercase
+UppercaseAToF = UppercaseAToF1 () / f
+UppercaseAToF1 = 'A' () / UppercaseAToF2
+UppercaseAToF2 = 'B' () / UppercaseAToF3
+UppercaseAToF3 = 'C' () / UppercaseAToF4
+UppercaseAToF4 = 'D' () / UppercaseAToF5
+UppercaseAToF5 = 'E' () / UppercaseAToF6
+UppercaseAToF6 = 'F' () / f
+Uppercase = UppercaseAToF () / Uppercase1
+Uppercase1 = 'G' () / Uppercase2
+Uppercase2 = 'H' () / Uppercase3
+Uppercase3 = 'I' () / Uppercase4
+Uppercase4 = 'J' () / Uppercase5
+Uppercase5 = 'K' () / Uppercase6
+Uppercase6 = 'L' () / Uppercase7
+Uppercase7 = 'M' () / Uppercase8
+Uppercase8 = 'N' () / Uppercase9
+Uppercase9 = 'O' () / Uppercase10
+Uppercase10 = 'P' () / Uppercase11
+Uppercase11 = 'Q' () / Uppercase12
+Uppercase12 = 'R' () / Uppercase13
+Uppercase13 = 'S' () / Uppercase14
+Uppercase14 = 'T' () / Uppercase15
+Uppercase15 = 'U' () / Uppercase16
+Uppercase16 = 'V' () / Uppercase17
+Uppercase17 = 'W' () / Uppercase18
+Uppercase18 = 'X' () / Uppercase19
+Uppercase19 = 'Y' () / Uppercase20
+Uppercase20 = 'Z' () / f
+
+QuoteEscape = "\\'" () / "\\\""
+EndOfLine = '\n' () / "\r\n"
+Space = ' ' () / f
+
+// Digits
+BinDigit = "0" () / "1"
+OctDigit = BinDigit () / OctDigit1
+OctDigit1 = "2" () / OctDigit2
+OctDigit2 = "3" () / OctDigit3
+OctDigit3 = "4" () / OctDigit4
+OctDigit4 = "5" () / OctDigit5
+OctDigit5 = "6" () / OctDigit6
+OctDigit6 = "7" () / f
+DecDigit = OctDigit () / DecDigit1
+DecDigit1 = "8" () / DecDigit2
+DecDigit2 = "9" () / f
+
+// Comment
+LineComment = "//" (!('\n') ?)*
+InnerLineComment = AnyExceptLF InnerLineComment / ()
+AnyExceptLF = AnyExceptLF1 ? / f
+AnyExceptLF1 = '\n' * / ()
+```
+
+<!---
+```rust
+// Hierarchical syntax
+MPLG = (Line)*
 Line = (Rule / LineComment / ()) EndOfLine
-Rule = Variable '=' E Space E Space '/' Space E
-E = Variable / TerminalSymbol
+Rule = Variable " = " E Space E " / " E
+E = TerminalSymbol / Variable
 
 // Lexical syntax
 // Variable
@@ -209,7 +380,8 @@ LiteralExpression = StringLiteral / IntegerLiteral
 // LiteralExpression = CharLiteral / StringLiteral / IntegerLiteral / FloatLiteral
 
 // String
-StringLiteral = "\"" ((!("\"" / "\\" / IsolatedCR) . / QuoteEscape / ASCIIEscape / UnicodeEscape / StringContinue)* "\""
+// TODO Multibyte character may not work.
+StringLiteral = "\"" (!("\"" / "\\" / IsolatedCR) . / QuoteEscape / ASCIIEscape / UnicodeEscape / StringContinue)* "\""
 StringContinue = "\\" &"\n" 
 
 // Char
@@ -254,7 +426,6 @@ EndOfLine = "\n" / "\r\n"
 Space = " "
 ```
 
-### In MPL grammar
 --->
 
 ## TODO

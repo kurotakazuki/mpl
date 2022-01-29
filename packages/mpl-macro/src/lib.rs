@@ -1,3 +1,5 @@
+mod mplg;
+
 use proc_macro::TokenStream;
 use std::fs::File;
 use std::io::Read;
