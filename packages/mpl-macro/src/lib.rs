@@ -6,6 +6,10 @@ use std::io::Read;
 use std::path::Path;
 use syn::{parse_macro_input, Attribute, DeriveInput, Generics, Ident, Lit, Meta};
 
+use crate::mplg::{MplgRules, MplgVariables};
+use mpl::parse::Parse;
+use mpl::span::StartAndLenSpan;
+
 #[proc_macro_derive(Parser, attributes(grammar))]
 pub fn derive_parser(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -25,6 +29,7 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
                 }
                 None => unimplemented!(),
             };
+
             // TODO Generate tokens.
             unimplemented!()
         }
@@ -70,9 +75,9 @@ fn get_grammar_attr(attr: &Attribute) -> Result<String, proc_macro2::TokenStream
     Err(syn::Error::new_spanned(attr, "expected `grammar = \"...\"`").to_compile_error())
 }
 
-fn read_file<P: AsRef<Path>>(path: P) -> std::io::Result<String> {
+fn read_file<P: AsRef<Path>>(path: P) -> std::io::Result<Vec<u8>> {
     let mut file = File::open(path)?;
-    let mut string = String::new();
-    file.read_to_string(&mut string)?;
-    Ok(string)
+    let mut v = Vec::new();
+    file.read_to_end(&mut v)?;
+    Ok(v)
 }

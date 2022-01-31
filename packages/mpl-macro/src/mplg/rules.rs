@@ -23,23 +23,28 @@ macro_rules! mplg_rule {
 }
 
 impl<'a> MplgRules {
-    mplg_rule!(MPLG_RULE, Mplg, Line, Mplg, f);
+    mplg_rule!(MPLG_RULE, Mplg, Line, Mplg, ());
     mplg_rule!(LINE_RULE, Line, Line1, EndOfLine, f);
     mplg_rule!(LINE1_RULE, Line1, LineComment, (), Line2);
     mplg_rule!(LINE2_RULE, Line2, Rule, (), ());
     // Rule
     mplg_rule!(RULE_RULE, Rule, Variable, Rule1, f);
-    mplg_rule!(RULE1_RULE, Rule1, Variable, Rule2, f);
-    mplg_rule!(RULE2_RULE, Rule2, { Str(" = ") }, Rule3, f);
-    mplg_rule!(RULE3_RULE, Rule3, E, Rule4, f);
-    mplg_rule!(RULE4_RULE, Rule4, Space, Rule5, f);
-    mplg_rule!(RULE5_RULE, Rule5, E, Rule6, f);
-    mplg_rule!(RULE6_RULE, Rule6, { Str(" = ") }, Rule7, f);
-    mplg_rule!(RULE7_RULE, Rule7, E, (), f);
+    mplg_rule!(RULE1_RULE, Rule1, { Str(" = ") }, Rule2, f);
+    mplg_rule!(RULE2_RULE, Rule2, E, Rule3, f);
+    mplg_rule!(RULE3_RULE, Rule3, Space, Rule4, f);
+    mplg_rule!(RULE4_RULE, Rule4, E, Rule5, f);
+    mplg_rule!(RULE5_RULE, Rule5, { Str(" / ") }, Rule6, f);
+    mplg_rule!(RULE6_RULE, Rule6, E, (), f);
     mplg_rule!(E_RULE, E, TerminalSymbol, (), Variable);
     // Lexical syntax
     // Variable
-    mplg_rule!(VARIABLE_RULE, Variable, Uppercase, VariableContinue, f);
+    mplg_rule!(
+        VARIABLE_RULE,
+        Variable,
+        Uppercase,
+        ZeroOrMoreVariableContinue,
+        f
+    );
     mplg_rule!(
         ZERO_OR_MORE_VARIABLE_CONTINUE_RULE,
         ZeroOrMoreVariableContinue,
@@ -80,11 +85,20 @@ impl<'a> MplgRules {
     mplg_rule!(
         INNER_STRING_LITERAL_RULE,
         InnerStringLiteral,
-        InnerInnerStringLiteral,
+        InnerStringLiteralLetter,
         InnerStringLiteral,
         ()
     );
-    mplg_rule!(INNER_INNER_STRING_LITERAL_RULE, InnerInnerStringLiteral, QuoteEscape, (), ?);
+    // InnerStringLiteralLetter
+    mplg_rule!(
+        INNER_STRING_LITERAL_LETTER_RULE,
+        InnerStringLiteralLetter,
+        NotStringLetter,
+        InnerStringLiteral1Letter1,
+        f
+    );
+    mplg_rule!(NOT_STRING_LETTER_RULE, NotStringLetter, { Char('"') }, *, ());
+    mplg_rule!(INNER_STRING_LITERAL_LETTER1_RULE, InnerStringLiteral1Letter1, QuoteEscape, (), ?);
 
     // Letters
     mplg_rule!(ALPHABET_RULE, Alphabet, Lowercase, (), Uppercase);
@@ -364,7 +378,7 @@ impl<'a> MplgRules {
         ()
     );
     mplg_rule!(ANY_EXCEPT_L_F_RULE, AnyExceptLF, AnyExceptLF1, ?, f);
-    mplg_rule!(ANY_EXCEPT_L_F1_RULE, AnyExceptLF1, { Char('\n') }, *, ());
+    mplg_rule!(ANY_EXCEPT_L_F1_RULE, AnyExceptLF1, EndOfLine, *, ());
 }
 
 impl<'a> Rules<U8SliceTerminal<'a>, MplgVariables> for MplgRules {
@@ -382,7 +396,6 @@ impl<'a> Rules<U8SliceTerminal<'a>, MplgVariables> for MplgRules {
             Rule4 => &Self::RULE4_RULE,
             Rule5 => &Self::RULE5_RULE,
             Rule6 => &Self::RULE6_RULE,
-            Rule7 => &Self::RULE7_RULE,
             E => &Self::E_RULE,
             // Lexical syntax
             // Variable
@@ -401,7 +414,10 @@ impl<'a> Rules<U8SliceTerminal<'a>, MplgVariables> for MplgRules {
             StringLiteral => &Self::STRING_LITERAL_RULE,
             StringLiteral1 => &Self::STRING_LITERAL1_RULE,
             InnerStringLiteral => &Self::INNER_STRING_LITERAL_RULE,
-            InnerInnerStringLiteral => &Self::INNER_INNER_STRING_LITERAL_RULE,
+            // InnerStringLiteralLetter
+            InnerStringLiteralLetter => &Self::INNER_STRING_LITERAL_LETTER_RULE,
+            NotStringLetter => &Self::NOT_STRING_LETTER_RULE,
+            InnerStringLiteral1Letter1 => &Self::INNER_STRING_LITERAL_LETTER1_RULE,
 
             // Letters
             Alphabet => &Self::ALPHABET_RULE,
