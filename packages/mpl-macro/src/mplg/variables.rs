@@ -1,3 +1,7 @@
+use mpl::symbols::Variable;
+
+impl Variable for MplgVariables {}
+
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum MplgVariables {
     // Hierarchical syntax
@@ -14,7 +18,6 @@ pub enum MplgVariables {
     Rule4,
     Rule5,
     Rule6,
-    Rule7,
     E,
 
     // Lexical syntax
@@ -36,7 +39,10 @@ pub enum MplgVariables {
     StringLiteral,
     StringLiteral1,
     InnerStringLiteral,
-    InnerInnerStringLiteral,
+    // InnerStringLiteralLetter
+    InnerStringLiteralLetter,
+    NotStringLetter,
+    InnerStringLiteral1Letter1,
 
     // Letters
     Alphabet,

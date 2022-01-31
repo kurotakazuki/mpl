@@ -203,7 +203,8 @@ Expr = LiteralExpr
 LiteralExpr = StringLiteral
 
 // String
-StringLiteral = "\"" (QuoteEscape / ?)* "\""
+StringLiteral = "\"" (NotStringLetter / QuoteEscape / ?)* "\""
+NotStringLetter = !("\"")
 
 // Letters
 Alphabet = Lowercase / Uppercase
@@ -213,7 +214,7 @@ Uppercase = UppercaseAToF / "G" / "H" / "I" / "J" / "K" / "L" / "M" / "N" / "O" 
 Lowercase = LowercaseAToF / "g" / "h" / "i" / "j" / "k" / "l" / "m" / "n" / "o" / "p" / "q" / "r" / "s" / "t" / "u" / "v" / "w" / "x" / "y" / "z"
 
 QuoteEscape = "\\'" / "\\\""
-EndOfLine = "\n" / "\r\n"
+EndOfLine = "\r\n" / '\n'
 Space = " "
 
 // Digits
@@ -223,32 +224,31 @@ DecDigit = OctDigit / "8" / "9"
 HexDigit = DecDigit / UppercaseAToF / LowercaseAToF
 
 // Comment
-LineComment = "//" (!("\n") ?)*
+LineComment = "//" (!(EndOfLine) ?)*
 ```
 
 ### In MPL grammar
 ```rust
 // Hierarchical syntax
-Mplg = Line Mplg / f
+Mplg = Line Mplg / ()
 
 Line = Line1 EndOfLine / f
 Line1 = LineComment () / Line2
 Line2 = Rule () / ()
 
 Rule = Variable Rule1 / f
-Rule1 = Variable Rule2 / f
-Rule2 = " = " Rule3 / f
-Rule3 = E Rule4 / f
-Rule4 = Space Rule5 / f
-Rule5 = E Rule6 / f
-Rule6 = " = " Rule7 / f
-Rule7 = E () / f
+Rule1 = " = " Rule2 / f
+Rule2 = E Rule3 / f
+Rule3 = Space Rule4 / f
+Rule4 = E Rule5 / f
+Rule5 = " / " Rule6 / f
+Rule6 = E () / f
 E = TerminalSymbol () / Variable
 
 
 // Lexical syntax
 // Variable
-Variable = Uppercase VariableContinue / f
+Variable = Uppercase ZeroOrMoreVariableContinue / f
 ZeroOrMoreVariableContinue =  VariableContinue ZeroOrMoreVariableContinue / ()
 VariableContinue =  Alphabet () / DecDigit
 
@@ -263,10 +263,13 @@ Expr = LiteralExpr () / f
 LiteralExpr = StringLiteral () / f
 
 // String
-StringLiteral = "\"" StringLiteral1 / f
-StringLiteral1 = InnerStringLiteral "\"" / f
-InnerStringLiteral = InnerInnerStringLiteral InnerStringLiteral / ()
-InnerInnerStringLiteral = QuoteEscape () / ?
+StringLiteral = '"' StringLiteral1 / f
+StringLiteral1 = InnerStringLiteral '"' / f
+InnerStringLiteral = InnerStringLiteralLetter InnerStringLiteral / ()
+// InnerStringLiteralLetter
+InnerStringLiteralLetter = NotStringLetter InnerStringLiteral1Letter1 / f
+NotStringLetter = '"' * / ()
+InnerStringLiteral1Letter1 = QuoteEscape () / ?
 
 // Letters
 Alphabet = Lowercase () / Uppercase
@@ -330,7 +333,7 @@ Uppercase19 = 'Y' () / Uppercase20
 Uppercase20 = 'Z' () / f
 
 QuoteEscape = "\\'" () / "\\\""
-EndOfLine = '\n' () / "\r\n"
+EndOfLine = "\r\n" () / '\n'
 Space = ' ' () / f
 
 // Digits
@@ -350,7 +353,7 @@ DecDigit2 = "9" () / f
 LineComment = "//" InnerLineComment / f
 InnerLineComment = AnyExceptLF InnerLineComment / ()
 AnyExceptLF = AnyExceptLF1 ? / f
-AnyExceptLF1 = '\n' * / ()
+AnyExceptLF1 = EndOfLine * / ()
 ```
 
 <!---
@@ -429,6 +432,8 @@ Space = " "
 --->
 
 ## TODO
+- Add { Original } in mplg
+- Add Metasymbols in mplg
 - Add functions that easy to get Variable from AST
 - Can be Variable in Leaf Node
 - Add RowColSpan
@@ -462,7 +467,7 @@ A = e A / ()
 ```
 
 ### Not predicate
-`A <- !e .`
+`A <- !e ?`
 ```rust
 A = B ? / f
 B = e * / ()
