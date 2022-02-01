@@ -65,7 +65,60 @@ impl<'a> MplgRules {
     // Expr
     mplg_rule!(EXPR_RULE, Expr, LiteralExpr, (), f);
     // Literal
-    mplg_rule!(LITERAL_EXPR_RULE, LiteralExpr, StringLiteral, (), f);
+    mplg_rule!(
+        LITERAL_EXPR_RULE,
+        LiteralExpr,
+        MetasymbolLiteral,
+        (),
+        StringLiteral
+    );
+
+    // Metasymbol
+    mplg_rule!(
+        METASYMBOL_LITERAL_RULE,
+        MetasymbolLiteral,
+        EmptyLiteral,
+        (),
+        MetasymbolLiteral1
+    );
+    mplg_rule!(
+        METASYMBOL_LITERAL1_RULE,
+        MetasymbolLiteral1,
+        FailureLiteral,
+        (),
+        MetasymbolLiteral2
+    );
+    mplg_rule!(
+        METASYMBOL_LITERAL2_RULE,
+        MetasymbolLiteral2,
+        AnyLiteral,
+        (),
+        MetasymbolLiteral3
+    );
+    mplg_rule!(
+        METASYMBOL_LITERAL3_RULE,
+        MetasymbolLiteral3,
+        AllLiteral,
+        (),
+        f
+    );
+    mplg_rule!(EMPTY_RULE, EmptyLiteral, { Str("()") }, (), f);
+    mplg_rule!(FAILURE_LITERAL_RULE, FailureLiteral, { Char('f') }, (), f);
+    mplg_rule!(
+        ANY_LITERAL_RULE,
+        AnyLiteral,
+        { Char('?') },
+        ZeroOrMoreAny,
+        f
+    );
+    mplg_rule!(
+        ZERO_OR_MORE_ANY_RULE,
+        ZeroOrMoreAny,
+        { Char('?') },
+        ZeroOrMoreAny,
+        ()
+    );
+    mplg_rule!(ALL_LITERAL_RULE, AllLiteral, { Char('*') }, (), f);
 
     // String
     mplg_rule!(
@@ -409,6 +462,16 @@ impl<'a> Rules<U8SliceTerminal<'a>, MplgVariables> for MplgRules {
             Expr => &Self::EXPR_RULE,
             // Literal
             LiteralExpr => &Self::LITERAL_EXPR_RULE,
+            // Metasymbol
+            MetasymbolLiteral => &Self::METASYMBOL_LITERAL_RULE,
+            MetasymbolLiteral1 => &Self::METASYMBOL_LITERAL1_RULE,
+            MetasymbolLiteral2 => &Self::METASYMBOL_LITERAL2_RULE,
+            MetasymbolLiteral3 => &Self::METASYMBOL_LITERAL3_RULE,
+            EmptyLiteral => &Self::EMPTY_RULE,
+            FailureLiteral => &Self::FAILURE_LITERAL_RULE,
+            AnyLiteral => &Self::ANY_LITERAL_RULE,
+            ZeroOrMoreAny => &Self::ZERO_OR_MORE_ANY_RULE,
+            AllLiteral => &Self::ALL_LITERAL_RULE,
 
             // String
             StringLiteral => &Self::STRING_LITERAL_RULE,

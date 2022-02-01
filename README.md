@@ -200,7 +200,14 @@ TerminalSymbol = Expr
 Expr = LiteralExpr
 
 // Literal
-LiteralExpr = StringLiteral
+LiteralExpr = MetasymbolLiteral / StringLiteral
+
+// Metasymbol
+MetasymbolLiteral = EmptyLiteral / FailureLiteral / AnyLiteral / AllLiteral
+EmptyLiteral = "()" () / f
+FailureLiteral = 'f' () / f
+AnyLiteral = '?' () / f
+AllLiteral = '*' () / f
 
 // String
 StringLiteral = "\"" (NotStringLetter / QuoteEscape / ?)* "\""
@@ -260,7 +267,18 @@ TerminalSymbol = Expr () / f
 Expr = LiteralExpr () / f
 
 // Literal
-LiteralExpr = StringLiteral () / f
+LiteralExpr = MetasymbolLiteral () / StringLiteral
+
+// Metasymbol
+MetasymbolLiteral = EmptyLiteral () / MetasymbolLiteral1
+MetasymbolLiteral1 = FailureLiteral () / MetasymbolLiteral2
+MetasymbolLiteral2 = AnyLiteral () / MetasymbolLiteral3
+MetasymbolLiteral3 = AllLiteral () / f
+EmptyLiteral = "()" () / f
+FailureLiteral = 'f' () / f
+AnyLiteral = '?' ZeroOrMoreAny / f
+ZeroOrMoreAny = '?' ZeroOrMoreAny / ()
+AllLiteral = '*' () / f
 
 // String
 StringLiteral = '"' StringLiteral1 / f
@@ -379,8 +397,15 @@ ArrayExpr = "[" ArrayElements? "]"
 ArrayElements = Expr ("," Expr)* ","? / Expr ";" Expr
 
 // Literal
-LiteralExpr = StringLiteral / IntegerLiteral
-// LiteralExpr = CharLiteral / StringLiteral / IntegerLiteral / FloatLiteral
+LiteralExpr = MetasymbolLiteral / StringLiteral / IntegerLiteral
+// LiteralExpr = MetasymbolLiteral / CharLiteral / StringLiteral / IntegerLiteral / FloatLiteral
+
+// Metasymbol
+MetasymbolLiteral = EmptyLiteral / FailureLiteral / AnyLiteral / AllLiteral
+EmptyLiteral = "()" () / f
+FailureLiteral = 'f' () / f
+AnyLiteral = '?' () / f
+AllLiteral = '*' () / f
 
 // String
 // TODO Multibyte character may not work.
@@ -433,7 +458,6 @@ Space = " "
 
 ## TODO
 - Add { Original } in mplg
-- Add Metasymbols in mplg
 - Add functions that easy to get Variable from AST
 - Can be Variable in Leaf Node
 - Add RowColSpan

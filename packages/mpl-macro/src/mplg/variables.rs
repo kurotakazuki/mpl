@@ -35,6 +35,17 @@ pub enum MplgVariables {
     // Literal
     LiteralExpr,
 
+    // Terminal Symbol
+    MetasymbolLiteral,
+    MetasymbolLiteral1,
+    MetasymbolLiteral2,
+    MetasymbolLiteral3,
+    EmptyLiteral,
+    FailureLiteral,
+    AnyLiteral,
+    ZeroOrMoreAny,
+    AllLiteral,
+
     // String
     StringLiteral,
     StringLiteral1,

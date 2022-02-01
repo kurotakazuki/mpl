@@ -1,4 +1,4 @@
-use crate::mplg::{MplgAST, MplgOutput, MplgRules, MplgVariables};
+use crate::mplg::{MplgAST, MplgRules, MplgVariables};
 use mpl::parse::Parse;
 use mpl::span::StartAndLenSpan;
 
@@ -14,33 +14,61 @@ mod tests {
 
     #[test]
     fn mplg() {
+        enum ParseResult {
+            Ok,
+            Err,
+        }
         let inputs = [
-            "",
-            "\n",
-            "\r\n",
-            "\r\n\n\r\n",
+            // Ok
+            ("", ParseResult::Ok),
+            ("\n", ParseResult::Ok),
+            ("\r\n", ParseResult::Ok),
+            ("\r\n\n\r\n", ParseResult::Ok),
             // Rule
-            "A = B C / D\n",
-            "Abc1 = B1 CC / D0d\n",
+            ("A = B C / D\n", ParseResult::Ok),
+            ("Abc1 = B1 CC / D0d\n", ParseResult::Ok),
             // Rules
-            "A = B C / D\r\nE = F G / H\nI = J K / L\r\nM = N O / P\n",
+            (
+                "A = B C / D\r\nE = F G / H\nI = J K / L\r\nM = N O / P\n",
+                ParseResult::Ok,
+            ),
             // LineComment
-            "//\n",
-            "//\r\n",
-            "// \n",
-            "// Hello\n",
-            "//A = B C / D\n",
-            "// \"こんにちは!\"\n",
+            ("//\n", ParseResult::Ok),
+            ("//\r\n", ParseResult::Ok),
+            ("// \n", ParseResult::Ok),
+            ("// Hello\n", ParseResult::Ok),
+            ("//A = B C / D\n", ParseResult::Ok),
+            ("// \"こんにちは!\"\n", ParseResult::Ok),
             // LineComments
-            "//\r\n// a\r\n//b\n",
+            ("//\r\n// a\r\n//b\n", ParseResult::Ok),
+            // Metasymbols
+            ("A = () () / ()\n", ParseResult::Ok),
+            ("A = f f / f\n", ParseResult::Ok),
+            ("A = ? ?? / ???\n", ParseResult::Ok),
+            ("A = * * / *\n", ParseResult::Ok),
             // Strings
-            "A = \"string\" \"''\r\n\n\\\"\\\"\n\" / \"\"\n",
+            (
+                "A = \"string\" \"''\r\n\n\\\"\\\"\n\" / \"\"\n",
+                ParseResult::Ok,
+            ),
             // Mplg
-            // "// Mplg = Line Mplg / ()\nMplg = Line Mplg / ()\r\n\n",
+            (
+                "// Mplg = Line Mplg / ()\nMplg = Line Mplg / ()\r\n\n",
+                ParseResult::Ok,
+            ),
+            // Err
+            ("A = B\n", ParseResult::Err),
+            ("A = B / C / D\n", ParseResult::Err),
+            ("a = B C / D\n", ParseResult::Err),
+            ("A = b c / d\n", ParseResult::Err),
+            ("() = B C / D\n", ParseResult::Err),
         ];
         for input in inputs {
-            let result = parse_mplg(input.as_bytes());
-            assert!(result.is_ok());
+            let result = parse_mplg(input.0.as_bytes());
+            match input.1 {
+                ParseResult::Ok => assert!(result.is_ok()),
+                ParseResult::Err => assert!(result.is_err()),
+            }
         }
     }
 }
