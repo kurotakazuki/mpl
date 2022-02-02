@@ -58,6 +58,7 @@ mod tests {
             ),
             // Err
             ("A = B\n", ParseResult::Err),
+            ("A = B C / D", ParseResult::Err),
             ("A = B / C / D\n", ParseResult::Err),
             ("a = B C / D\n", ParseResult::Err),
             ("A = b c / d\n", ParseResult::Err),

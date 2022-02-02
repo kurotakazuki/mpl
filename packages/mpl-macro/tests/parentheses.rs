@@ -4,6 +4,6 @@ use mpl_macro::Parser;
 fn derive_grammar_from_file() {
     // TODO
     // #[derive(Parser)]
-    // #[grammar = "tests/parentheses.mplg"]
+    // #[mplg = "tests/parentheses.mplg"]
     // pub struct MyParser;
 }

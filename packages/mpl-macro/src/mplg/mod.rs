@@ -2,11 +2,12 @@ use mpl::span::StartAndLenSpan;
 use mpl::trees::AST;
 
 pub use self::output::MplgOutput;
+pub use self::parser::parse_mplg;
 pub use self::rules::MplgRules;
 pub use self::variables::MplgVariables;
 
 mod output;
-mod parse;
+mod parser;
 mod rules;
 mod variables;
 
