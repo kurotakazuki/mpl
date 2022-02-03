@@ -1,8 +1,8 @@
 mod mplg;
 
-use crate::mplg::parse_mplg;
+use crate::mplg::{parse_mplg, MplgOutput};
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{format_ident, quote};
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -14,18 +14,24 @@ enum GrammarData {
     None,
 }
 
-#[proc_macro_derive(Parser, attributes(grammar))]
+#[proc_macro_derive(Parser, attributes(mplg))]
 pub fn derive_parser(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    let (parser_ident, generics, grammar_data) = parse_derive(input);
+    let (parser_ident, _generics, grammar_data) = parse_derive(input);
+    let ident = parser_ident.to_string().replace("Parser", "");
+    let variable_ident = &format_ident!("{}Variables", ident);
 
     match grammar_data {
         Ok(grammar_data) => {
             match grammar_data {
                 // mplg = \"...\"
                 GrammarData::Mplg(data) => {
-                    let variables = variables(&data);
-                    todo!()
+                    let variable = variable(variable_ident, &data);
+
+                    quote! {
+                        #variable
+                    }
+                    .into()
                 }
                 GrammarData::None => TokenStream::new(),
             }
@@ -34,24 +40,36 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
     }
 }
 
-fn variables(data: &[u8]) -> proc_macro2::TokenStream {
-    let ast = parse_mplg(&data).unwrap();
+fn variable(ident: &Ident, data: &[u8]) -> proc_macro2::TokenStream {
+    let lines = parse_mplg(&data)
+        .unwrap()
+        .into_original()
+        .expect("Lines")
+        .to_lines();
 
-    let variables_enum = variables_enum();
-    let variables_impl = variables_impl();
+    let variables = lines
+        .iter()
+        .filter(|line| matches!(line, MplgOutput::Lines(_)))
+        .map(|line| {
+            match line {
+                // LineComment
+                // MplgOutput::Str(line_comment) => quote!(#line_comment),
+                MplgOutput::Rule(rule) => {
+                    let variable = rule.value;
+                    quote!(#variable)
+                }
+                _ => unreachable!(),
+            }
+        });
 
     quote! {
-        #variables_enum
-        #variables_impl
+        impl mpl::symbols::Variable for #ident {}
+
+        #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+        pub enum #ident {
+            #(#variables),*
+        }
     }
-}
-
-fn variables_enum() -> proc_macro2::TokenStream {
-    todo!()
-}
-
-fn variables_impl() -> proc_macro2::TokenStream {
-    todo!()
 }
 
 fn parse_derive(

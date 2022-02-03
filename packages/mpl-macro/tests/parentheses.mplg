@@ -1,3 +1,5 @@
-Open = '(' Parentheses / ()
+// Parentheses
+Open = "(" Parentheses / ()
+
 Parentheses = Open Close / f
 Close = ")" Open / f

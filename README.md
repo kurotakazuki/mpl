@@ -237,7 +237,8 @@ LineComment = "//" (!(EndOfLine) ?)*
 ### In MPL grammar
 ```rust
 // Hierarchical syntax
-Mplg = Line Mplg / ()
+Mplg = ZeroOrMoreLines () / f
+ZeroOrMoreLines = Line ZeroOrMoreLines / ()
 
 Line = Line1 EndOfLine / f
 Line1 = LineComment () / Line2
@@ -457,9 +458,13 @@ Space = " "
 --->
 
 ## TODO
+
+### Tasks
+- into_first() in CST
+
+### 
 - Add { Original } in mplg
 - Add functions that easy to get Variable from AST
-- Can be Variable in Leaf Node
 - Add RowColSpan
 - Create parser from MPLG file.
 - Error Handling

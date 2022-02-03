@@ -1,11 +1,12 @@
 use mpl::symbols::Variable;
 
-impl Variable for MplgVariables {}
+impl Variable for MplgVariable {}
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum MplgVariables {
+pub enum MplgVariable {
     // Hierarchical syntax
     Mplg,
+    ZeroOrMoreLines,
     // Line
     Line,
     Line1,

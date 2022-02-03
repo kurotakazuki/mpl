@@ -1,11 +1,11 @@
-use crate::mplg::{MplgAST, MplgRules, MplgVariables};
+use crate::mplg::{MplgAST, MplgRules, MplgVariable};
 use mpl::parse::Parse;
 use mpl::span::StartAndLenSpan;
 
 pub fn parse_mplg(input: &[u8]) -> Result<MplgAST, MplgAST> {
     let all_of_the_span = StartAndLenSpan::<u32, u32>::from_start_len(0, input.len() as u32);
     let rules = &MplgRules;
-    input.minimal_parse(rules, &MplgVariables::Mplg, &all_of_the_span)
+    input.minimal_parse(rules, &MplgVariable::Mplg, &all_of_the_span)
 }
 
 #[cfg(test)]

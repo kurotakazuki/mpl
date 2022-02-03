@@ -7,16 +7,18 @@ use std::hash::Hash;
 
 /// This structure is used when defining the right rule for a variable.
 #[derive(Clone, Debug, PartialEq)]
-pub struct RightRule<T, V> {
-    pub first: First<E<T, V>>,
-    pub second: Second<E<T, V>>,
+pub struct RightRule<GenE> {
+    pub first: First<GenE>,
+    pub second: Second<GenE>,
 }
 
-impl<T, V> RightRule<T, V> {
-    pub fn new(first: First<E<T, V>>, second: Second<E<T, V>>) -> Self {
+impl<GenE> RightRule<GenE> {
+    pub const fn new(first: First<GenE>, second: Second<GenE>) -> Self {
         Self { first, second }
     }
+}
 
+impl<T, V> RightRule<E<T, V>> {
     pub fn from_right_rule_kind(
         first: (RightRuleKind<T, V>, RightRuleKind<T, V>),
         second: RightRuleKind<T, V>,
@@ -51,20 +53,20 @@ impl<T, V> From<RightRuleKind<T, V>> for E<T, V> {
     }
 }
 
-pub type Rule<T, V> = Equivalence<V, RightRule<T, V>>;
+pub type Rule<V, GenE> = Equivalence<V, RightRule<GenE>>;
 
 /// Rules types.
 ///
 /// `R` is a finite set of rules of the form.
 pub trait Rules<T, V> {
-    fn get(&self, variable: &V) -> Option<&RightRule<T, V>>;
+    fn get(&self, variable: &V) -> Option<&RightRule<E<T, V>>>;
 }
 
-impl<T, V> Rules<T, V> for HashMap<V, RightRule<T, V>>
+impl<T, V> Rules<T, V> for HashMap<V, RightRule<E<T, V>>>
 where
     V: Eq + Hash,
 {
-    fn get(&self, variable: &V) -> Option<&RightRule<T, V>> {
+    fn get(&self, variable: &V) -> Option<&RightRule<E<T, V>>> {
         self.get(variable)
     }
 }
@@ -86,26 +88,28 @@ mod tests {
         }
 
         #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-        enum BinDigitVariable {
+        enum BinDigitVariables {
             BinDigit,
             One,
         }
 
-        let mut rules: HashMap<BinDigitVariable, RightRule<BinDigitTerminal, BinDigitVariable>> =
-            HashMap::new();
+        let mut rules: HashMap<
+            BinDigitVariables,
+            RightRule<E<BinDigitTerminal, BinDigitVariables>>,
+        > = HashMap::new();
 
         rules.insert(
-            BinDigitVariable::BinDigit,
+            BinDigitVariables::BinDigit,
             RightRule::new(
                 First::new(
                     TerminalSymbol::from_original(BinDigitTerminal::Char('0')).into(),
                     Metasymbol::Empty.into(),
                 ),
-                Second::new(E::from_v(BinDigitVariable::One)),
+                Second::new(E::from_v(BinDigitVariables::One)),
             ),
         );
         rules.insert(
-            BinDigitVariable::One,
+            BinDigitVariables::One,
             RightRule::new(
                 First::new(
                     TerminalSymbol::from_original(BinDigitTerminal::Char('1')).into(),
@@ -115,21 +119,23 @@ mod tests {
             ),
         );
 
-        let mut rules2: HashMap<BinDigitVariable, RightRule<BinDigitTerminal, BinDigitVariable>> =
-            HashMap::new();
+        let mut rules2: HashMap<
+            BinDigitVariables,
+            RightRule<E<BinDigitTerminal, BinDigitVariables>>,
+        > = HashMap::new();
 
         rules2.insert(
-            BinDigitVariable::BinDigit,
+            BinDigitVariables::BinDigit,
             RightRule::from_right_rule_kind(
                 (
                     RightRuleKind::T(BinDigitTerminal::Char('0')),
                     RightRuleKind::Empty,
                 ),
-                RightRuleKind::V(BinDigitVariable::One),
+                RightRuleKind::V(BinDigitVariables::One),
             ),
         );
         rules2.insert(
-            BinDigitVariable::One,
+            BinDigitVariables::One,
             RightRule::from_right_rule_kind(
                 (
                     RightRuleKind::T(BinDigitTerminal::Char('1')),
@@ -140,12 +146,12 @@ mod tests {
         );
 
         assert_eq!(
-            rules[&BinDigitVariable::BinDigit],
-            rules2[&BinDigitVariable::BinDigit]
+            rules[&BinDigitVariables::BinDigit],
+            rules2[&BinDigitVariables::BinDigit]
         );
         assert_eq!(
-            rules[&BinDigitVariable::One],
-            rules2[&BinDigitVariable::One]
+            rules[&BinDigitVariables::One],
+            rules2[&BinDigitVariables::One]
         );
     }
 }

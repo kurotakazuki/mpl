@@ -1,4 +1,4 @@
-use crate::mplg::{MplgVariables, MplgVariables::*};
+use crate::mplg::{MplgVariable, MplgVariable::*};
 
 use mpl::choices::{First, Second};
 use mpl::e_from;
@@ -7,7 +7,7 @@ use mpl::symbols::{Metasymbol::*, TerminalSymbol, U8SliceTerminal, U8SliceTermin
 
 pub struct MplgRules;
 
-type Rule<'a> = RightRule<U8SliceTerminal<'a>, MplgVariables>;
+type Rule<'a> = RightRule<E<U8SliceTerminal<'a>, MplgVariable>>;
 
 macro_rules! mplg_rule {
     ($rule_ident:ident, $v:ty, $fl:tt, $fr:tt, $s:tt) => {
@@ -23,7 +23,15 @@ macro_rules! mplg_rule {
 }
 
 impl<'a> MplgRules {
-    mplg_rule!(MPLG_RULE, Mplg, Line, Mplg, ());
+    mplg_rule!(MPLG_RULE, Mplg, ZeroOrMoreLines, (), f);
+    mplg_rule!(
+        ZERO_OR_MORE_LINES_RULE,
+        ZeroOrMoreLines,
+        Line,
+        ZeroOrMoreLines,
+        ()
+    );
+
     mplg_rule!(LINE_RULE, Line, Line1, EndOfLine, f);
     mplg_rule!(LINE1_RULE, Line1, LineComment, (), Line2);
     mplg_rule!(LINE2_RULE, Line2, Rule, (), ());
@@ -434,10 +442,11 @@ impl<'a> MplgRules {
     mplg_rule!(ANY_EXCEPT_L_F1_RULE, AnyExceptLF1, EndOfLine, *, ());
 }
 
-impl<'a> Rules<U8SliceTerminal<'a>, MplgVariables> for MplgRules {
-    fn get(&self, variable: &MplgVariables) -> Option<&Rule<'a>> {
+impl<'a> Rules<U8SliceTerminal<'a>, MplgVariable> for MplgRules {
+    fn get(&self, variable: &MplgVariable) -> Option<&Rule<'a>> {
         Some(match variable {
             Mplg => &Self::MPLG_RULE,
+            ZeroOrMoreLines => &Self::ZERO_OR_MORE_LINES_RULE,
             Line => &Self::LINE_RULE,
             Line1 => &Self::LINE1_RULE,
             Line2 => &Self::LINE2_RULE,

@@ -10,7 +10,7 @@ pub struct First<E> {
 }
 
 impl<E> First<E> {
-    pub fn new(lhs: E, rhs: E) -> Self {
+    pub const fn new(lhs: E, rhs: E) -> Self {
         Self { lhs, rhs }
     }
 }
@@ -32,7 +32,7 @@ impl<V, S, O> From<AST<V, S, O>> for Second<AST<V, S, O>> {
 }
 
 impl<E> Second<E> {
-    pub fn new(e: E) -> Self {
+    pub const fn new(e: E) -> Self {
         Self(e)
     }
 }
