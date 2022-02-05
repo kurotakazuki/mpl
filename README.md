@@ -281,6 +281,8 @@ AnyLiteral = '?' ZeroOrMoreAny / f
 ZeroOrMoreAny = '?' ZeroOrMoreAny / ()
 AllLiteral = '*' () / f
 
+// Original symbol
+
 // String
 StringLiteral = '"' StringLiteral1 / f
 StringLiteral1 = InnerStringLiteral '"' / f

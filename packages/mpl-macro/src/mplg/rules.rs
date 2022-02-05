@@ -7,12 +7,12 @@ use mpl::symbols::{Metasymbol::*, TerminalSymbol, U8SliceTerminal, U8SliceTermin
 
 pub struct MplgRules;
 
-type Rule<'a> = RightRule<E<U8SliceTerminal<'a>, MplgVariable>>;
+type MplgRightRule<'a> = RightRule<U8SliceTerminal<'a>, MplgVariable>;
 
 macro_rules! mplg_rule {
     ($rule_ident:ident, $v:ty, $fl:tt, $fr:tt, $s:tt) => {
         /// $v = $fl $fr / $s
-        const $rule_ident: Rule<'a> = RightRule {
+        const $rule_ident: MplgRightRule<'a> = RightRule {
             first: First {
                 lhs: e_from!($fl),
                 rhs: e_from!($fr),
@@ -443,7 +443,7 @@ impl<'a> MplgRules {
 }
 
 impl<'a> Rules<U8SliceTerminal<'a>, MplgVariable> for MplgRules {
-    fn get(&self, variable: &MplgVariable) -> Option<&Rule<'a>> {
+    fn get(&self, variable: &MplgVariable) -> Option<&MplgRightRule<'a>> {
         Some(match variable {
             Mplg => &Self::MPLG_RULE,
             ZeroOrMoreLines => &Self::ZERO_OR_MORE_LINES_RULE,
