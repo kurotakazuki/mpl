@@ -11,4 +11,4 @@ mod parser;
 mod rules;
 mod variables;
 
-pub type MplgAST<'input> = AST<MplgVariable, StartAndLenSpan<u32, u32>, MplgOutput<'input>>;
+pub type MplgAST<'i> = AST<MplgVariable, StartAndLenSpan<u32, u32>, MplgOutput<'i>>;

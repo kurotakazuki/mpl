@@ -29,7 +29,7 @@ This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Dow
 ### Example
 ```rust
 use crate::ParenthesesVariable::*;
-use mpl::parse::Parse;
+use mpl::parser::Parser;
 use mpl::rules::{RightRule, RightRuleKind::*};
 use mpl::span::StartAndLenSpan;
 use mpl::symbols::{StrTerminal::*, Variable};
@@ -45,12 +45,15 @@ enum ParenthesesVariable {
 
 impl Variable for ParenthesesVariable {}
 
+struct ParenthesesParser;
+
 /// ```
 /// Open = '(' Parentheses / ()
 /// Parentheses = Open Close / f
 /// Close = ")" Open / f
 /// ```
 fn main() {
+    let parser = ParenthesesParser;
     let mut rules = HashMap::new();
 
     rules.insert(
@@ -74,7 +77,7 @@ fn main() {
     let result: Result<
         AST<ParenthesesVariable, StartAndLenSpan<u32, u16>, ()>,
         AST<ParenthesesVariable, StartAndLenSpan<u32, u16>, ()>,
-    > = input.minimal_parse(&rules, &Open, &all_of_the_span);
+    > = parser.parse(input, &rules, &Open, &all_of_the_span);
 
     if let Ok(ast) = result {
         println!("{}", ast);
@@ -106,14 +109,14 @@ A MPL grammar `G` is a tuple `G = (V, Σ, R, S)` in which:
 #### Empty
 `()` is a metasymbol that always succeeds without consuming input.
 
-```
+```rust ignore
 Empty = () () / ()
 ```
 
 #### Failure
 `f` is a metasymbol that always fails without consuming input.
 
-```
+```rust ignore
 Failure = f f / f
 ```
 
@@ -123,7 +126,7 @@ Since one of the goals of MPL is to create an AST, it also supports two features
 #### Any
 `?` is a metasymbol representing any single input like wildcard character. This succeeds if there is any input left, and fails if there is no input left.
 
-```
+```rust ignore
 Any = ? () / f
 ```
 
@@ -132,7 +135,7 @@ To extend the difinition of MPL grammar, let ? &isin; M.
 #### All
 `*` is a metasymbol representing All remaining input like wildcard character. This will succeed even if the remaining inputs are zero.
 
-```
+```rust ignore
 All = * () / f
 ```
 
@@ -182,7 +185,7 @@ MPL, on the other hand, has one rule form.
 
 ## MPLG (MPL Grammar) syntax
 ### In PEG like grammar
-```rust
+```rust ignore
 // Hierarchical syntax
 MPLG = (Line)*
 Line = (LineComment / Rule / ()) EndOfLine
@@ -235,7 +238,7 @@ LineComment = "//" (!(EndOfLine) ?)*
 ```
 
 ### In MPL grammar
-```rust
+```rust ignore
 // Hierarchical syntax
 Mplg = ZeroOrMoreLines () / f
 ZeroOrMoreLines = Line ZeroOrMoreLines / ()
@@ -378,7 +381,7 @@ AnyExceptLF1 = EndOfLine * / ()
 ```
 
 <!---
-```rust
+```rust ignore
 // Hierarchical syntax
 MPLG = (Line)*
 Line = (Rule / LineComment / ()) EndOfLine
@@ -481,25 +484,25 @@ Space = " "
 ## Practice
 ### Sequence
 `A <- e1 e2`
-```rust
+```rust ignore
 A = e1 e2 / f
 ```
 
 ### Choice
 `A <- e1 / e2`
-```rust
+```rust ignore
 A = e1 () / e2
 ```
 
 ### Zero or more
 `A <- e*`
-```rust
+```rust ignore
 A = e A / ()
 ```
 
 ### Not predicate
 `A <- !e ?`
-```rust
+```rust ignore
 A = B ? / f
 B = e * / ()
 ```

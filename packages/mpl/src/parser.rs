@@ -13,37 +13,42 @@ use crate::trees::{AST, CST};
 
 /// Types that can be parsed.
 ///
+/// I is Input.
 /// T is terminal symbols.
-/// O is output type.
 /// V is (enum of) Variables.
 /// S is Span.
 /// P is position.
+/// R is Rules.
+/// O is output type.
 // TODO: Create Error types
-pub trait Parse<'input, T, V, S, P, R, O = ()>: Input
+pub trait Parser<'i, I, T, V, S, P, R, O = ()>
 where
-    T: Terminal<'input, Self, V, S, P, O>,
+    I: Input + ?Sized,
+    T: Terminal<'i, I, V, S, P, O>,
     V: Variable,
-    S: Span<Self, P>,
+    S: Span<I, P>,
     P: Position,
     R: Rules<T, V>,
-    O: Output<'input, Self, V, S>,
+    O: Output<'i, I, V, S>,
 {
     /// Minimal parse.
     ///
     /// # Warning
     ///
     /// `all_of_the_span.hi(self)` must be smaller than its length.
-    fn minimal_parse(
-        &'input self,
+    fn parse(
+        &self,
+        input: &'i I,
         rules: &R,
         start_variable: &V,
         all_of_the_span: &S,
     ) -> Result<AST<V, S, O>, AST<V, S, O>> {
         let ast = self.eval(
-            &all_of_the_span.lo(self),
+            input,
+            &all_of_the_span.lo(input),
             rules,
             start_variable,
-            &all_of_the_span.hi(self),
+            &all_of_the_span.hi(input),
         )?;
 
         if &ast.span == all_of_the_span {
@@ -53,29 +58,30 @@ where
         }
     }
 
-    fn to_epsilon_ast(&'input self, pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
+    fn to_empty_ast(&self, input: &'i I, pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
         Ok(AST::from_leaf(
             Metasymbol::Empty.into(),
-            Span::from_lo_hi(pos.clone(), pos, self),
+            Span::from_lo_hi(pos.clone(), pos, input),
         ))
     }
 
-    fn to_failed_ast(&'input self, pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
+    fn to_failure_ast(&self, input: &'i I, pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
         Err(AST::from_leaf(
             Metasymbol::Failure.into(),
-            Span::from_lo_hi(pos.clone(), pos, self),
+            Span::from_lo_hi(pos.clone(), pos, input),
         ))
     }
 
     // TODO: Decide return Any or Failure
     fn to_any_ast(
-        &'input self,
+        &self,
+        input: &'i I,
         pos: P,
         max_pos: &P,
         n: usize,
     ) -> Result<AST<V, S, O>, AST<V, S, O>> {
-        let span_with_len_added = S::from_lo_len(pos, n, self);
-        let hi = span_with_len_added.hi(self);
+        let span_with_len_added = S::from_lo_len(pos, n, input);
+        let hi = span_with_len_added.hi(input);
         let ast = AST::from_leaf(Metasymbol::Any(n).into(), span_with_len_added);
         if &hi <= max_pos {
             Ok(ast)
@@ -84,33 +90,35 @@ where
         }
     }
 
-    fn to_all_ast(&'input self, pos: P, max_pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
+    fn to_all_ast(&self, input: &'i I, pos: P, max_pos: P) -> Result<AST<V, S, O>, AST<V, S, O>> {
         Ok(AST::from_leaf(
             Metasymbol::All.into(),
-            Span::from_lo_hi(pos, max_pos, self),
+            Span::from_lo_hi(pos, max_pos, input),
         ))
     }
 
     fn eval_terminal_symbol(
-        &'input self,
+        &self,
+        input: &'i I,
         terminal_symbol: &TerminalSymbol<T>,
         pos: P,
         max_pos: &P,
     ) -> Result<AST<V, S, O>, AST<V, S, O>> {
         match terminal_symbol {
-            TerminalSymbol::Original(t) => t.eval(self, pos, max_pos),
+            TerminalSymbol::Original(t) => t.eval(input, pos, max_pos),
             TerminalSymbol::Metasymbol(metasymbol) => match metasymbol {
-                Metasymbol::Empty => self.to_epsilon_ast(pos),
-                Metasymbol::Failure => self.to_failed_ast(pos),
-                Metasymbol::Any(n) => self.to_any_ast(pos, max_pos, *n),
-                Metasymbol::All => self.to_all_ast(pos, max_pos.clone()),
+                Metasymbol::Empty => self.to_empty_ast(input, pos),
+                Metasymbol::Failure => self.to_failure_ast(input, pos),
+                Metasymbol::Any(n) => self.to_any_ast(input, pos, max_pos, *n),
+                Metasymbol::All => self.to_all_ast(input, pos, max_pos.clone()),
                 Metasymbol::Omit => unimplemented!(),
             },
         }
     }
 
     fn eval(
-        &'input self,
+        &self,
+        input: &'i I,
         pos: &P,
         rules: &R,
         variable: &V,
@@ -122,31 +130,34 @@ where
         // left-hand side of first choice
         let left_ast: Result<AST<V, S, O>, AST<V, S, O>> = match &right_rule.first.lhs {
             E::T(terminal_symbol) => {
-                self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
+                self.eval_terminal_symbol(input, terminal_symbol, pos.clone(), max_pos)
             }
-            E::V(lhs_of_fc_v) => self.eval(pos, rules, lhs_of_fc_v, max_pos),
+            E::V(lhs_of_fc_v) => self.eval(input, pos, rules, lhs_of_fc_v, max_pos),
         };
 
         if let Ok(left_ast) = left_ast {
             // right-hand side of first choice
             let right_ast: Result<AST<V, S, O>, AST<V, S, O>> = match &right_rule.first.rhs {
-                E::T(terminal_symbol) => {
-                    self.eval_terminal_symbol(terminal_symbol, left_ast.span.hi(self), max_pos)
-                }
+                E::T(terminal_symbol) => self.eval_terminal_symbol(
+                    input,
+                    terminal_symbol,
+                    left_ast.span.hi(input),
+                    max_pos,
+                ),
                 E::V(rhs_of_fc_v) => {
-                    self.eval(&left_ast.span.hi(self), rules, rhs_of_fc_v, max_pos)
+                    self.eval(input, &left_ast.span.hi(input), rules, rhs_of_fc_v, max_pos)
                 }
             };
 
             if let Ok(right_ast) = right_ast {
-                let merged_span = Span::merge_lhs_and_rhs(&left_ast.span, &right_ast.span, self);
+                let merged_span = Span::merge_lhs_and_rhs(&left_ast.span, &right_ast.span, input);
 
                 let variable_and_choice =
                     Equivalence::new(variable.clone(), (left_ast, right_ast).into());
 
                 let cst = CST::new(variable_and_choice, merged_span);
 
-                let output_ast = O::output_ast(self, cst);
+                let output_ast = O::output_ast(input, cst);
 
                 return Ok(output_ast);
             }
@@ -155,17 +166,17 @@ where
         // Second choice
         match &right_rule.second.0 {
             E::T(terminal_symbol) => {
-                self.eval_terminal_symbol(terminal_symbol, pos.clone(), max_pos)
+                self.eval_terminal_symbol(input, terminal_symbol, pos.clone(), max_pos)
             }
             E::V(sc_v) => {
-                let ast = self.eval(pos, rules, sc_v, max_pos)?;
+                let ast = self.eval(input, pos, rules, sc_v, max_pos)?;
                 let span = ast.span.clone();
 
                 let variable_and_choice = Equivalence::new(variable.clone(), ast.into());
 
                 let cst = CST::new(variable_and_choice, span);
 
-                let output_ast = O::output_ast(self, cst);
+                let output_ast = O::output_ast(input, cst);
 
                 Ok(output_ast)
             }
@@ -174,36 +185,36 @@ where
 }
 
 /// T represents the element type.
-impl<'input, T, V, P, L, R, O>
-    Parse<'input, SliceTerminal<'input, T>, V, StartAndLenSpan<P, L>, P, R, O> for [T]
+impl<'i, Gen, T, V, P, L, R, O>
+    Parser<'i, [T], SliceTerminal<'i, T>, V, StartAndLenSpan<P, L>, P, R, O> for Gen
 where
     T: PartialEq,
     V: Variable,
-    P: Start<Self, L>,
-    L: Len<Self, P>,
-    R: Rules<SliceTerminal<'input, T>, V>,
-    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
+    P: Start<[T], L>,
+    L: Len<[T], P>,
+    R: Rules<SliceTerminal<'i, T>, V>,
+    O: Output<'i, [T], V, StartAndLenSpan<P, L>>,
 {
 }
 
-impl<'input, V, P, L, R, O> Parse<'input, StrTerminal<'input>, V, StartAndLenSpan<P, L>, P, R, O>
-    for str
+impl<'i, Gen, V, P, L, R, O> Parser<'i, str, StrTerminal<'i>, V, StartAndLenSpan<P, L>, P, R, O>
+    for Gen
 where
     V: Variable,
-    P: Start<Self, L>,
-    L: Len<Self, P>,
-    R: Rules<StrTerminal<'input>, V>,
-    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
+    P: Start<str, L>,
+    L: Len<str, P>,
+    R: Rules<StrTerminal<'i>, V>,
+    O: Output<'i, str, V, StartAndLenSpan<P, L>>,
 {
 }
 
-impl<'input, V, P, L, R, O>
-    Parse<'input, U8SliceTerminal<'input>, V, StartAndLenSpan<P, L>, P, R, O> for [u8]
+impl<'i, Gen, V, P, L, R, O>
+    Parser<'i, [u8], U8SliceTerminal<'i>, V, StartAndLenSpan<P, L>, P, R, O> for Gen
 where
     V: Variable,
-    P: Start<Self, L>,
-    L: Len<Self, P>,
-    R: Rules<U8SliceTerminal<'input>, V>,
-    O: Output<'input, Self, V, StartAndLenSpan<P, L>>,
+    P: Start<[u8], L>,
+    L: Len<[u8], P>,
+    R: Rules<U8SliceTerminal<'i>, V>,
+    O: Output<'i, [u8], V, StartAndLenSpan<P, L>>,
 {
 }

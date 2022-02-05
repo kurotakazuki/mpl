@@ -38,9 +38,9 @@ impl<'a> MplgOutput<'a> {
     }
 }
 
-impl<'input> Output<'input, [u8], MplgVariable, StartAndLenSpan<u32, u32>> for MplgOutput<'input> {
+impl<'i> Output<'i, [u8], MplgVariable, StartAndLenSpan<u32, u32>> for MplgOutput<'i> {
     fn output_ast(
-        input: &'input [u8],
+        input: &'i [u8],
         cst: CST<MplgVariable, StartAndLenSpan<u32, u32>, Self>,
     ) -> AST<MplgVariable, StartAndLenSpan<u32, u32>, Self> {
         match cst.node.value {

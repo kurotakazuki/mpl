@@ -23,7 +23,7 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
     let (parser_ident, _generics, grammar_data) = parse_derive(input);
     let ident = parser_ident.to_string().replace("Parser", "");
     let rules_ident = &format_ident!("{}Rules", ident);
-    let variable_ident = &format_ident!("{}Variables", ident);
+    let variable_ident = &format_ident!("{}Variable", ident);
 
     match grammar_data {
         Ok(grammar_data) => {

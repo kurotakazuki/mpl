@@ -59,6 +59,7 @@ pub fn generate_rules(
 
         impl<'a> ::mpl::rules::Rules<::mpl::symbols::U8SliceTerminal<'a>, #variable_ident> for #rules_ident {
             fn get(&self, variable: &#variable_ident) -> Option<&::mpl::rules::RightRule<::mpl::symbols::U8SliceTerminal<'a>, #variable_ident>> {
+                eprintln!("{:?}", &variable);
                 Some(match variable {
                     #(#rules),*
                 })

@@ -1,6 +1,6 @@
 use mpl::input::Input;
 use mpl::output::Output;
-use mpl::parse::Parse;
+use mpl::parser::Parser;
 use mpl::position::Position;
 use mpl::rules::{RightRule, RightRuleKind, Rules};
 use mpl::span::{Len, Span, Start, StartAndLenSpan};
@@ -128,9 +128,9 @@ impl<'a> Terminal<'a, ExtStr, NumberVariable, ByteSpan, BytePos, NumberTerminal<
     }
 }
 
-impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal<'input> {
+impl<'i> Output<'i, ExtStr, NumberVariable, ByteSpan> for NumberTerminal<'i> {
     fn output_ast(
-        input: &'input ExtStr,
+        input: &'i ExtStr,
         cst: CST<NumberVariable, ByteSpan, Self>,
     ) -> AST<NumberVariable, ByteSpan, Self> {
         match cst.node.value {
@@ -163,8 +163,11 @@ impl<'input> Output<'input, ExtStr, NumberVariable, ByteSpan> for NumberTerminal
 
 impl Variable for NumberVariable {}
 
-impl<'a, R> Parse<'a, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos, R, NumberTerminal<'a>>
-    for ExtStr
+struct NumberParser;
+
+impl<'a, R>
+    Parser<'a, ExtStr, NumberTerminal<'a>, NumberVariable, ByteSpan, BytePos, R, NumberTerminal<'a>>
+    for NumberParser
 where
     R: Rules<NumberTerminal<'a>, NumberVariable>,
 {
@@ -182,6 +185,7 @@ where
 /// ```
 #[test]
 fn number() {
+    let parser = NumberParser;
     let mut rules = HashMap::new();
 
     rules.insert(
@@ -255,14 +259,14 @@ fn number() {
     let input = ExtStr(String::from("012001"));
     // all of the span
     let all_of_the_span = StartAndLenSpan::from_start_len(BytePos(0), input.0.len() as u16);
-    let result = input.minimal_parse(&rules, &NumberVariable::Number, &all_of_the_span);
+    let result = parser.parse(&input, &rules, &NumberVariable::Number, &all_of_the_span);
 
     assert!(result.is_err());
 
     let input = ExtStr(String::from("0１0０1"));
     // all of the span
     let all_of_the_span = StartAndLenSpan::from_start_len(BytePos(0), input.0.len() as u16);
-    let result = input.minimal_parse(&rules, &NumberVariable::Number, &all_of_the_span);
+    let result = parser.parse(&input, &rules, &NumberVariable::Number, &all_of_the_span);
 
     assert_eq!(result.unwrap().span.len, 9);
 }

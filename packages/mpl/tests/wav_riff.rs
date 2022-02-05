@@ -1,5 +1,5 @@
 use mpl::output::Output;
-use mpl::parse::Parse;
+use mpl::parser::Parser;
 use mpl::rules::{RightRule, RightRuleKind};
 use mpl::span::{Span, StartAndLenSpan};
 use mpl::symbols::{SliceTerminal, Variable};
@@ -24,9 +24,9 @@ enum U16OrU32 {
 
 impl Variable for WavRiffVariable {}
 
-impl<'input> Output<'input, [u8], WavRiffVariable, StartAndLenSpan<u32, u16>> for U16OrU32 {
+impl<'i> Output<'i, [u8], WavRiffVariable, StartAndLenSpan<u32, u16>> for U16OrU32 {
     fn output_ast(
-        input: &'input [u8],
+        input: &'i [u8],
         cst: CST<WavRiffVariable, StartAndLenSpan<u32, u16>, Self>,
     ) -> AST<WavRiffVariable, StartAndLenSpan<u32, u16>, Self> {
         match cst.node.value {
@@ -43,6 +43,8 @@ impl<'input> Output<'input, [u8], WavRiffVariable, StartAndLenSpan<u32, u16>> fo
     }
 }
 
+struct WavRiffParser;
+
 /// ```
 /// Riff = b"RIFF" FileSize / f
 /// FileSize = U32 Wave / f
@@ -53,6 +55,7 @@ impl<'input> Output<'input, [u8], WavRiffVariable, StartAndLenSpan<u32, u16>> fo
 /// ```
 #[test]
 fn wav_riff() {
+    let parser = WavRiffParser;
     let mut rules = HashMap::new();
 
     rules.insert(
@@ -102,7 +105,7 @@ fn wav_riff() {
     let result: Result<
         AST<WavRiffVariable, StartAndLenSpan<u32, u16>, U16OrU32>,
         AST<WavRiffVariable, StartAndLenSpan<u32, u16>, U16OrU32>,
-    > = input.minimal_parse(&rules, &WavRiffVariable::Riff, &all_of_the_span);
+    > = parser.parse(input, &rules, &WavRiffVariable::Riff, &all_of_the_span);
 
     assert!(result.is_ok());
 
@@ -115,7 +118,7 @@ fn wav_riff() {
     let result: Result<
         AST<WavRiffVariable, StartAndLenSpan<u32, u16>, U16OrU32>,
         AST<WavRiffVariable, StartAndLenSpan<u32, u16>, U16OrU32>,
-    > = input.minimal_parse(&rules, &WavRiffVariable::Riff, &all_of_the_span);
+    > = parser.parse(input, &rules, &WavRiffVariable::Riff, &all_of_the_span);
 
     assert!(result.is_err());
 }
