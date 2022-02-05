@@ -4,11 +4,8 @@ use crate::input::Input;
 use crate::output::Output;
 use crate::position::Position;
 use crate::rules::Rules;
-use crate::span::{Len, Span, Start, StartAndLenSpan};
-use crate::symbols::{
-    Equivalence, Metasymbol, SliceTerminal, StrTerminal, Terminal, TerminalSymbol, U8SliceTerminal,
-    Variable, E,
-};
+use crate::span::Span;
+use crate::symbols::{Equivalence, Metasymbol, Terminal, TerminalSymbol, Variable, E};
 use crate::trees::{AST, CST};
 
 /// Types that can be parsed.
@@ -182,39 +179,4 @@ where
             }
         }
     }
-}
-
-/// T represents the element type.
-impl<'i, Gen, T, V, P, L, R, O>
-    Parser<'i, [T], SliceTerminal<'i, T>, V, StartAndLenSpan<P, L>, P, R, O> for Gen
-where
-    T: PartialEq,
-    V: Variable,
-    P: Start<[T], L>,
-    L: Len<[T], P>,
-    R: Rules<SliceTerminal<'i, T>, V>,
-    O: Output<'i, [T], V, StartAndLenSpan<P, L>>,
-{
-}
-
-impl<'i, Gen, V, P, L, R, O> Parser<'i, str, StrTerminal<'i>, V, StartAndLenSpan<P, L>, P, R, O>
-    for Gen
-where
-    V: Variable,
-    P: Start<str, L>,
-    L: Len<str, P>,
-    R: Rules<StrTerminal<'i>, V>,
-    O: Output<'i, str, V, StartAndLenSpan<P, L>>,
-{
-}
-
-impl<'i, Gen, V, P, L, R, O>
-    Parser<'i, [u8], U8SliceTerminal<'i>, V, StartAndLenSpan<P, L>, P, R, O> for Gen
-where
-    V: Variable,
-    P: Start<[u8], L>,
-    L: Len<[u8], P>,
-    R: Rules<U8SliceTerminal<'i>, V>,
-    O: Output<'i, [u8], V, StartAndLenSpan<P, L>>,
-{
 }

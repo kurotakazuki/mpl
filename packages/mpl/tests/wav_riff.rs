@@ -1,7 +1,7 @@
 use mpl::output::Output;
 use mpl::parser::Parser;
-use mpl::rules::{RightRule, RightRuleKind};
-use mpl::span::{Span, StartAndLenSpan};
+use mpl::rules::{RightRule, RightRuleKind, Rules};
+use mpl::span::{Len, Span, Start, StartAndLenSpan};
 use mpl::symbols::{SliceTerminal, Variable};
 use mpl::trees::{AST, CST};
 use std::collections::HashMap;
@@ -44,6 +44,19 @@ impl<'i> Output<'i, [u8], WavRiffVariable, StartAndLenSpan<u32, u16>> for U16OrU
 }
 
 struct WavRiffParser;
+
+/// T represents the element type.
+impl<'i, T, V, P, L, R, O> Parser<'i, [T], SliceTerminal<'i, T>, V, StartAndLenSpan<P, L>, P, R, O>
+    for WavRiffParser
+where
+    T: PartialEq,
+    V: Variable,
+    P: Start<[T], L>,
+    L: Len<[T], P>,
+    R: Rules<SliceTerminal<'i, T>, V>,
+    O: Output<'i, [T], V, StartAndLenSpan<P, L>>,
+{
+}
 
 /// ```
 /// Riff = b"RIFF" FileSize / f

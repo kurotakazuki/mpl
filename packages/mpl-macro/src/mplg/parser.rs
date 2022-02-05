@@ -1,8 +1,20 @@
 use crate::mplg::{MplgAST, MplgRules, MplgVariable};
+use mpl::output::Output;
 use mpl::parser::Parser;
-use mpl::span::StartAndLenSpan;
+use mpl::span::{Len, Start, StartAndLenSpan};
+use mpl::symbols::U8SliceTerminal;
 
 pub struct MplgParser;
+
+impl<'i, P, L, O>
+    Parser<'i, [u8], U8SliceTerminal<'i>, MplgVariable, StartAndLenSpan<P, L>, P, MplgRules, O>
+    for MplgParser
+where
+    P: Start<[u8], L>,
+    L: Len<[u8], P>,
+    O: Output<'i, [u8], MplgVariable, StartAndLenSpan<P, L>>,
+{
+}
 
 pub fn parse_mplg(input: &[u8]) -> Result<MplgAST, MplgAST> {
     let parser = MplgParser;

@@ -1,7 +1,7 @@
 use mpl::output::Output;
 use mpl::parser::Parser;
-use mpl::rules::{RightRule, RightRuleKind};
-use mpl::span::StartAndLenSpan;
+use mpl::rules::{RightRule, RightRuleKind, Rules};
+use mpl::span::{Len, Start, StartAndLenSpan};
 use mpl::symbols::{StrTerminal, U8SliceTerminal, Variable};
 use mpl::trees::{AST, CST};
 use std::collections::HashMap;
@@ -22,11 +22,11 @@ enum ParseResult {
 
 const INPUTS: [(&str, ParseResult); 8] = [
     // Ok
+    ("", ParseResult::Ok),
     ("()", ParseResult::Ok),
     ("()(())", ParseResult::Ok),
     ("(()(()))", ParseResult::Ok),
     // Err
-    ("", ParseResult::Ok),
     ("(", ParseResult::Err),
     (")", ParseResult::Err),
     ("()())", ParseResult::Err),
@@ -34,6 +34,17 @@ const INPUTS: [(&str, ParseResult); 8] = [
 ];
 
 struct ParenthesesParser;
+
+impl<'i, V, P, L, R, O> Parser<'i, str, StrTerminal<'i>, V, StartAndLenSpan<P, L>, P, R, O>
+    for ParenthesesParser
+where
+    V: Variable,
+    P: Start<str, L>,
+    L: Len<str, P>,
+    R: Rules<StrTerminal<'i>, V>,
+    O: Output<'i, str, V, StartAndLenSpan<P, L>>,
+{
+}
 
 /// ```
 /// Open = '(' Parentheses / ()
@@ -125,6 +136,24 @@ fn str_parentheses() {
 /// ```
 #[test]
 fn u8_slice_parentheses() {
+    impl<'i, P, L, O>
+        Parser<
+            'i,
+            [u8],
+            U8SliceTerminal<'i>,
+            ParenthesesVariable,
+            StartAndLenSpan<P, L>,
+            P,
+            HashMap<ParenthesesVariable, RightRule<U8SliceTerminal<'i>, ParenthesesVariable>>,
+            O,
+        > for ParenthesesParser
+    where
+        P: Start<[u8], L>,
+        L: Len<[u8], P>,
+        O: Output<'i, [u8], ParenthesesVariable, StartAndLenSpan<P, L>>,
+    {
+    }
+
     let mut rules = HashMap::new();
 
     rules.insert(
