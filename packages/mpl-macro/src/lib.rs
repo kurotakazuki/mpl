@@ -49,17 +49,13 @@ fn variable(ident: &Ident, data: &[u8]) -> proc_macro2::TokenStream {
 
     let variables = lines
         .iter()
-        .filter(|line| matches!(line, MplgOutput::Lines(_)))
-        .map(|line| {
-            match line {
-                // LineComment
-                // MplgOutput::Str(line_comment) => quote!(#line_comment),
-                MplgOutput::Rule(rule) => {
-                    let variable = rule.value;
-                    quote!(#variable)
-                }
-                _ => unreachable!(),
+        .filter(|line| matches!(line, MplgOutput::Rule(_)))
+        .map(|line| match line {
+            MplgOutput::Rule(rule) => {
+                let variable = format_ident!("{}", rule.value);
+                quote!(#variable)
             }
+            _ => unreachable!(),
         });
 
     quote! {

@@ -88,28 +88,26 @@ mod tests {
         }
 
         #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-        enum BinDigitVariables {
+        enum BinDigitVariable {
             BinDigit,
             One,
         }
 
-        let mut rules: HashMap<
-            BinDigitVariables,
-            RightRule<E<BinDigitTerminal, BinDigitVariables>>,
-        > = HashMap::new();
+        let mut rules: HashMap<BinDigitVariable, RightRule<E<BinDigitTerminal, BinDigitVariable>>> =
+            HashMap::new();
 
         rules.insert(
-            BinDigitVariables::BinDigit,
+            BinDigitVariable::BinDigit,
             RightRule::new(
                 First::new(
                     TerminalSymbol::from_original(BinDigitTerminal::Char('0')).into(),
                     Metasymbol::Empty.into(),
                 ),
-                Second::new(E::from_v(BinDigitVariables::One)),
+                Second::new(E::from_v(BinDigitVariable::One)),
             ),
         );
         rules.insert(
-            BinDigitVariables::One,
+            BinDigitVariable::One,
             RightRule::new(
                 First::new(
                     TerminalSymbol::from_original(BinDigitTerminal::Char('1')).into(),
@@ -120,22 +118,22 @@ mod tests {
         );
 
         let mut rules2: HashMap<
-            BinDigitVariables,
-            RightRule<E<BinDigitTerminal, BinDigitVariables>>,
+            BinDigitVariable,
+            RightRule<E<BinDigitTerminal, BinDigitVariable>>,
         > = HashMap::new();
 
         rules2.insert(
-            BinDigitVariables::BinDigit,
+            BinDigitVariable::BinDigit,
             RightRule::from_right_rule_kind(
                 (
                     RightRuleKind::T(BinDigitTerminal::Char('0')),
                     RightRuleKind::Empty,
                 ),
-                RightRuleKind::V(BinDigitVariables::One),
+                RightRuleKind::V(BinDigitVariable::One),
             ),
         );
         rules2.insert(
-            BinDigitVariables::One,
+            BinDigitVariable::One,
             RightRule::from_right_rule_kind(
                 (
                     RightRuleKind::T(BinDigitTerminal::Char('1')),
@@ -146,12 +144,12 @@ mod tests {
         );
 
         assert_eq!(
-            rules[&BinDigitVariables::BinDigit],
-            rules2[&BinDigitVariables::BinDigit]
+            rules[&BinDigitVariable::BinDigit],
+            rules2[&BinDigitVariable::BinDigit]
         );
         assert_eq!(
-            rules[&BinDigitVariables::One],
-            rules2[&BinDigitVariables::One]
+            rules[&BinDigitVariable::One],
+            rules2[&BinDigitVariable::One]
         );
     }
 }

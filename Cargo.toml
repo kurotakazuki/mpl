@@ -3,4 +3,6 @@ members = [
   # Packages
   "packages/mpl",
   "packages/mpl-macro",
+  # Examples
+  "examples/paren",
 ]
