@@ -6,8 +6,10 @@ use std::io::Read;
 use std::path::Path;
 use syn::{parse2, Attribute, DeriveInput, Generics, Ident, Lit, Meta};
 
+pub use self::rules::generate_rules;
 pub use self::variable::generate_variable;
 
+mod rules;
 mod variable;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -20,6 +22,7 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
     let input = parse2(input).unwrap();
     let (parser_ident, _generics, grammar_data) = parse_derive(input);
     let ident = parser_ident.to_string().replace("Parser", "");
+    let rules_ident = &format_ident!("{}Rules", ident);
     let variable_ident = &format_ident!("{}Variables", ident);
 
     match grammar_data {
@@ -32,10 +35,12 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
                         .into_original()
                         .expect("Lines")
                         .to_lines();
+                    let rules = generate_rules(rules_ident, variable_ident, &lines);
                     let variable = generate_variable(variable_ident, &lines);
 
                     quote! {
                         #variable
+                        #rules
                     }
                 }
                 GrammarData::None => TokenStream::new(),

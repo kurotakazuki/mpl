@@ -186,7 +186,7 @@ impl<'input> Output<'input, [u8], MplgVariable, StartAndLenSpan<u32, u32>> for M
             MplgVariable::StringLiteral => {
                 let lo = cst.span.start as usize;
                 let hi = cst.span.hi(input) as usize;
-                let s = std::str::from_utf8(&input[lo..hi]).expect("str");
+                let s = std::str::from_utf8(&input[lo + 1..hi - 1]).expect("str");
 
                 AST::from_leaf(
                     TerminalSymbol::from_original(MplgOutput::E(

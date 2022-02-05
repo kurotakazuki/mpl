@@ -1,8 +1,9 @@
 use crate::mplg::MplgOutput;
+use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::Ident;
 
-pub fn generate_variable(ident: &Ident, lines: &[MplgOutput]) -> proc_macro2::TokenStream {
+pub fn generate_variable(ident: &Ident, lines: &[MplgOutput]) -> TokenStream {
     let variables = lines
         .iter()
         .filter(|line| matches!(line, MplgOutput::Rule(_)))

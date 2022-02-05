@@ -27,36 +27,60 @@ impl<T, V> E<T, V> {
     }
 }
 
-// TODO Use absolute path.
 #[macro_export]
 macro_rules! e_from {
     (f) => {
-        E::T(TerminalSymbol::Metasymbol(Failure))
+        $crate::symbols::E::T($crate::symbols::TerminalSymbol::Metasymbol(
+            $crate::symbols::Metasymbol::Failure,
+        ))
     };
     (()) => {
-        E::T(TerminalSymbol::Metasymbol(Empty))
+        $crate::symbols::E::T($crate::symbols::TerminalSymbol::Metasymbol(
+            $crate::symbols::Metasymbol::Empty,
+        ))
     };
     (*) => {
-        E::T(TerminalSymbol::Metasymbol(All))
+        $crate::symbols::E::T($crate::symbols::TerminalSymbol::Metasymbol(
+            $crate::symbols::Metasymbol::All,
+        ))
     };
     (?) => {
-        E::T(TerminalSymbol::Metasymbol(Any(1)))
+        $crate::symbols::E::T($crate::symbols::TerminalSymbol::Metasymbol(
+            $crate::symbols::Metasymbol::Any(1),
+        ))
+    };
+    (Failure) => {
+        $crate::symbols::E::T($crate::symbols::TerminalSymbol::Metasymbol(
+            $crate::symbols::Metasymbol::Failure,
+        ))
+    };
+    (Empty) => {
+        $crate::symbols::E::T($crate::symbols::TerminalSymbol::Metasymbol(
+            $crate::symbols::Metasymbol::Empty,
+        ))
+    };
+    (All) => {
+        $crate::symbols::E::T($crate::symbols::TerminalSymbol::Metasymbol(
+            $crate::symbols::Metasymbol::All,
+        ))
     };
     (Any($len:literal)) => {
-        E::T(TerminalSymbol::Metasymbol(Any($len)))
+        $crate::symbols::E::T($crate::symbols::TerminalSymbol::Metasymbol(
+            $crate::symbols::Metasymbol::Any($len),
+        ))
     };
     ($v:path) => {
-        E::V($v)
+        $crate::symbols::E::V($v)
     };
     ($o:block) => {
-        E::T(TerminalSymbol::Original($o))
+        $crate::symbols::E::T($crate::symbols::TerminalSymbol::Original($o))
     };
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::symbols::{Metasymbol::*, U8SliceTerminal, U8SliceTerminal::*};
+    use crate::symbols::{Metasymbol::*, U8SliceTerminal, U8SliceTerminal::*, E};
 
     #[test]
     fn e_from() {

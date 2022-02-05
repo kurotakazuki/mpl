@@ -3,7 +3,7 @@ use crate::mplg::{MplgVariable, MplgVariable::*};
 use mpl::choices::{First, Second};
 use mpl::e_from;
 use mpl::rules::{RightRule, Rules};
-use mpl::symbols::{Metasymbol::*, TerminalSymbol, U8SliceTerminal, U8SliceTerminal::*, E};
+use mpl::symbols::{U8SliceTerminal, U8SliceTerminal::*};
 
 pub struct MplgRules;
 
