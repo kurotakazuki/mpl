@@ -12,17 +12,17 @@ enum ParseResult {
     Err,
 }
 
-const INPUTS: [(&str, ParseResult); 8] = [
+const INPUTS: [(&str, ParseResult); 1] = [
     // Ok
-    ("", ParseResult::Ok),
+    // ("", ParseResult::Ok),
     ("()", ParseResult::Ok),
-    ("()(())", ParseResult::Ok),
-    ("(()(()))", ParseResult::Ok),
-    // Err
-    ("(", ParseResult::Err),
-    (")", ParseResult::Err),
-    ("()())", ParseResult::Err),
-    ("(()(())))", ParseResult::Err),
+    // ("()(())", ParseResult::Ok),
+    // ("(()(()))", ParseResult::Ok),
+    // // Err
+    // ("(", ParseResult::Err),
+    // (")", ParseResult::Err),
+    // ("()())", ParseResult::Err),
+    // ("(()(())))", ParseResult::Err),
 ];
 
 fn main() {
