@@ -1,5 +1,5 @@
 use crate::mplg::MplgOutput;
-use mpl::symbols::{TerminalSymbol, U8SliceTerminal, E};
+use mpl::symbols::{Metasymbol, TerminalSymbol, U8SliceTerminal, E};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::Ident;
@@ -7,22 +7,46 @@ use syn::Ident;
 pub fn generate_e<'a>(e: &E<U8SliceTerminal<'a>, &'a str>, variable_ident: &Ident) -> TokenStream {
     match e {
         E::T(t) => match t {
-            TerminalSymbol::Metasymbol(m) => {
-                let m = format!("{:?}", m);
-                let ident = format_ident!("{}", m);
-                quote!(#ident)
-            }
+            TerminalSymbol::Metasymbol(m) => match m {
+                Metasymbol::Failure => quote! {
+                    ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::T(::mpl::symbols::TerminalSymbol::Metasymbol(
+                        ::mpl::symbols::Metasymbol::Failure
+                     ))
+                },
+                Metasymbol::Empty => quote! {
+                    ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::T(::mpl::symbols::TerminalSymbol::Metasymbol(
+                        ::mpl::symbols::Metasymbol::Empty
+                     ))
+                },
+                Metasymbol::All => quote! {
+                    ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::T(::mpl::symbols::TerminalSymbol::Metasymbol(
+                        ::mpl::symbols::Metasymbol::All
+                     ))
+                },
+                Metasymbol::Any(n) => quote! {
+                    ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::T(::mpl::symbols::TerminalSymbol::Metasymbol(
+                        ::mpl::symbols::Metasymbol::Any(#n)
+                     ))
+                },
+                _ => unreachable!(),
+            },
             TerminalSymbol::Original(o) => match o {
                 U8SliceTerminal::Str(s) => {
                     let o = format!("{}", s);
-                    quote!({ ::mpl::symbols::U8SliceTerminal::Str(#o) })
+                    quote! {
+                        ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::T(::mpl::symbols::TerminalSymbol::Original(
+                            ::mpl::symbols::U8SliceTerminal::Str(#o)
+                        ))
+                    }
                 }
                 _ => unimplemented!(),
             },
         },
         E::V(v) => {
             let ident = format_ident!("{}", format!("{}", v));
-            quote!(#variable_ident::#ident)
+            quote! {
+                ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::V(#variable_ident::#ident)
+            }
         }
     }
 }
@@ -46,10 +70,10 @@ pub fn generate_rules(
                 quote! {
                     #variable =>{ dbg!("This is", variable, #fl); &::mpl::rules::RightRule {
                         first: ::mpl::choices::First {
-                            lhs: ::mpl::e_from!(#fl),
-                            rhs: ::mpl::e_from!(#fr),
+                            lhs: #fl,
+                            rhs: #fr,
                         },
-                        second: ::mpl::choices::Second(::mpl::e_from!(#s)),
+                        second: ::mpl::choices::Second(#s),
                     } }
                 }
             }
