@@ -23,6 +23,13 @@ impl<'a> MplgOutput<'a> {
         }
     }
 
+    pub fn to_rule(self) -> Rule<U8SliceTerminal<'a>, &'a str> {
+        match self {
+            MplgOutput::Rule(r) => r,
+            _ => panic!("expect Rule"),
+        }
+    }
+
     fn to_str(self) -> &'a str {
         match self {
             MplgOutput::Str(s) => s,
