@@ -30,9 +30,10 @@ This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Dow
 ```rust
 use crate::ParenthesesVariable::*;
 use mpl::parser::Parser;
-use mpl::rules::{RightRule, RightRuleKind::*};
-use mpl::span::StartAndLenSpan;
-use mpl::symbols::{StrTerminal::*, Variable};
+use mpl::rules::{RightRule, RightRuleKind::*, Rules};
+use mpl::span::{StartAndLenSpan, Start, Len};
+use mpl::output::Output;
+use mpl::symbols::{StrTerminal, StrTerminal::*, Variable};
 use mpl::trees::AST;
 use std::collections::HashMap;
 
@@ -46,6 +47,17 @@ enum ParenthesesVariable {
 impl Variable for ParenthesesVariable {}
 
 struct ParenthesesParser;
+
+impl<'i, V, P, L, R, O> Parser<'i, str, StrTerminal<'i>, V, StartAndLenSpan<P, L>, P, R, O>
+    for ParenthesesParser
+where
+    V: Variable,
+    P: Start<str, L>,
+    L: Len<str, P>,
+    R: Rules<StrTerminal<'i>, V>,
+    O: Output<'i, str, V, StartAndLenSpan<P, L>>,
+{
+}
 
 /// ```
 /// Open = '(' Parentheses / ()

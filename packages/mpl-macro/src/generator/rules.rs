@@ -37,18 +37,20 @@ pub fn generate_rules(
         .filter(|line| matches!(line, MplgOutput::Rule(_)))
         .map(|line| match line {
             MplgOutput::Rule(rule) => {
+                dbg!(rule);
                 let variable = format_ident!("{}", rule.value);
                 let fl = generate_e(&rule.equal.first.lhs, variable_ident);
                 let fr = generate_e(&rule.equal.first.rhs, variable_ident);
                 let s = generate_e(&rule.equal.second.0, variable_ident);
+                dbg!(&fl);
                 quote! {
-                    #variable => &::mpl::rules::RightRule {
+                    #variable =>{ dbg!("This is", variable, #fl); &::mpl::rules::RightRule {
                         first: ::mpl::choices::First {
                             lhs: ::mpl::e_from!(#fl),
                             rhs: ::mpl::e_from!(#fr),
                         },
                         second: ::mpl::choices::Second(::mpl::e_from!(#s)),
-                    }
+                    } }
                 }
             }
             _ => unreachable!(),
@@ -59,10 +61,12 @@ pub fn generate_rules(
 
         impl<'a> ::mpl::rules::Rules<::mpl::symbols::U8SliceTerminal<'a>, #variable_ident> for #rules_ident {
             fn get(&self, variable: &#variable_ident) -> Option<&::mpl::rules::RightRule<::mpl::symbols::U8SliceTerminal<'a>, #variable_ident>> {
-                eprintln!("{:?}", &variable);
-                Some(match variable {
+                eprintln!("Get Variable: {:?}", &variable);
+                let a = Some(match variable {
                     #(#rules),*
-                })
+                });
+                eprintln!("{:#?}", a);
+                a
             }
         }
     }
