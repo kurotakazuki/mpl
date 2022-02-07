@@ -36,7 +36,7 @@ pub fn derive_parser(input: TokenStream) -> TokenStream {
                         .unwrap()
                         .into_original()
                         .expect("Lines")
-                        .to_lines();
+                        .into_lines();
                     let variable = generate_variable(variable_ident, &lines);
                     let rules = generate_rules(rules_ident, variable_ident, &lines);
                     let parser = generate_parser(parser_ident, rules_ident, variable_ident);

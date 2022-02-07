@@ -16,28 +16,21 @@ pub enum MplgOutput<'a> {
 }
 
 impl<'a> MplgOutput<'a> {
-    pub fn to_lines(self) -> Vec<MplgOutput<'a>> {
+    pub fn into_lines(self) -> Vec<MplgOutput<'a>> {
         match self {
             MplgOutput::Lines(l) => l,
             _ => panic!("expect lines"),
         }
     }
 
-    pub fn to_rule(self) -> Rule<U8SliceTerminal<'a>, &'a str> {
-        match self {
-            MplgOutput::Rule(r) => r,
-            _ => panic!("expect Rule"),
-        }
-    }
-
-    fn to_str(self) -> &'a str {
+    fn into_str(self) -> &'a str {
         match self {
             MplgOutput::Str(s) => s,
             _ => panic!("expect str"),
         }
     }
 
-    fn to_e(self) -> E<U8SliceTerminal<'a>, &'a str> {
+    fn into_e(self) -> E<U8SliceTerminal<'a>, &'a str> {
         match self {
             MplgOutput::E(e) => e,
             _ => panic!("expect E"),
@@ -111,17 +104,17 @@ impl<'i> Output<'i, [u8], MplgVariable, StartAndLenSpan<u32, u32>> for MplgOutpu
             MplgVariable::Rule => {
                 let span = cst.span;
                 let first = cst.node.equal.into_first().unwrap();
-                let variable = first.lhs.into_original().unwrap().to_str();
+                let variable = first.lhs.into_original().unwrap().into_str();
                 let rule2 = first.rhs.into_first().unwrap().rhs.into_first().unwrap();
                 // First
                 // lhs
-                let fl = rule2.lhs.into_original().unwrap().to_e();
+                let fl = rule2.lhs.into_original().unwrap().into_e();
                 let rule4 = rule2.rhs.into_first().unwrap().rhs.into_first().unwrap();
                 // rhs
-                let fr = rule4.lhs.into_original().unwrap().to_e();
+                let fr = rule4.lhs.into_original().unwrap().into_e();
                 let rule6 = rule4.rhs.into_first().unwrap().rhs.into_first().unwrap();
                 // Second
-                let s = rule6.lhs.into_original().unwrap().to_e();
+                let s = rule6.lhs.into_original().unwrap().into_e();
 
                 let rule = Rule::new(variable, RightRule::new(First::new(fl, fr), Second::new(s)));
                 AST::from_leaf(TerminalSymbol::from_original(MplgOutput::Rule(rule)), span)
@@ -137,7 +130,7 @@ impl<'i> Output<'i, [u8], MplgVariable, StartAndLenSpan<u32, u32>> for MplgOutpu
                     Choice::Second(second) => {
                         let s = second.0.into_original().expect("Variable");
                         AST::from_leaf(
-                            TerminalSymbol::from_original(MplgOutput::E(E::V(s.to_str()))),
+                            TerminalSymbol::from_original(MplgOutput::E(E::V(s.into_str()))),
                             span,
                         )
                     }

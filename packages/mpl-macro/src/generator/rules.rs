@@ -32,10 +32,9 @@ pub fn generate_e<'a>(e: &E<U8SliceTerminal<'a>, &'a str>, variable_ident: &Iden
             },
             TerminalSymbol::Original(o) => match o {
                 U8SliceTerminal::Str(s) => {
-                    let o = format!("{}", s);
                     quote! {
                         ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::T(::mpl::symbols::TerminalSymbol::Original(
-                            ::mpl::symbols::U8SliceTerminal::Str(#o)
+                            ::mpl::symbols::U8SliceTerminal::Str(#s)
                         ))
                     }
                 }

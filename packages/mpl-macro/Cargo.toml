@@ -1,7 +1,14 @@
 [package]
 name = "mpl-macro"
 version = "0.1.0"
+authors = ["Kazuki Kurota"]
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Minimal parser combinator of Minimal Parsing Language (MPL) like Top-Down Parsing Language (TDPL)."
+readme = "../../README.md"
+repository = "https://github.com/kurotakazuki/mpl"
+categories = ["parsing"]
+keywords = ["combinator", "generator", "grammar", "parser", "tdpl"]
 
 [lib]
 proc-macro = true
