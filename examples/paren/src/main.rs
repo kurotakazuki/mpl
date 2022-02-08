@@ -4,6 +4,7 @@ use mpl::span::StartAndLenSpan;
 use mpl::symbols::U8SliceTerminal;
 use mpl::trees::AST;
 use mpl_macro::Parse;
+
 #[derive(Parse, Debug)]
 #[mplg = "../../examples/paren/parentheses.mplg"] // TODO Use release mpl_macro
 pub struct ParenParser;

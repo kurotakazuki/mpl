@@ -196,7 +196,7 @@ MPL, on the other hand, has one rule form.
 
 
 ## MPLG (MPL Grammar) syntax
-### In PEG like grammar
+<!-- ### In PEG like grammar
 ```rust ignore
 // Hierarchical syntax
 MPLG = (Line)*
@@ -247,7 +247,7 @@ HexDigit = DecDigit / UppercaseAToF / LowercaseAToF
 
 // Comment
 LineComment = "//" (!(EndOfLine) ?)*
-```
+``` -->
 
 ### In MPL grammar
 ```rust ignore
@@ -271,19 +271,46 @@ E = TerminalSymbol () / Variable
 
 // Lexical syntax
 // Variable
-Variable = Uppercase ZeroOrMoreVariableContinue / f
-ZeroOrMoreVariableContinue =  VariableContinue ZeroOrMoreVariableContinue / ()
-VariableContinue =  Alphabet () / DecDigit
-
+Variable = Identifier () / f
 
 // Terminal symbol
-TerminalSymbol = Expr () / f
+TerminalSymbol = MetasymbolLiteral () / OriginalSymbolExpr
 
 // Expr
-Expr = LiteralExpr () / f
+Expr = ExprWithoutBlock () / f
+
+// Without Block
+ExprWithoutBlock = LiteralExpr () / ExprWithoutBlock1
+ExprWithoutBlock1 = IntegerLiteral () / f
+
+// Struct
+StructExpr = StructExprStruct () / StructExpr1
+StructExpr1 = StructExprTuple () / StructExprUnit
+
+StructExprStruct = f f / f
+
+StructExprTuple = PathInExpr StructExprTuple1 / f
+StructExprTuple1 = '(' StructExprTuple2 / f
+StructExprTuple2 = ZeroOrMoreExpr ')' / f
+ZeroOrMoreExpr = Expr () / f
+
+StructExprUnit = PathInExpr () / f
+
+// PathInExpr
+PathInExpr = ZeroOrOneDoubleColon OneOrMorePathExprSegment / f
+ZeroOrOneDoubleColon = "::" () / ()
+OneOrMorePathExprSegment = PathExprSegment () / f
+
+PathExprSegment = PathIdentSegment PathExprSegment1 / f
+PathExprSegment1 = "::" GenericArgs / ()
+
+PathIdentSegment = Identifier () / f
+
+GenericArgs = f f / f
 
 // Literal
-LiteralExpr = MetasymbolLiteral () / StringLiteral
+LiteralExpr = StringLiteral () / LiteralExpr1
+LiteralExpr1 = IntegerLiteral () / f
 
 // Metasymbol
 MetasymbolLiteral = EmptyLiteral () / MetasymbolLiteral1
@@ -297,6 +324,8 @@ ZeroOrMoreAny = '?' ZeroOrMoreAny / ()
 AllLiteral = '*' () / f
 
 // Original symbol
+OriginalSymbolExpr = "{{ " ExprWithoutBlock OriginalSymbolExpr1 / f
+OriginalSymbolExpr1 = " }}" () / f
 
 // String
 StringLiteral = '"' StringLiteral1 / f
@@ -306,6 +335,19 @@ InnerStringLiteral = InnerStringLiteralLetter InnerStringLiteral / ()
 InnerStringLiteralLetter = NotStringLetter InnerStringLiteral1Letter1 / f
 NotStringLetter = '"' * / ()
 InnerStringLiteral1Letter1 = QuoteEscape () / ?
+
+// Integer
+IntegerLiteral = IntegerLiterals () / f
+IntegerLiterals = DecLiteral () / f
+DecLiteral = DecDigit ZeroOrMoreDecDigit / f
+ZeroOrMoreDecDigit = DecDigitOrUnderscore ZeroOrMoreDecDigit / ()
+DecDigitOrUnderscore = DecDigit () / '_'
+
+// IDENTIFIER
+Identifier = Uppercase ZeroOrMoreIdentifierContinue / f
+ZeroOrMoreIdentifierContinue =  IdentifierContinue ZeroOrMoreIdentifierContinue / ()
+IdentifierContinue =  Alphabet () / DecDigit
+
 
 // Letters
 Alphabet = Lowercase () / Uppercase
