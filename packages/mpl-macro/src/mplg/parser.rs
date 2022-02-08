@@ -63,7 +63,17 @@ mod tests {
             ("A = * * / *\n", ParseResult::Ok),
             // Strings
             (
-                "A = \"string\" \"''\r\n\n\\\"\\\"\n\" / \"\"\n",
+                "A = { \"string\" } { \"''\r\n\n\\\"\\\"\n\" } / { \"\" }\n",
+                ParseResult::Ok,
+            ),
+            // Integers
+            (
+                "A = { 1234567890 } { 1_2__3 } / { 1_____ }\n",
+                ParseResult::Ok,
+            ),
+            // Struct
+            (
+                "A = { Str(\"b\") } { Null(1) } / { A(2) }\n",
                 ParseResult::Ok,
             ),
             // Mplg

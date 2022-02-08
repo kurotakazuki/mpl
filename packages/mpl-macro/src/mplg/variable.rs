@@ -24,8 +24,6 @@ pub enum MplgVariable {
     // Lexical syntax
     // Variable
     Variable,
-    ZeroOrMoreVariableContinue,
-    VariableContinue,
 
     // Terminal symbol
     TerminalSymbol,
@@ -33,10 +31,40 @@ pub enum MplgVariable {
     // Expr
     Expr,
 
+    // Without Block
+    ExprWithoutBlock,
+    ExprWithoutBlock1,
+
+    // Struct
+    StructExpr,
+    StructExpr1,
+
+    StructExprStruct,
+
+    StructExprTuple,
+    StructExprTuple1,
+    StructExprTuple2,
+    ZeroOrMoreExpr,
+
+    StructExprUnit,
+
+    // PathInExpr
+    PathInExpr,
+    ZeroOrOneDoubleColon,
+    OneOrMorePathExprSegment,
+
+    PathExprSegment,
+    PathExprSegment1,
+
+    PathIdentSegment,
+
+    GenericArgs,
+
     // Literal
     LiteralExpr,
+    LiteralExpr1,
 
-    // Terminal Symbol
+    // Metasymbol
     MetasymbolLiteral,
     MetasymbolLiteral1,
     MetasymbolLiteral2,
@@ -47,6 +75,10 @@ pub enum MplgVariable {
     ZeroOrMoreAny,
     AllLiteral,
 
+    // Original symbol
+    OriginalSymbolExpr,
+    OriginalSymbolExpr1,
+
     // String
     StringLiteral,
     StringLiteral1,
@@ -55,6 +87,18 @@ pub enum MplgVariable {
     InnerStringLiteralLetter,
     NotStringLetter,
     InnerStringLiteral1Letter1,
+
+    // Integer
+    IntegerLiteral,
+    IntegerLiterals,
+    DecLiteral,
+    ZeroOrMoreDecDigit,
+    DecDigitOrUnderscore,
+
+    // IDENTIFIER
+    Identifier,
+    ZeroOrMoreIdentifierContinue,
+    IdentifierContinue,
 
     // Letters
     Alphabet,

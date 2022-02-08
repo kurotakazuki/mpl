@@ -1,10 +1,11 @@
 use crate::mplg::MplgOutput;
-use mpl::symbols::{Metasymbol, TerminalSymbol, U8SliceTerminal, E};
+use mpl::symbols::{Metasymbol, TerminalSymbol, E};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
+use std::str::FromStr;
 use syn::Ident;
 
-pub fn generate_e<'a>(e: &E<U8SliceTerminal<'a>, &'a str>, variable_ident: &Ident) -> TokenStream {
+pub fn generate_e<'a>(e: &E<&'a str, &'a str>, variable_ident: &Ident) -> TokenStream {
     match e {
         E::T(t) => match t {
             TerminalSymbol::Metasymbol(m) => match m {
@@ -30,19 +31,19 @@ pub fn generate_e<'a>(e: &E<U8SliceTerminal<'a>, &'a str>, variable_ident: &Iden
                 },
                 _ => unreachable!(),
             },
-            TerminalSymbol::Original(o) => match o {
-                U8SliceTerminal::Str(s) => {
-                    quote! {
-                        ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::T(::mpl::symbols::TerminalSymbol::Original(
-                            ::mpl::symbols::U8SliceTerminal::Str(#s)
-                        ))
-                    }
+            TerminalSymbol::Original(o) => {
+                // eprintln!("fadsj;lkkalcmondai{}", o);
+                // let o = format_ident!("{}", o);
+                let o = TokenStream::from_str(o).unwrap();
+                quote! {
+                    ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::T(::mpl::symbols::TerminalSymbol::Original(
+                        ::mpl::symbols::U8SliceTerminal::#o
+                    ))
                 }
-                _ => unimplemented!(),
-            },
+            }
         },
         E::V(v) => {
-            let ident = format_ident!("{}", format!("{}", v));
+            let ident = format_ident!("{}", v);
             quote! {
                 ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::V(#variable_ident::#ident)
             }

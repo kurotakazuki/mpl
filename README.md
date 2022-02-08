@@ -281,7 +281,7 @@ Expr = ExprWithoutBlock () / f
 
 // Without Block
 ExprWithoutBlock = LiteralExpr () / ExprWithoutBlock1
-ExprWithoutBlock1 = IntegerLiteral () / f
+ExprWithoutBlock1 = StructExpr () / f
 
 // Struct
 StructExpr = StructExprStruct () / StructExpr1
@@ -324,8 +324,8 @@ ZeroOrMoreAny = '?' ZeroOrMoreAny / ()
 AllLiteral = '*' () / f
 
 // Original symbol
-OriginalSymbolExpr = "{{ " ExprWithoutBlock OriginalSymbolExpr1 / f
-OriginalSymbolExpr1 = " }}" () / f
+OriginalSymbolExpr = "{ " OriginalSymbolExpr1 / f
+OriginalSymbolExpr1 = ExprWithoutBlock " }" / f
 
 // String
 StringLiteral = '"' StringLiteral1 / f

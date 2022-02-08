@@ -1,5 +1,5 @@
 // Parentheses
-Open = "(" Parentheses / ()
+Open = { Str("(") } Parentheses / ()
 
 Parentheses = Open Close / f
-Close = ")" Open / f
+Close = { Str(")") } Open / f

@@ -46,40 +46,129 @@ impl<'a> MplgRules {
     mplg_rule!(E_RULE, E, TerminalSymbol, (), Variable);
     // Lexical syntax
     // Variable
+    mplg_rule!(VARIABLE_RULE, Variable, Identifier, (), f);
+
+    // Terminal symbol
     mplg_rule!(
-        VARIABLE_RULE,
-        Variable,
-        Uppercase,
-        ZeroOrMoreVariableContinue,
+        TERMINAL_SYMBOL_RULE,
+        TerminalSymbol,
+        MetasymbolLiteral,
+        (),
+        OriginalSymbolExpr
+    );
+    // Expr
+    mplg_rule!(EXPR_RULE, Expr, ExprWithoutBlock, (), f);
+
+    // Without Block
+    mplg_rule!(
+        EXPR_WITHOUT_BLOCK_RULE,
+        ExprWithoutBlock,
+        LiteralExpr,
+        (),
+        ExprWithoutBlock1
+    );
+    mplg_rule!(
+        EXPR_WITHOUT_BLOCK1_RULE,
+        ExprWithoutBlock1,
+        StructExpr,
+        (),
+        f
+    );
+
+    // Struct
+    mplg_rule!(
+        STRUCT_EXPR_RULE,
+        StructExpr,
+        StructExprStruct,
+        (),
+        StructExpr1
+    );
+    mplg_rule!(
+        STRUCT_EXPR1_RULE,
+        StructExpr1,
+        StructExprTuple,
+        (),
+        StructExprUnit
+    );
+
+    mplg_rule!(STRUCT_EXPR_STRUCT_RULE, StructExprStruct, f, f, f);
+
+    mplg_rule!(
+        STRUCT_EXPR_TUPLE_RULE,
+        StructExprTuple,
+        PathInExpr,
+        StructExprTuple1,
         f
     );
     mplg_rule!(
-        ZERO_OR_MORE_VARIABLE_CONTINUE_RULE,
-        ZeroOrMoreVariableContinue,
-        VariableContinue,
-        ZeroOrMoreVariableContinue,
+        STRUCT_EXPR_TUPLE1_RULE,
+        StructExprTuple1,
+        { Char('(') },
+        StructExprTuple2,
+        f
+    );
+    mplg_rule!(
+        STRUCT_EXPR_TUPLE2_RULE,
+        StructExprTuple2,
+        ZeroOrMoreExpr,
+        { Char(')') },
+        f
+    );
+    mplg_rule!(ZERO_OR_MORE_EXPR_RULE, ZeroOrMoreExpr, Expr, (), f);
+
+    mplg_rule!(STRUCT_EXPR_UNIT_RULE, StructExprUnit, PathInExpr, (), f);
+
+    // PathInExpr
+    mplg_rule!(
+        PATH_IN_EXPR_RULE,
+        PathInExpr,
+        ZeroOrOneDoubleColon,
+        OneOrMorePathExprSegment,
+        f
+    );
+    mplg_rule!(
+        ZERO_OR_ONE_DOUBLE_COLON_RULE,
+        ZeroOrOneDoubleColon,
+        { Str("::") },
+        (),
         ()
     );
     mplg_rule!(
-        VARIABLE_CONTINUE_RULE,
-        VariableContinue,
-        Alphabet,
+        ONE_OR_MORE_PATH_EXPR_SEGMENT_RULE,
+        OneOrMorePathExprSegment,
+        PathExprSegment,
         (),
-        DecDigit
+        f
     );
 
-    // Terminal symbol
-    mplg_rule!(TERMINAL_SYMBOL_RULE, TerminalSymbol, Expr, (), f);
-    // Expr
-    mplg_rule!(EXPR_RULE, Expr, LiteralExpr, (), f);
+    mplg_rule!(
+        PATH_EXPR_SEGMENT_RULE,
+        PathExprSegment,
+        PathIdentSegment,
+        PathExprSegment1,
+        f
+    );
+    mplg_rule!(
+        PATH_EXPR_SEGMENT1_RULE,
+        PathExprSegment1,
+        { Str("::") },
+        GenericArgs,
+        ()
+    );
+
+    mplg_rule!(PATH_IDENT_SEGMENT_RULE, PathIdentSegment, Identifier, (), f);
+
+    mplg_rule!(GENERIC_ARGS_RULE, GenericArgs, f, f, f);
+
     // Literal
     mplg_rule!(
         LITERAL_EXPR_RULE,
         LiteralExpr,
-        MetasymbolLiteral,
+        StringLiteral,
         (),
-        StringLiteral
+        LiteralExpr1
     );
+    mplg_rule!(LITERAL_EXPR1_RULE, LiteralExpr1, IntegerLiteral, (), f);
 
     // Metasymbol
     mplg_rule!(
@@ -128,6 +217,22 @@ impl<'a> MplgRules {
     );
     mplg_rule!(ALL_LITERAL_RULE, AllLiteral, { Char('*') }, (), f);
 
+    // Original symbol
+    mplg_rule!(
+        ORIGINAL_SYMBOL_EXPR_RULE,
+        OriginalSymbolExpr,
+        { Str("{ ") },
+        OriginalSymbolExpr1,
+        f
+    );
+    mplg_rule!(
+        ORIGINAL_SYMBOL_EXPR1_RULE,
+        OriginalSymbolExpr1,
+        ExprWithoutBlock,
+        { Str(" }") },
+        f
+    );
+
     // String
     mplg_rule!(
         STRING_LITERAL_RULE,
@@ -160,6 +265,54 @@ impl<'a> MplgRules {
     );
     mplg_rule!(NOT_STRING_LETTER_RULE, NotStringLetter, { Char('"') }, *, ());
     mplg_rule!(INNER_STRING_LITERAL_LETTER1_RULE, InnerStringLiteral1Letter1, QuoteEscape, (), ?);
+
+    // Integer
+    mplg_rule!(INTEGER_LITERAL_RULE, IntegerLiteral, IntegerLiterals, (), f);
+    mplg_rule!(INTEGER_LITERALS_RULE, IntegerLiterals, DecLiteral, (), f);
+    mplg_rule!(
+        DEC_LITERAL_RULE,
+        DecLiteral,
+        DecDigit,
+        ZeroOrMoreDecDigit,
+        f
+    );
+    mplg_rule!(
+        ZERO_OR_MORE_DEC_DIGIT_RULE,
+        ZeroOrMoreDecDigit,
+        DecDigitOrUnderscore,
+        ZeroOrMoreDecDigit,
+        ()
+    );
+    mplg_rule!(
+        DEC_DIGIT_OR_UNDERSCORE_RULE,
+        DecDigitOrUnderscore,
+        DecDigit,
+        (),
+        { Char('_') }
+    );
+
+    // IDENTIFIER
+    mplg_rule!(
+        IDENTIFIER_RULE,
+        Identifier,
+        Uppercase,
+        ZeroOrMoreIdentifierContinue,
+        f
+    );
+    mplg_rule!(
+        ZERO_OR_MORE_IDENTIFIER_CONTINUE_RULE,
+        ZeroOrMoreIdentifierContinue,
+        IdentifierContinue,
+        ZeroOrMoreIdentifierContinue,
+        ()
+    );
+    mplg_rule!(
+        IDENTIFIER_CONTINUE_RULE,
+        IdentifierContinue,
+        Alphabet,
+        (),
+        DecDigit
+    );
 
     // Letters
     mplg_rule!(ALPHABET_RULE, Alphabet, Lowercase, (), Uppercase);
@@ -462,15 +615,45 @@ impl<'a> Rules<U8SliceTerminal<'a>, MplgVariable> for MplgRules {
             // Lexical syntax
             // Variable
             Variable => &Self::VARIABLE_RULE,
-            ZeroOrMoreVariableContinue => &Self::ZERO_OR_MORE_VARIABLE_CONTINUE_RULE,
-            VariableContinue => &Self::VARIABLE_CONTINUE_RULE,
 
             // Terminal symbol
             TerminalSymbol => &Self::TERMINAL_SYMBOL_RULE,
             // Expr
             Expr => &Self::EXPR_RULE,
+
+            // Without Block
+            ExprWithoutBlock => &Self::EXPR_WITHOUT_BLOCK_RULE,
+            ExprWithoutBlock1 => &Self::EXPR_WITHOUT_BLOCK1_RULE,
+
+            // Struct
+            StructExpr => &Self::STRUCT_EXPR_RULE,
+            StructExpr1 => &Self::STRUCT_EXPR1_RULE,
+
+            StructExprStruct => &Self::STRUCT_EXPR_STRUCT_RULE,
+
+            StructExprTuple => &Self::STRUCT_EXPR_TUPLE_RULE,
+            StructExprTuple1 => &Self::STRUCT_EXPR_TUPLE1_RULE,
+            StructExprTuple2 => &Self::STRUCT_EXPR_TUPLE2_RULE,
+            ZeroOrMoreExpr => &Self::ZERO_OR_MORE_EXPR_RULE,
+
+            StructExprUnit => &Self::STRUCT_EXPR_UNIT_RULE,
+
+            // PathInExpr
+            PathInExpr => &Self::PATH_IN_EXPR_RULE,
+            ZeroOrOneDoubleColon => &Self::ZERO_OR_ONE_DOUBLE_COLON_RULE,
+            OneOrMorePathExprSegment => &Self::ONE_OR_MORE_PATH_EXPR_SEGMENT_RULE,
+
+            PathExprSegment => &Self::PATH_EXPR_SEGMENT_RULE,
+            PathExprSegment1 => &Self::PATH_EXPR_SEGMENT1_RULE,
+
+            PathIdentSegment => &Self::PATH_IDENT_SEGMENT_RULE,
+
+            GenericArgs => &Self::GENERIC_ARGS_RULE,
+
             // Literal
             LiteralExpr => &Self::LITERAL_EXPR_RULE,
+            LiteralExpr1 => &Self::LITERAL_EXPR1_RULE,
+
             // Metasymbol
             MetasymbolLiteral => &Self::METASYMBOL_LITERAL_RULE,
             MetasymbolLiteral1 => &Self::METASYMBOL_LITERAL1_RULE,
@@ -482,6 +665,10 @@ impl<'a> Rules<U8SliceTerminal<'a>, MplgVariable> for MplgRules {
             ZeroOrMoreAny => &Self::ZERO_OR_MORE_ANY_RULE,
             AllLiteral => &Self::ALL_LITERAL_RULE,
 
+            // Original symbol
+            OriginalSymbolExpr => &Self::ORIGINAL_SYMBOL_EXPR_RULE,
+            OriginalSymbolExpr1 => &Self::ORIGINAL_SYMBOL_EXPR1_RULE,
+
             // String
             StringLiteral => &Self::STRING_LITERAL_RULE,
             StringLiteral1 => &Self::STRING_LITERAL1_RULE,
@@ -490,6 +677,18 @@ impl<'a> Rules<U8SliceTerminal<'a>, MplgVariable> for MplgRules {
             InnerStringLiteralLetter => &Self::INNER_STRING_LITERAL_LETTER_RULE,
             NotStringLetter => &Self::NOT_STRING_LETTER_RULE,
             InnerStringLiteral1Letter1 => &Self::INNER_STRING_LITERAL_LETTER1_RULE,
+
+            // Integer
+            IntegerLiteral => &Self::INTEGER_LITERAL_RULE,
+            IntegerLiterals => &Self::INTEGER_LITERALS_RULE,
+            DecLiteral => &Self::DEC_LITERAL_RULE,
+            ZeroOrMoreDecDigit => &Self::ZERO_OR_MORE_DEC_DIGIT_RULE,
+            DecDigitOrUnderscore => &Self::DEC_DIGIT_OR_UNDERSCORE_RULE,
+
+            // IDENTIFIER
+            Identifier => &Self::IDENTIFIER_RULE,
+            ZeroOrMoreIdentifierContinue => &Self::ZERO_OR_MORE_IDENTIFIER_CONTINUE_RULE,
+            IdentifierContinue => &Self::IDENTIFIER_CONTINUE_RULE,
 
             // Letters
             Alphabet => &Self::ALPHABET_RULE,

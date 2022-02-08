@@ -3,16 +3,15 @@ use mpl::choices::{Choice, First, Second};
 use mpl::output::Output;
 use mpl::rules::{RightRule, Rule};
 use mpl::span::{Span, StartAndLenSpan};
-use mpl::symbols::U8SliceTerminal;
 use mpl::symbols::{Metasymbol, TerminalSymbol, E};
 use mpl::trees::{Node, AST, CST};
 
 #[derive(Clone, Debug)]
 pub enum MplgOutput<'a> {
     Lines(Vec<MplgOutput<'a>>),
-    Rule(Rule<U8SliceTerminal<'a>, &'a str>),
+    Rule(Rule<&'a str, &'a str>),
     Str(&'a str),
-    E(E<U8SliceTerminal<'a>, &'a str>),
+    E(E<&'a str, &'a str>),
 }
 
 impl<'a> MplgOutput<'a> {
@@ -30,7 +29,7 @@ impl<'a> MplgOutput<'a> {
         }
     }
 
-    fn into_e(self) -> E<U8SliceTerminal<'a>, &'a str> {
+    fn into_e(self) -> E<&'a str, &'a str> {
         match self {
             MplgOutput::E(e) => e,
             _ => panic!("expect E"),
@@ -139,11 +138,11 @@ impl<'i> Output<'i, [u8], MplgVariable, StartAndLenSpan<u32, u32>> for MplgOutpu
             // Terminal symbol
             MplgVariable::TerminalSymbol => {
                 let span = cst.span;
-                let expr = cst.node.equal.into_first().unwrap().lhs;
-                let literal_expr = expr.into_first().unwrap().lhs.into_internal().unwrap();
-                let e = match *literal_expr.equal {
+                let e = match cst.node.equal {
                     Choice::First(first) => first.lhs.into_original().expect("Metasymbol literal"),
-                    Choice::Second(second) => second.0.into_original().expect("String literal"),
+                    Choice::Second(second) => {
+                        second.0.into_original().expect("Original symbol expr")
+                    }
                 };
                 AST::from_leaf(TerminalSymbol::from_original(e), span)
             }
@@ -182,15 +181,15 @@ impl<'i> Output<'i, [u8], MplgVariable, StartAndLenSpan<u32, u32>> for MplgOutpu
                     }
                 }
             }
-            // Original
-            MplgVariable::StringLiteral => {
+            // Original symbol
+            MplgVariable::OriginalSymbolExpr => {
                 let lo = cst.span.start as usize;
                 let hi = cst.span.hi(input) as usize;
-                let s = std::str::from_utf8(&input[lo + 1..hi - 1]).expect("str");
+                let s = std::str::from_utf8(&input[lo + 2..hi - 2]).expect("str");
 
                 AST::from_leaf(
                     TerminalSymbol::from_original(MplgOutput::E(
-                        TerminalSymbol::Original(s.into()).into(),
+                        TerminalSymbol::Original(s).into(),
                     )),
                     cst.span,
                 )
