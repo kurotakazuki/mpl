@@ -309,8 +309,9 @@ PathIdentSegment = Identifier () / f
 GenericArgs = f f / f
 
 // Literal
-LiteralExpr = StringLiteral () / LiteralExpr1
-LiteralExpr1 = IntegerLiteral () / f
+LiteralExpr = CharLiteral () / LiteralExpr1
+LiteralExpr1 = StringLiteral () / LiteralExpr2
+LiteralExpr2 = IntegerLiteral () / f
 
 // Metasymbol
 MetasymbolLiteral = EmptyLiteral () / MetasymbolLiteral1
@@ -327,14 +328,21 @@ AllLiteral = '*' () / f
 OriginalSymbolExpr = "{ " OriginalSymbolExpr1 / f
 OriginalSymbolExpr1 = ExprWithoutBlock " }" / f
 
+// Char
+CharLiteral = '\'' CharLiteral1 / f
+CharLiteral1 = InnerCharLiteral '\'' / f
+InnerCharLiteral = NotCharLetter InnerCharLiteral1 / f
+NotCharLetter = '\'' * / ()
+InnerCharLiteral1 = QuoteEscape () / ?
+
 // String
 StringLiteral = '"' StringLiteral1 / f
 StringLiteral1 = InnerStringLiteral '"' / f
 InnerStringLiteral = InnerStringLiteralLetter InnerStringLiteral / ()
 // InnerStringLiteralLetter
-InnerStringLiteralLetter = NotStringLetter InnerStringLiteral1Letter1 / f
+InnerStringLiteralLetter = NotStringLetter InnerStringLiteralLetter1 / f
 NotStringLetter = '"' * / ()
-InnerStringLiteral1Letter1 = QuoteEscape () / ?
+InnerStringLiteralLetter1 = QuoteEscape () / ?
 
 // Integer
 IntegerLiteral = IntegerLiterals () / f

@@ -2,4 +2,4 @@
 Open = { Str("(") } Parentheses / ()
 
 Parentheses = Open Close / f
-Close = { Str(")") } Open / f
+Close = { Char(')') } Open / f

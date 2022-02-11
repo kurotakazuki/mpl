@@ -164,11 +164,18 @@ impl<'a> MplgRules {
     mplg_rule!(
         LITERAL_EXPR_RULE,
         LiteralExpr,
-        StringLiteral,
+        CharLiteral,
         (),
         LiteralExpr1
     );
-    mplg_rule!(LITERAL_EXPR1_RULE, LiteralExpr1, IntegerLiteral, (), f);
+    mplg_rule!(
+        LITERAL_EXPR1_RULE,
+        LiteralExpr1,
+        StringLiteral,
+        (),
+        LiteralExpr2
+    );
+    mplg_rule!(LITERAL_EXPR2_RULE, LiteralExpr2, IntegerLiteral, (), f);
 
     // Metasymbol
     mplg_rule!(
@@ -233,6 +240,31 @@ impl<'a> MplgRules {
         f
     );
 
+    // Char
+    mplg_rule!(
+        CHAR_LITERAL_RULE,
+        CharLiteral,
+        { Char('\'') },
+        CharLiteral1,
+        f
+    );
+    mplg_rule!(
+        CHAR_LITERAL1_RULE,
+        CharLiteral1,
+        InnerCharLiteral,
+        { Char('\'') },
+        f
+    );
+    mplg_rule!(
+        INNER_CHAR_LITERAL_RULE,
+        InnerCharLiteral,
+        NotCharLetter,
+        InnerCharLiteral1,
+        f
+    );
+    mplg_rule!(NOT_CHAR_LETTER_RULE, NotCharLetter, { Char('\'') }, *, ());
+    mplg_rule!(INNER_CHAR_LITERAL1_RULE, InnerCharLiteral1, QuoteEscape, (), ?);
+
     // String
     mplg_rule!(
         STRING_LITERAL_RULE,
@@ -260,11 +292,11 @@ impl<'a> MplgRules {
         INNER_STRING_LITERAL_LETTER_RULE,
         InnerStringLiteralLetter,
         NotStringLetter,
-        InnerStringLiteral1Letter1,
+        InnerStringLiteralLetter1,
         f
     );
     mplg_rule!(NOT_STRING_LETTER_RULE, NotStringLetter, { Char('"') }, *, ());
-    mplg_rule!(INNER_STRING_LITERAL_LETTER1_RULE, InnerStringLiteral1Letter1, QuoteEscape, (), ?);
+    mplg_rule!(INNER_STRING_LITERAL_LETTER1_RULE, InnerStringLiteralLetter1, QuoteEscape, (), ?);
 
     // Integer
     mplg_rule!(INTEGER_LITERAL_RULE, IntegerLiteral, IntegerLiterals, (), f);
@@ -653,6 +685,7 @@ impl<'a> Rules<U8SliceTerminal<'a>, MplgVariable> for MplgRules {
             // Literal
             LiteralExpr => &Self::LITERAL_EXPR_RULE,
             LiteralExpr1 => &Self::LITERAL_EXPR1_RULE,
+            LiteralExpr2 => &Self::LITERAL_EXPR2_RULE,
 
             // Metasymbol
             MetasymbolLiteral => &Self::METASYMBOL_LITERAL_RULE,
@@ -669,6 +702,13 @@ impl<'a> Rules<U8SliceTerminal<'a>, MplgVariable> for MplgRules {
             OriginalSymbolExpr => &Self::ORIGINAL_SYMBOL_EXPR_RULE,
             OriginalSymbolExpr1 => &Self::ORIGINAL_SYMBOL_EXPR1_RULE,
 
+            // Char
+            CharLiteral => &Self::CHAR_LITERAL_RULE,
+            CharLiteral1 => &Self::CHAR_LITERAL1_RULE,
+            InnerCharLiteral => &Self::INNER_CHAR_LITERAL_RULE,
+            NotCharLetter => &Self::NOT_CHAR_LETTER_RULE,
+            InnerCharLiteral1 => &Self::INNER_CHAR_LITERAL1_RULE,
+
             // String
             StringLiteral => &Self::STRING_LITERAL_RULE,
             StringLiteral1 => &Self::STRING_LITERAL1_RULE,
@@ -676,7 +716,7 @@ impl<'a> Rules<U8SliceTerminal<'a>, MplgVariable> for MplgRules {
             // InnerStringLiteralLetter
             InnerStringLiteralLetter => &Self::INNER_STRING_LITERAL_LETTER_RULE,
             NotStringLetter => &Self::NOT_STRING_LETTER_RULE,
-            InnerStringLiteral1Letter1 => &Self::INNER_STRING_LITERAL_LETTER1_RULE,
+            InnerStringLiteralLetter1 => &Self::INNER_STRING_LITERAL_LETTER1_RULE,
 
             // Integer
             IntegerLiteral => &Self::INTEGER_LITERAL_RULE,

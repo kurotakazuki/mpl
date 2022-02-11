@@ -63,6 +63,7 @@ pub enum MplgVariable {
     // Literal
     LiteralExpr,
     LiteralExpr1,
+    LiteralExpr2,
 
     // Metasymbol
     MetasymbolLiteral,
@@ -79,6 +80,13 @@ pub enum MplgVariable {
     OriginalSymbolExpr,
     OriginalSymbolExpr1,
 
+    // Char
+    CharLiteral,
+    CharLiteral1,
+    InnerCharLiteral,
+    NotCharLetter,
+    InnerCharLiteral1,
+
     // String
     StringLiteral,
     StringLiteral1,
@@ -86,7 +94,7 @@ pub enum MplgVariable {
     // InnerStringLiteralLetter
     InnerStringLiteralLetter,
     NotStringLetter,
-    InnerStringLiteral1Letter1,
+    InnerStringLiteralLetter1,
 
     // Integer
     IntegerLiteral,

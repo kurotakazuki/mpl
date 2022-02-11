@@ -61,6 +61,9 @@ mod tests {
             ("A = f f / f\n", ParseResult::Ok),
             ("A = ? ?? / ???\n", ParseResult::Ok),
             ("A = * * / *\n", ParseResult::Ok),
+            // Chars
+            ("A = { 'b' } { 'c' } / { 'd' }\n", ParseResult::Ok),
+            // ("A = { '\'' } { '\'' } / { '\'' }\n", ParseResult::Ok),
             // Strings
             (
                 "A = { \"string\" } { \"''\r\n\n\\\"\\\"\n\" } / { \"\" }\n",
@@ -88,6 +91,7 @@ mod tests {
             ("a = B C / D\n", ParseResult::Err),
             ("A = b c / d\n", ParseResult::Err),
             ("() = B C / D\n", ParseResult::Err),
+            ("A = { 'bb' } { 'c' } / { 'd' }\n", ParseResult::Err),
         ];
         for input in inputs {
             let result = parse_mplg(input.0.as_bytes());
