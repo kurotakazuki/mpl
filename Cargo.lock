@@ -15,6 +15,8 @@ checksum = "4f5bf88457102919eb498988955620b10fe1c6b28a938afd62a95030fedc391e"
 [[package]]
 name = "mpl-macro"
 version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bea4685e971a436a14a427ba3492219e380e79306a14edcad39f913a09e57945"
 dependencies = [
  "mpl 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2",
@@ -24,9 +26,7 @@ dependencies = [
 
 [[package]]
 name = "mpl-macro"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bea4685e971a436a14a427ba3492219e380e79306a14edcad39f913a09e57945"
+version = "0.1.2"
 dependencies = [
  "mpl 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2",
@@ -39,7 +39,7 @@ name = "paren"
 version = "0.1.0"
 dependencies = [
  "mpl 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "mpl-macro 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "mpl-macro 0.1.1",
 ]
 
 [[package]]
