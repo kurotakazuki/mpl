@@ -66,7 +66,7 @@ pub fn generate_rules(
                 let s = generate_e(&rule.equal.second.0, variable_ident);
 
                 quote! {
-                    const #const_ident: ::mpl::rules::RightRule<::mpl::symbols::U8SliceTerminal<'a>, #variable_ident> = ::mpl::rules::RightRule {
+                    pub const #const_ident: ::mpl::rules::RightRule<::mpl::symbols::U8SliceTerminal<'a>, #variable_ident> = ::mpl::rules::RightRule {
                         first: ::mpl::choices::First {
                             lhs: #fl,
                             rhs: #fr,
