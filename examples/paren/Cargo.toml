@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-mpl = { path = "../../packages/mpl" }
+mpl = "0.2"
 mpl-macro = { path = "../../packages/mpl-macro" }

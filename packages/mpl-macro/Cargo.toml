@@ -16,6 +16,5 @@ proc-macro = true
 [dependencies]
 proc-macro2 = "1.0"
 quote = "1.0"
-# TODO Remove extra-trait features
-syn = { version = "1.0", features = ["extra-traits"] }
-mpl = { path = "../mpl" }
+syn = "1.0"
+mpl = "0.2"

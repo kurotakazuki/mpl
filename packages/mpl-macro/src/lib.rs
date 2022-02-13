@@ -11,7 +11,7 @@ use proc_macro::TokenStream;
 ///
 /// # Examples
 ///
-/// ```
+/// ``` ignore
 /// use mpl_macro::Parse;
 ///
 /// #[derive(Parse)]
