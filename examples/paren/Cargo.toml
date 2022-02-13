@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 mpl = "0.2"
-mpl-macro = { path = "../../packages/mpl-macro" }
+mpl-macro = "0.1.1"

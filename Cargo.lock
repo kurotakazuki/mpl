@@ -23,11 +23,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "mpl-macro"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d1ff66176c40c9b889774693bc4b63a4d4c4715e10b968fabe138219dee87868"
+dependencies = [
+ "mpl 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "paren"
 version = "0.1.0"
 dependencies = [
  "mpl 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "mpl-macro",
+ "mpl-macro 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

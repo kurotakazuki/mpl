@@ -6,7 +6,7 @@ use mpl::trees::AST;
 use mpl_macro::Parse;
 
 #[derive(Parse, Debug)]
-#[mplg = "../../examples/paren/parentheses.mplg"] // TODO Use release mpl_macro
+#[mplg = "parentheses.mplg"]
 pub struct ParenParser;
 
 impl<'a> Rules<U8SliceTerminal<'a>, ParenVariable> for ParenRules {

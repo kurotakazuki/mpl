@@ -79,7 +79,7 @@ fn get_grammar_data(attr: &Attribute) -> Result<GrammarData, proc_macro2::TokenS
             Lit::Str(lit_str) => {
                 if name_value.path.is_ident("mplg") {
                     let attr = lit_str.value();
-                    let root = env!("CARGO_MANIFEST_DIR");
+                    let root = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".into());
                     let full_path = Path::new(&root).join(&attr);
                     let data = match read_file(&full_path) {
                         Ok(data) => data,
