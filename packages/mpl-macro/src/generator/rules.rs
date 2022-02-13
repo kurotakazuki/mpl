@@ -32,8 +32,6 @@ pub fn generate_e<'a>(e: &E<&'a str, &'a str>, variable_ident: &Ident) -> TokenS
                 _ => unreachable!(),
             },
             TerminalSymbol::Original(o) => {
-                // eprintln!("fadsj;lkkalcmondai{}", o);
-                // let o = format_ident!("{}", o);
                 let o = TokenStream::from_str(o).unwrap();
                 quote! {
                     ::mpl::symbols::E::<::mpl::symbols::U8SliceTerminal, #variable_ident>::T(::mpl::symbols::TerminalSymbol::Original(
