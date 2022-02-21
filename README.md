@@ -3,7 +3,7 @@
 [![Crate](https://img.shields.io/crates/v/mpl.svg)](https://crates.io/crates/mpl)
 [![API](https://docs.rs/mpl/badge.svg)](https://docs.rs/mpl)
 
-This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Down Parsing Language (TDPL). It creates a abstract syntax tree (AST) for each input.
+This is minimal parser combinator of Minimal Parsing Language (MPL) like Top-Down Parsing Language (TDPL). It creates an abstract syntax tree (AST) for each input.
 
 ## Getting Started
 1. implement `Variable`
@@ -98,12 +98,12 @@ fn main() {
 ```
 
 ### Test Examples
-- [Number](tests/number.rs)
-- [Parentheses](tests/parentheses.rs)
-- [Wav Riff](tests/wav_riff.rs)
+<!-- - [Number](tests/number.rs) -->
+- [Parentheses](examples/paren)
+<!-- - [Wav Riff](tests/wav_riff.rs) -->
 
-### Parsers written with MPL
-- [WAV AST](https://github.com/kurotakazuki/wav_ast) : RIFF waveform Audio Format
+<!-- ### Parsers written with MPL
+- [WAV AST](https://github.com/kurotakazuki/wav_ast) : RIFF waveform Audio Format -->
 
 ## MPL
 ### Definition of MPL grammar
